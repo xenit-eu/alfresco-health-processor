@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="healthProcessorPlatform.proxy" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory" ref="healthProcessorPlatform.subsystem.type"/>
+        <property name="sourceBeanName" value="healthProcessorPlatform"/>
+        <property name="interfaces">
+            <list>
+                <value>eu.xenit.alfresco.processor.service.ProcessorService</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="healthProcessorPlatform.subsystem.type"
+          class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory"
+          parent="abstractPropertyBackedBean">
+    <property name="category" value="healthProcessor"/>
+    <property name="typeName" value="platform"/>
+    <property name="instancePath">
+        <list>
+            <value>healthProcessorPlatform</value>
+        </list>
+    </property>
+    <property name="autoStart" value="true"/>
+    </bean>
+</beans>
