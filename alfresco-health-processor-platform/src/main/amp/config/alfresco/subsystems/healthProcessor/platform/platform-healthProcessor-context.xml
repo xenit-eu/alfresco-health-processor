@@ -5,5 +5,6 @@
 		http://www.springframework.org/schema/beans/spring-beans.xsd">
     <bean id="healthProcessorPlatform"
           class="eu.xenit.alfresco.processor.service.ProcessorServiceImpl">
+        <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
     </bean>
 </beans>
