@@ -1,0 +1,22 @@
+version: '3.2'
+services:
+  alfresco:
+    image: ${DOCKER_IMAGE}
+    ports:
+      - target: 8080
+        published: 80
+        mode: host
+    environment:
+      - CATALINA_OPTS=-Xdebug -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
+      - INDEX=noindex
+      - ENABLE_CLUSTERING=true
+    depends_on:
+        - postgresql
+
+  postgresql:
+    image: docker.io/xenit/postgres
+    environment:
+      - POSTGRES_USER=alfresco
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=alfresco
+

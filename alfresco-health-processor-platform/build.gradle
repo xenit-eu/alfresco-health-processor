@@ -1,12 +1,7 @@
-plugins {
-    id 'idea'
-    id 'java'
-    id 'eu.xenit.alfresco' version "1.0.1"
-    id 'eu.xenit.amp' version "1.0.1"
-}
-
-//description = "Extension based upon the Alfresco Solr Api endpoints, required to perform an Alfresco to Alfresco " +
-//        "migration with Alfred Inflow."
+apply plugin: "idea"
+apply plugin: "java"
+apply plugin: "eu.xenit.alfresco"
+apply plugin: "eu.xenit.amp"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -14,33 +9,22 @@ java {
     withSourcesJar()
 }
 
-ext {
-    alfrescoVersion = '5.0.d'
-}
-
 dependencies {
-    alfrescoProvided("org.alfresco:alfresco-core:${alfrescoVersion}") { transitive = false }
-    alfrescoProvided("org.alfresco:alfresco-remote-api:${alfrescoVersion}") { transitive = false }
-    alfrescoProvided("org.alfresco:alfresco-data-model:${alfrescoVersion}") { transitive = false }
-    alfrescoProvided("org.alfresco:alfresco-repository:${alfrescoVersion}") { transitive = false }
-    alfrescoProvided('org.springframework.extensions.surf:spring-webscripts:1.2.0-M35') { transitive = false }
-    alfrescoProvided('org.springframework.extensions.surf:spring-surf-core:1.2.0-M35') { transitive = false }
-    alfrescoProvided 'org.json:json:20090211'
-    alfrescoProvided 'org.slf4j:slf4j-api:1.7.7'
-}
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
-processResources {
-    filesMatching("**/module.properties") {
-        expand project.properties
-    }
-}
+    alfrescoProvided(enforcedPlatform("eu.xenit.alfresco:alfresco-community-bom:${alfrescoVersion}"))
 
-sourceSets {
-    main {
-        amp {
-            module("src/main/resources/alfresco/module/alfresco-solr-api-extended-platform/module.properties")
-        }
-    }
+    alfrescoProvided("org.alfresco:alfresco-core") { transitive = false }
+    alfrescoProvided("org.alfresco:alfresco-repository") { transitive = false }
+    alfrescoProvided("org.alfresco:alfresco-data-model") { transitive = false }
+    alfrescoProvided 'org.slf4j:slf4j-api'
+
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
+    testImplementation "org.hamcrest:hamcrest-all:${hamcrestVersion}"
+    testImplementation "commons-logging:commons-logging"
 }
 
 test {
@@ -58,4 +42,3 @@ publishing {
         }
     }
 }
-
