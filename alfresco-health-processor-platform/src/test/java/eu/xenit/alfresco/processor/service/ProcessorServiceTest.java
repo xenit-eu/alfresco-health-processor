@@ -11,29 +11,40 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ProcessorServiceTest {
-    @Mock
-    private ExecutorService executorService;
     @Spy
     private ProcessorServiceImpl processorService;
+    @Mock
+    private ExecutorService executorService;
+    @Mock
+    private HealthProcessorConfiguration configurationService;
 
     @Test
-    public void validateHealthTest() {
+    public void validateHealthWhenDisabledTest() {
+        when(configurationService.isEnabled())
+                .thenAnswer(i -> false);
+        processorService.setConfigurationService(configurationService);
+        processorService.validateHealth();
+        verify(executorService, never())
+                .submit(any(Runnable.class));
+    }
+
+    @Test
+    public void validateHealthWhenEnabledTest() {
+        when(configurationService.isEnabled())
+                .thenAnswer(i -> true);
         final AtomicBoolean executed = new AtomicBoolean(false);
         doAnswer(i -> {
-            Runnable submittedAction = i.getArgument(0);
-            submittedAction.run();
             executed.set(true);
             return null;
         }).when(executorService).submit(any(Runnable.class));
-        doNothing()
-                .when(processorService)
-                .doInTransaction(any(Runnable.class), anyBoolean(), anyBoolean());
+        processorService.setConfigurationService(configurationService);
         processorService.setExecutorService(executorService);
         processorService.validateHealth();
         assertTrue(executed.get());
