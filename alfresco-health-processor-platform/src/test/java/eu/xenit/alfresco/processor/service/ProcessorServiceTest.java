@@ -3,12 +3,15 @@ package eu.xenit.alfresco.processor.service;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,7 +27,8 @@ public class ProcessorServiceTest {
                 .thenAnswer(i -> false);
         ProcessorService processorService = createNewProcessorService(
                 executorService,
-                configurationService);
+                configurationService,
+                null);
         processorService.validateHealth();
         verify(executorService, never())
                 .submit(any(Runnable.class));
@@ -44,20 +48,28 @@ public class ProcessorServiceTest {
             executed.set(true);
             return null;
         }).when(executorService).submit(any(Runnable.class));
+        ProcessorAttributeService processorAttributeService =
+                Mockito.mock(ProcessorAttributeService.class);
+        doReturn(false)
+                .when(processorAttributeService)
+                .getAttribute(anyString(), any(Serializable.class));
         ProcessorService processorService = createNewProcessorService(
                 executorService,
-                configurationService);
+                configurationService,
+                processorAttributeService);
         processorService.validateHealth();
         assertTrue(executed.get());
     }
 
     private ProcessorService createNewProcessorService(
             ExecutorService executorService,
-            HealthProcessorConfiguration configuration) {
+            HealthProcessorConfiguration configuration,
+            ProcessorAttributeService processorAttributeService) {
         return new ProcessorService(
                 null,
                 executorService,
-                configuration
+                configuration,
+                processorAttributeService
         );
     }
 }

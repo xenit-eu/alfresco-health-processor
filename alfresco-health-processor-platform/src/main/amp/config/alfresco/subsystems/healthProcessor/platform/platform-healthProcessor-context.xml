@@ -7,5 +7,6 @@
           class="eu.xenit.alfresco.processor.service.ProcessorServiceImpl">
         <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
         <property name="configurationService" ref="eu.xenit.alfresco.processor.service.healthProcessorConfiguration"/>
+        <property name="processorAttributeService" ref="eu.xenit.alfresco.processor.service.processorAttributeService"/>
     </bean>
 </beans>

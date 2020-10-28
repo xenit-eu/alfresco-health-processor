@@ -7,4 +7,9 @@
           class="eu.xenit.alfresco.processor.service.HealthProcessorConfigurationImpl">
         <property name="globalProperties" ref="global-properties"/>
     </bean>
+    <bean id="eu.xenit.alfresco.processor.service.processorAttributeService"
+          class="eu.xenit.alfresco.processor.service.ProcessorAttributeServiceImpl">
+        <property name="attributeService" ref="attributeService"/>
+        <property name="descriptorService" ref="descriptorComponent"/>
+    </bean>
 </beans>
