@@ -25,5 +25,6 @@
         <constructor-arg name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
         <constructor-arg name="progressTracker" ref="eu.xenit.alfresco.processor.service.progressTracker"/>
         <constructor-arg name="nodeTxService" ref="eu.xenit.alfresco.processor.service.nodeTxService"/>
+        <constructor-arg name="validationService" ref="eu.xenit.alfresco.processor.service.validationService"/>
     </bean>
 </beans>

@@ -17,22 +17,25 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @AllArgsConstructor
-public class CycleService {
+public class CycleService  {
     private static final Logger logger = LoggerFactory.getLogger(CycleService.class);
 
     protected final RetryingTransactionHelper retryingTransactionHelper;
     protected final ProgressTracker progressTracker;
     protected final NodeTxService nodeTxService;
+    protected final ValidationService validationService;
 
     public void execute(HealthProcessorConfiguration configurationService) {
         Cycle cycle = createCycle( configurationService);
-        AtomicBoolean continueCycle = new AtomicBoolean();
+        AtomicBoolean continueCycle = new AtomicBoolean(true);
         run(configurationService, cycle, continueCycle);
         while(configurationService.isEnabled()
                 && !configurationService.isRunOnce()
                 && continueCycle.get()) {
+            logger.trace("Restarting the cycle...");
             run(configurationService, cycle, continueCycle);
         }
+        logger.trace("Cycle completed.");
     }
 
     Cycle createCycle(HealthProcessorConfiguration configurationService) {
@@ -60,7 +63,7 @@ public class CycleService {
 
         if(reachedMaxTx.get()) {
             try {
-                logger.error("Max transaction reached, entering idle state");
+                logger.debug("Max transaction reached, entering idle state");
                 Thread.sleep(configurationService.getTimeIncrementSeconds() * 1000);
             } catch (InterruptedException e) {
                 logger.error("Idling has failed, aborting...");
@@ -75,7 +78,7 @@ public class CycleService {
         int timeIncrementSeconds = cycle.getTimeIncrementSeconds();
         long firstCommitTime = cycle.getFirstCommitTime();
 
-        logger.debug("Tracking changes ... Start commit time: {}", LocalDateTime
+        logger.trace("Tracking changes ... Start commit time: {}", LocalDateTime
                 .ofInstant(Instant.ofEpochMilli(firstCommitTime), ZoneId.systemDefault())
                 .toString());
 
@@ -97,6 +100,8 @@ public class CycleService {
 
     private boolean txnHistoryIsCatchingUp(long timeIncrementEpoch, TrackerInfo trackerInfo) {
         long supposedLastScanTime = OffsetDateTime.now().toInstant().toEpochMilli() - timeIncrementEpoch;
+        logger.trace("supposedLastScanTime {} > trackerInfo.getCommitTimeMs() {}",
+                supposedLastScanTime , trackerInfo.getCommitTimeMs());
         return supposedLastScanTime > trackerInfo.getCommitTimeMs();
     }
 
@@ -104,6 +109,9 @@ public class CycleService {
         // Save current progress in case of transactions collection failure
         long maxTxId = trackerInfo.getTransactionId();
         long maxCommitTimeMs = trackerInfo.getCommitTimeMs();
+
+        logger.debug("maxTxId {}", maxTxId);
+        logger.debug("maxCommitTimeMs {}", maxCommitTimeMs);
 
         try {
             List<Transaction> txs = nodeTxService.getNodeTransactions(
@@ -116,14 +124,15 @@ public class CycleService {
                 maxCommitTimeMs = txs.stream().map(Transaction::getCommitTimeMs)
                         .max(Long::compare).get();
                 maxTxId = txs.stream().map(Transaction::getId)
-                        .max(Long::compare).get();
+                        .max(Long::compare)
+                        .orElse(-1L);
 
                 for(Transaction tx : txs) {
                     try {
                         retryingTransactionHelper.doInTransaction(() -> {
                             // Collect node references within transaction range
                             List<NodeRef> nodes = nodeTxService.getNodeReferences(tx);
-                            // TODO validate
+                            validationService.validate(nodes);
                             return null;
                         }, true, false);
                     } catch (Exception e) {

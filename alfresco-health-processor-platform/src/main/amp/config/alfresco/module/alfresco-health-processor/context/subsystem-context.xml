@@ -9,7 +9,7 @@
         <property name="sourceBeanName" value="healthProcessorPlatform"/>
         <property name="interfaces">
             <list>
-                <value>eu.xenit.alfresco.processor.service.ProcessorService</value>
+                <value>eu.xenit.alfresco.processor.service.IProcessorService</value>
             </list>
         </property>
     </bean>

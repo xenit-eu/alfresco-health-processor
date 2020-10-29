@@ -9,17 +9,17 @@
         <constructor-arg name="processorService" ref="healthProcessorPlatform.proxy"/>
     </bean>
 
-    <bean id="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.jobDetail"
+    <bean id="eu.xenit.alfresco.processor.tasks.processorTask.jobDetail"
             class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
         <property name="name" value="healthProcessorTask" />
         <property name="targetObject" ref="eu.xenit.alfresco.processor.processorTask"/>
         <property name="targetMethod" value="execute"/>
     </bean>
 
-    <bean id="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.trigger"
+    <bean id="eu.xenit.alfresco.processor.tasks.processorTask.trigger"
             class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="name" value="healthProcessorTrigger" />
-        <property name="jobDetail" ref="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.jobDetail"/>
+        <property name="jobDetail" ref="eu.xenit.alfresco.processor.tasks.processorTask.jobDetail"/>
         <property name="cronExpression">
             <value>${eu.xenit.alfresco.processor.task.cron}</value>
         </property>
@@ -28,12 +28,11 @@
         </property>
     </bean>
 
-    <bean id="eu.xenit.alfresco.processor.tasks.scheduler"
-            class="org.springframework.scheduling.quartz.SchedulerAccessorBean">
+    <bean id="eu.xenit.alfresco.processor.tasks.processorTask.scheduler" class="org.springframework.scheduling.quartz.SchedulerAccessorBean">
         <property name="scheduler" ref="schedulerFactory"/>
         <property name="triggers">
             <list>
-                <ref bean="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.trigger"/>
+                <ref bean="eu.xenit.alfresco.processor.tasks.processorTask.trigger"/>
             </list>
         </property>
     </bean>

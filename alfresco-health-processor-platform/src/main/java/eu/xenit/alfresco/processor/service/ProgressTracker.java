@@ -19,9 +19,14 @@ public class ProgressTracker {
 
     public void updateTrackerInfo(TrackerInfo trackerInfo,
                                   final long maxTransactionId, final long maxCommitTime) {
+        OffsetDateTime now = OffsetDateTime.now();
+        logger.debug("Setting maxTransactionIdto {}", maxTransactionId);
+        logger.debug("Setting maxCommitTime to {}", maxCommitTime);
+        logger.debug("Setting timestamp to {}", now);
+        logger.debug("Setting name to {}", this.getClass().getName());
         trackerInfo.setTransactionId(maxTransactionId);
         trackerInfo.setCommitTimeMs(maxCommitTime);
-        trackerInfo.setTimestamp(OffsetDateTime.now());
+        trackerInfo.setTimestamp(now);
         trackerInfo.setName(this.getClass().getName());
     }
 

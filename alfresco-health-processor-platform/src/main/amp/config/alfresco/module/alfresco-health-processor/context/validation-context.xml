@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="eu.xenit.alfresco.processor.modules.contentExistenceValidator"
+          class="eu.xenit.alfresco.processor.modules.ContentExistenceValidator"
+        init-method="initialize">
+        <constructor-arg name="filterType">
+            <value>${eu.xenit.alfresco.processor.validation.content.type-filter}</value>
+        </constructor-arg>
+        <constructor-arg name="contentService" ref="contentService"/>
+        <constructor-arg name="nodeService" ref="nodeService"/>
+        <constructor-arg name="dictionaryService" ref="dictionaryService"/>
+    </bean>
+    <bean id="eu.xenit.alfresco.processor.service.validationService"
+          class="eu.xenit.alfresco.processor.service.ValidationService">
+        <constructor-arg name="nodeValidators">
+            <list>
+                <ref bean="eu.xenit.alfresco.processor.modules.contentExistenceValidator" />
+            </list>
+        </constructor-arg >
+    </bean>
+</beans>

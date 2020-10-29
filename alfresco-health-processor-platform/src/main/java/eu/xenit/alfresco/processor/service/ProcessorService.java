@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
 
 @AllArgsConstructor
-public class ProcessorService {
+public class ProcessorService implements IProcessorService {
     private static final Logger logger = LoggerFactory.getLogger(ProcessorService.class);
 
     protected final RetryingTransactionHelper retryingTransactionHelper;
@@ -17,6 +17,7 @@ public class ProcessorService {
     protected final ProcessorAttributeService processorAttributeService;
     protected final CycleService cycleService;
 
+    @Override
     public void validateHealth() {
         if(!configuration.isEnabled()) {
             logger.info("Health validation initiated, but it is not enabled, aborting.");
@@ -29,8 +30,9 @@ public class ProcessorService {
             return;
         }
 
+        logger.debug("Scheduling health validation!");
         executorService.submit(() -> {
-            logger.trace("Current thread id: {}", Thread.currentThread().getId());
+            logger.debug("Current thread id: {}", Thread.currentThread().getId());
             doInTransaction(
                     () -> processorAttributeService
                                 .persistAttribute(ProcessorAttributeService.ATTR_KEY_IS_RUNNING, true),
