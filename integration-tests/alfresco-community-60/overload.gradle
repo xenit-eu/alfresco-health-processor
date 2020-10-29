@@ -1,0 +1,5 @@
+ext {
+    alfrescoVersion = '6.0.7-ga'
+    alfrescoBaseWar = "org.alfresco:content-services-community:${alfrescoVersion}@war"
+    alfrescoBaseImage = "docker.io/xenit/alfresco-repository-community:${alfrescoVersion}"
+}

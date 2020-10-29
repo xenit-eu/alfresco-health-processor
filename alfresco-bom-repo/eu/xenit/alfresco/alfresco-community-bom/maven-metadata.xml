@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>eu.xenit.alfresco</groupId>
+  <artifactId>alfresco-community-bom</artifactId>
+  <versioning>
+    <release>6.2.0-ga</release>
+    <versions>
+      <version>5.2.f</version>
+      <version>6.0.7-ga</version>
+      <version>6.1.2-ga</version>
+      <version>6.2.0-ga</version>
+    </versions>
+    <lastUpdated>20191129152941</lastUpdated>
+  </versioning>
+</metadata>

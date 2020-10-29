@@ -1,0 +1,99 @@
+apply plugin: 'java'
+
+ext {
+    junitJupiterVersion = '5.4.2'
+    mockitoVersion = '2.27.0'
+    hamcrestVersion = '1.3'
+    restAssuredVersion = '4.0.0'
+    slf4jVersion = '1.7.25'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:${junitJupiterVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
+    testImplementation "org.hamcrest:hamcrest-all:${hamcrestVersion}"
+    testImplementation "io.rest-assured:rest-assured:${restAssuredVersion}"
+
+    testImplementation group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jVersion}"
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: "${slf4jVersion}"
+}
+
+test {
+    // By default tests should only run in the subprojects. To manually run tests in your IDEA, uncomment:
+    enabled = false
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    def alfrescoVersion = project.name[-2..-1]
+    apply from: "${project.projectDir}/overload.gradle"
+
+    description = "Alfresco ${alfrescoVersion} with Health Processor"
+
+    task integrationTest(type: Test) {
+        useJUnitPlatform()
+        testLogging {
+            events "passed", "skipped", "failed"
+        }
+        testClassesDirs = project.parent.sourceSets.test.output.classesDirs
+        classpath = project.parent.sourceSets.test.runtimeClasspath
+        outputs.upToDateWhen { false }
+    }
+
+    check.dependsOn integrationTest
+
+    apply plugin: 'eu.xenit.docker-alfresco'
+    apply plugin: 'eu.xenit.docker-compose.auto'
+
+    dependencies {
+        baseAlfrescoWar "${alfrescoBaseWar}"
+        alfrescoAmp("eu.xenit:alfresco-dynamic-extensions-repo-${alfrescoVersion}:2.0.4")
+        alfrescoAmp("eu.xenit.apix:apix-impl-${alfrescoVersion}-amp:2.7.0")
+        alfrescoAmp project(path: ":alfresco-health-processor-platform", configuration: "amp")
+    }
+
+    dockerAlfresco {
+        baseImage = "${alfrescoBaseImage}"
+        leanImage = true
+
+        dockerBuild {
+            repository = "docker.io/xenit/alfresco-health-processor-${alfrescoVersion}"
+            tags = [version]
+            automaticTags = false
+        }
+    }
+
+    dockerCompose {
+        useComposeFiles = [
+                "${project.parent.projectDir}/src/test/resources/compose/docker-compose.yml",
+        ]
+
+        removeVolumes = true
+        captureContainersOutput = false
+
+        // Uncomment for quick iterations when developing integration tests
+        // stopContainers = false
+
+        // expose alfresco/inflow on a random port, comment to use default port (8080)
+        environment.put "ALFRESCO_TCP_8080", "8080"
+
+        isRequiredBy(project.tasks.integrationTest)
+
+        dev {
+            useComposeFiles = [
+                "${project.parent.projectDir}/src/test/resources/compose/docker-compose.yml"
+            ]
+        }
+    }
+}
