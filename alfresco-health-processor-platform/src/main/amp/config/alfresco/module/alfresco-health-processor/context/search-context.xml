@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--  Ignore indexing by node type or by node aspects  -->
+
+    <bean id="eu.xenit.alfresco.search.abstractIndexFilter" abstract="true" init-method="init" >
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.search.TypeIndexFilter"
+          class="org.alfresco.repo.search.TypeIndexFilter"
+          parent="eu.xenit.alfresco.search.abstractIndexFilter">
+        <property name="ignorePathsForSpecificTypes">
+            <value>${search.solrTrackingSupport.ignorePathsForSpecificTypes:false}</value>
+        </property>
+        <property name="typesForIgnoringPaths">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}person</value>
+                <value>{http://www.alfresco.org/model/application/1.0}configurations</value>
+                <value>{http://www.alfresco.org/model/content/1.0}authorityContainer</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.search.AspectIndexFilter"
+          class="org.alfresco.repo.search.AspectIndexFilter"
+          parent="eu.xenit.alfresco.search.abstractIndexFilter">
+        <property name="ignorePathsForSpecificAspects">
+            <value>${search.solrTrackingSupport.ignorePathsForSpecificAspects:false}</value>
+        </property>
+        <property name="aspectsForIgnoringPaths">
+            <list></list>
+        </property>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.search.solrTrackingComponent"
+          class="org.alfresco.repo.solr.SOLRTrackingComponentImpl"
+          init-method="init">
+        <property name="permissionService" ref="permissionService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="ownableService" ref="ownableService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="solrDAO" ref="solrDAO" />
+        <property name="dictionaryDAO" ref="dictionaryDAO" />
+        <property name="aclDAO" ref="aclDAO" />
+        <property name="enabled">
+            <value>${eu.xenit.alfresco.processor.tracking.enabled:true}</value>
+        </property>
+        <property name="typeIndexFilter" ref="eu.xenit.alfresco.search.TypeIndexFilter" />
+        <property name="aspectIndexFilter" ref="eu.xenit.alfresco.search.AspectIndexFilter" />
+        <property name="namespaceService" ref="namespaceService" />
+    </bean>
+</beans>

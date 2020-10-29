@@ -13,7 +13,5 @@ public class Cycle {
     private long firstTxn;
     private int timeIncrementSeconds;
     private long firstCommitTime;
-
-    private long transactionId;
-    private long commitTimeMs;
+    private TrackerInfo trackerInfo;
 }
