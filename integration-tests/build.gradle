@@ -60,7 +60,6 @@ subprojects {
         baseAlfrescoWar "${alfrescoBaseWar}"
         alfrescoAmp("eu.xenit:alfresco-dynamic-extensions-repo-${alfrescoVersion}:2.0.4")
         alfrescoAmp("eu.xenit.apix:apix-impl-${alfrescoVersion}-amp:2.7.0")
-        alfrescoAmp("eu.xenit.care4alf:care4alf-5x:${care4alfModulesVersion}:amp@amp")
         alfrescoAmp project(path: ":alfresco-health-processor-platform", configuration: "amp")
     }
 

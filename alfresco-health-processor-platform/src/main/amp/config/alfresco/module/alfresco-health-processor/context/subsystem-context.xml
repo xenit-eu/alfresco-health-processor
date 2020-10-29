@@ -16,13 +16,13 @@
     <bean id="healthProcessorPlatform.subsystem.type"
           class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory"
           parent="abstractPropertyBackedBean">
-    <property name="category" value="healthProcessor"/>
-    <property name="typeName" value="platform"/>
-    <property name="instancePath">
-        <list>
-            <value>healthProcessorPlatform</value>
-        </list>
-    </property>
-    <property name="autoStart" value="true"/>
+        <property name="category" value="healthProcessor"/>
+        <property name="typeName" value="platform"/>
+        <property name="instancePath">
+            <list>
+                <value>healthProcessorPlatform</value>
+            </list>
+        </property>
+        <property name="autoStart" value="true"/>
     </bean>
 </beans>

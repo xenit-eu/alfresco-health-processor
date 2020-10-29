@@ -12,7 +12,8 @@ nexusStaging {
 }
 
 ext {
-    shortDotLessAlfrescoVersion = project.hasProperty("alfVersion") ? project.property("alfVersion") : '61'
+    shortDotLessAlfrescoVersion = '61'
+    alfrescoVersion = '6.1.2-ga'
     care4alfModulesVersion = '2.1.0'
     lombokVersion = '1.18.10'
 }
@@ -32,8 +33,6 @@ subprojects {
     apply from: "${rootProject.projectDir}/publish.gradle"
 }
 
-apply from: "${project.rootProject.projectDir}/integration-tests/alfresco-community-${shortDotLessAlfrescoVersion}/overload.gradle"
-
 allprojects {
     group = 'eu.xenit.alfresco'
     version = '0.1.0'
@@ -49,13 +48,6 @@ allprojects {
         }
         maven {
             url 'https://artifacts.alfresco.com/nexus/content/groups/public'
-        }
-        maven {
-            url 'https://artifactory.xenit.eu/artifactory/libs-release'
-            credentials {
-                username property("eu.xenit.artifactory.username")
-                password property("eu.xenit.artifactory.password")
-            }
         }
     }
 }
