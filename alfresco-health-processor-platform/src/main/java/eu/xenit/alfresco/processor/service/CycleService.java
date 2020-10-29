@@ -5,6 +5,7 @@ import eu.xenit.alfresco.processor.model.TrackerInfo;
 import lombok.AllArgsConstructor;
 import org.alfresco.repo.solr.Transaction;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +13,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -22,6 +22,7 @@ public class CycleService {
 
     protected final RetryingTransactionHelper retryingTransactionHelper;
     protected final ProgressTracker progressTracker;
+    protected final NodeTxService nodeTxService;
 
     public void execute(HealthProcessorConfiguration configurationService) {
         Cycle cycle = createCycle( configurationService);
@@ -48,7 +49,7 @@ public class CycleService {
     }
 
     void run(HealthProcessorConfiguration configurationService, Cycle cycle, AtomicBoolean continueCycle) {
-        cycle = start(cycle);
+        start(cycle);
 
         final TrackerInfo ti = cycle.getTrackerInfo();
         AtomicBoolean reachedMaxTx = new AtomicBoolean(false);
@@ -68,7 +69,7 @@ public class CycleService {
         }
     }
 
-    Cycle start(Cycle cycle) {
+    void start(Cycle cycle) {
         TrackerInfo trackerInfo = cycle.getTrackerInfo();
         int txnLimit = cycle.getTxnLimit();
         int timeIncrementSeconds = cycle.getTimeIncrementSeconds();
@@ -92,7 +93,6 @@ public class CycleService {
         }
 
         cycle.setTrackerInfo(trackerInfo);
-        return cycle;
     }
 
     private boolean txnHistoryIsCatchingUp(long timeIncrementEpoch, TrackerInfo trackerInfo) {
@@ -106,8 +106,8 @@ public class CycleService {
         long maxCommitTimeMs = trackerInfo.getCommitTimeMs();
 
         try {
-            List<Transaction> txs = getNodeTransactions(trackerInfo,
-                    txnLimit, timeIncrementSeconds);
+            List<Transaction> txs = nodeTxService.getNodeTransactions(
+                    trackerInfo, txnLimit, timeIncrementSeconds);
 
             logger.debug("Found {} transactions", txs.size());
 
@@ -121,7 +121,9 @@ public class CycleService {
                 for(Transaction tx : txs) {
                     try {
                         retryingTransactionHelper.doInTransaction(() -> {
-                            // do work
+                            // Collect node references within transaction range
+                            List<NodeRef> nodes = nodeTxService.getNodeReferences(tx);
+                            // TODO validate
                             return null;
                         }, true, false);
                     } catch (Exception e) {
@@ -137,9 +139,5 @@ public class CycleService {
             logger.error("Impossible to read tracker info: " + ex.getMessage(), ex);
         }
         return trackerInfo;
-    }
-
-    private List<Transaction> getNodeTransactions(TrackerInfo trackerInfo, int txnLimit, int timeIncrementSeconds) {
-        return new ArrayList<>();
     }
 }

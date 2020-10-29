@@ -16,9 +16,14 @@
           class="eu.xenit.alfresco.processor.service.ProgressTracker">
         <constructor-arg name="tracker" ref="eu.xenit.alfresco.search.solrTrackingComponent"/>
     </bean>
+    <bean id="eu.xenit.alfresco.processor.service.nodeTxService"
+          class="eu.xenit.alfresco.processor.service.NodeTxService">
+        <constructor-arg name="tracker" ref="eu.xenit.alfresco.search.solrTrackingComponent"/>
+    </bean>
     <bean id="eu.xenit.alfresco.processor.service.cycleService"
           class="eu.xenit.alfresco.processor.service.CycleService">
         <constructor-arg name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
         <constructor-arg name="progressTracker" ref="eu.xenit.alfresco.processor.service.progressTracker"/>
+        <constructor-arg name="nodeTxService" ref="eu.xenit.alfresco.processor.service.nodeTxService"/>
     </bean>
 </beans>
