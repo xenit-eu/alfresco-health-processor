@@ -30,7 +30,8 @@ public class ProcessorServiceTest {
         ProcessorService processorService = createNewProcessorService(
                 executorService,
                 configurationService,
-                processorAttributeService);
+                processorAttributeService,
+                null);
         processorService.validateHealth();
         verify(processorAttributeService, never())
                 .getAttribute(anyString(), anyBoolean());
@@ -58,7 +59,8 @@ public class ProcessorServiceTest {
         ProcessorService processorService = createNewProcessorService(
                 executorService,
                 configurationService,
-                processorAttributeService);
+                processorAttributeService,
+                null);
         processorService.validateHealth();
         assertTrue(executed.get());
     }
@@ -66,12 +68,14 @@ public class ProcessorServiceTest {
     private ProcessorService createNewProcessorService(
             ExecutorService executorService,
             HealthProcessorConfiguration configuration,
-            ProcessorAttributeService processorAttributeService) {
+            ProcessorAttributeService processorAttributeService,
+            CycleService cycleService) {
         return new ProcessorService(
                 null,
                 executorService,
                 configuration,
-                processorAttributeService
+                processorAttributeService,
+                cycleService
         );
     }
 }

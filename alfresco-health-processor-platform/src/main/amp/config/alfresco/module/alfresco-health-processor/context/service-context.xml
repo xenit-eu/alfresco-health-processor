@@ -12,4 +12,8 @@
         <constructor-arg  name="attributeService" ref="attributeService"/>
         <constructor-arg  name="descriptorService" ref="descriptorComponent"/>
     </bean>
+    <bean id="eu.xenit.alfresco.processor.service.cycleService"
+          class="eu.xenit.alfresco.processor.service.CycleService">
+        <constructor-arg name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
+    </bean>
 </beans>

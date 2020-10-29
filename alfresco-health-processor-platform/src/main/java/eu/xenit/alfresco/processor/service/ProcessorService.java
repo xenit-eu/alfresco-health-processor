@@ -15,6 +15,7 @@ public class ProcessorService {
     protected final ExecutorService executorService;
     protected final HealthProcessorConfiguration configuration;
     protected final ProcessorAttributeService processorAttributeService;
+    protected final CycleService cycleService;
 
     public void validateHealth() {
         if(!configuration.isEnabled()) {
@@ -34,8 +35,11 @@ public class ProcessorService {
                     () -> processorAttributeService
                                 .persistAttribute(ProcessorAttributeService.ATTR_KEY_IS_RUNNING, true),
                     false, true);
-            // do work
-            processorAttributeService.cleanupAttributes();
+            try {
+                this.cycleService.execute(configuration);
+            } finally {
+                processorAttributeService.cleanupAttributes();
+            }
         });
     }
 
