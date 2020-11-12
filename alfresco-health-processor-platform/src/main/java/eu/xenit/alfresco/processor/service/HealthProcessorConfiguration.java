@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
+import java.util.function.Function;
 
 @AllArgsConstructor
 public class HealthProcessorConfiguration {
@@ -86,7 +87,7 @@ public class HealthProcessorConfiguration {
                 String::toString);
     }
 
-    <T> T getProperty(String propertyName, T defaultValue, PropertyConverter<T> convertor) {
+    <T> T getProperty(String propertyName, T defaultValue, Function<String, T> convertor) {
         if(propertyName == null || propertyName.isEmpty()) {
             throw new IllegalStateException("Property name must be provided in order to resolve a value.");
         }
@@ -98,7 +99,7 @@ public class HealthProcessorConfiguration {
 
         String prop = globalProperties.get(propertyName).toString();
         logger.debug("Global property value: {}", prop);
-        return convertor.from(prop);
+        return convertor.apply(prop);
     }
 
     ProcessorService.TransactionScope createScope(String value) {
@@ -106,9 +107,5 @@ public class HealthProcessorConfiguration {
             throw new InvalidParameterException("value cannot be null or empty!");
         }
         return ProcessorService.TransactionScope.valueOf(value.toUpperCase());
-    }
-
-    interface PropertyConverter<T> {
-        T from(String value);
     }
 }

@@ -4,27 +4,28 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.security.InvalidParameterException;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HealthProcessorConfigurationTest {
 
-    private HealthProcessorConfiguration configuration = new HealthProcessorConfiguration(null);
+    private final HealthProcessorConfiguration configuration = new HealthProcessorConfiguration(null);
 
     @Test
     public void propertyConverterScopeUpperCaseTest() {
-        test( this::createScope, "ALL", ProcessorService.TransactionScope.ALL);
+        test( this::createScope, "ALL");
     }
 
     @Test
     public void propertyConverterScopeMixedCaseTest() {
-        test(this::createScope, "aLl", ProcessorService.TransactionScope.ALL);
+        test(this::createScope, "aLl");
     }
 
     @Test
     public void propertyConverterScopeNullTest() {
         Assertions.assertThrows(InvalidParameterException.class, () -> {
-            test(this::createScope, null, ProcessorService.TransactionScope.ALL);
+            test(this::createScope, null);
         });
     }
 
@@ -32,7 +33,7 @@ public class HealthProcessorConfigurationTest {
         return configuration.createScope(value);
     }
 
-    private <T> void test(HealthProcessorConfiguration.PropertyConverter<T> propertyConverter, String input, T expected) {
-        assertEquals(propertyConverter.from(input), expected);
+    private <T> void test(Function<String, T> convertor, String input) {
+        assertEquals(convertor.apply(input), ProcessorService.TransactionScope.ALL);
     }
 }
