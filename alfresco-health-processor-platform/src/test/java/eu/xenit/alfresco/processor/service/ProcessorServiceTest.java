@@ -1,10 +1,7 @@
 package eu.xenit.alfresco.processor.service;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,20 +13,18 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 public class ProcessorServiceTest {
-    @Spy
-    private ProcessorService processorService;
-    @Mock
-    private ExecutorService executorService;
-    @Mock
-    private HealthProcessorConfiguration configurationService;
-
     @Test
     public void validateHealthWhenDisabledTest() {
+        HealthProcessorConfiguration configurationService =
+                Mockito.mock(HealthProcessorConfiguration.class);
+        ExecutorService executorService =
+                Mockito.mock(ExecutorService.class);
         when(configurationService.isEnabled())
                 .thenAnswer(i -> false);
-        processorService.setConfiguration(configurationService);
+        ProcessorService processorService = createNewProcessorService(
+                executorService,
+                configurationService);
         processorService.validateHealth();
         verify(executorService, never())
                 .submit(any(Runnable.class));
@@ -37,16 +32,32 @@ public class ProcessorServiceTest {
 
     @Test
     public void validateHealthWhenEnabledTest() {
+        HealthProcessorConfiguration configurationService =
+                Mockito.mock(HealthProcessorConfiguration.class);
         when(configurationService.isEnabled())
                 .thenAnswer(i -> true);
+
         final AtomicBoolean executed = new AtomicBoolean(false);
+        ExecutorService executorService =
+                Mockito.mock(ExecutorService.class);
         doAnswer(i -> {
             executed.set(true);
             return null;
         }).when(executorService).submit(any(Runnable.class));
-        processorService.setConfiguration(configurationService);
-        processorService.setExecutorService(executorService);
+        ProcessorService processorService = createNewProcessorService(
+                executorService,
+                configurationService);
         processorService.validateHealth();
         assertTrue(executed.get());
+    }
+
+    private ProcessorService createNewProcessorService(
+            ExecutorService executorService,
+            HealthProcessorConfiguration configuration) {
+        return new ProcessorService(
+                null,
+                executorService,
+                configuration
+        );
     }
 }

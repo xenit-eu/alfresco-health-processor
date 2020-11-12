@@ -1,16 +1,12 @@
 package eu.xenit.alfresco.processor.service;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 
-@NoArgsConstructor(access = AccessLevel.PACKAGE)
 @AllArgsConstructor
 public class ProcessorService {
     private static final Logger logger = LoggerFactory.getLogger(ProcessorService.class);
@@ -20,14 +16,9 @@ public class ProcessorService {
         NEW
     }
 
-    @Setter(AccessLevel.PACKAGE)
-    protected RetryingTransactionHelper retryingTransactionHelper;
-
-    @Setter(AccessLevel.PACKAGE)
-    protected ExecutorService executorService;
-
-    @Setter(AccessLevel.PACKAGE)
-    protected HealthProcessorConfiguration configuration;
+    protected final RetryingTransactionHelper retryingTransactionHelper;
+    protected final ExecutorService executorService;
+    protected final HealthProcessorConfiguration configuration;
 
     public void validateHealth() {
         if(!configuration.isEnabled()) {

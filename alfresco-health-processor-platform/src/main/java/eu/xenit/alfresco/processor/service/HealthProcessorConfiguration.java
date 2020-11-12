@@ -12,7 +12,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
-@NoArgsConstructor(access = AccessLevel.PACKAGE)
 @AllArgsConstructor
 public class HealthProcessorConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(HealthProcessorConfiguration.class);
@@ -26,7 +25,7 @@ public class HealthProcessorConfiguration {
     private static String PROP_PROC_TXN_COMMIT_TIME_INCREMENT = "eu.xenit.alfresco.processor.transaction.time.increment";
     private static String PROP_PROC_TXN_COMMIT_TIME_START = "eu.xenit.alfresco.processor.transaction.time.start";
 
-    protected Properties globalProperties;
+    protected final Properties globalProperties;
 
     public boolean isEnabled() {
         return getProperty(

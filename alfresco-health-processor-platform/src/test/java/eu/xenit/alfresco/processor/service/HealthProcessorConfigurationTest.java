@@ -2,19 +2,14 @@ package eu.xenit.alfresco.processor.service;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.InvalidParameterException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ExtendWith(MockitoExtension.class)
 public class HealthProcessorConfigurationTest {
 
-    @Spy
-    private HealthProcessorConfiguration configuration;
+    private HealthProcessorConfiguration configuration = new HealthProcessorConfiguration(null);
 
     @Test
     public void propertyConverterScopeUpperCaseTest() {
