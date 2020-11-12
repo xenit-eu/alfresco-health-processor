@@ -1,12 +1,9 @@
 package eu.xenit.alfresco.processor.service;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.InvalidParameterException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -40,13 +37,6 @@ public class HealthProcessorConfiguration {
                 PROP_PROC_RUN_ONCE,
                 false,
                 Boolean::parseBoolean);
-    }
-
-    public ProcessorService.TransactionScope getScope() {
-            return getProperty(
-                    PROP_PROC_SCOPE,
-                    ProcessorService.TransactionScope.ALL,
-                    this::createScope);
     }
 
     public int getTransactionLimit() {
@@ -100,12 +90,5 @@ public class HealthProcessorConfiguration {
         String prop = globalProperties.get(propertyName).toString();
         logger.debug("Global property value: {}", prop);
         return convertor.apply(prop);
-    }
-
-    ProcessorService.TransactionScope createScope(String value) {
-        if(value == null || value.isEmpty()) {
-            throw new InvalidParameterException("value cannot be null or empty!");
-        }
-        return ProcessorService.TransactionScope.valueOf(value.toUpperCase());
     }
 }

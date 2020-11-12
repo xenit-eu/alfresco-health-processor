@@ -11,11 +11,6 @@ import java.util.concurrent.ExecutorService;
 public class ProcessorService {
     private static final Logger logger = LoggerFactory.getLogger(ProcessorService.class);
 
-    public enum TransactionScope {
-        ALL,
-        NEW
-    }
-
     protected final RetryingTransactionHelper retryingTransactionHelper;
     protected final ExecutorService executorService;
     protected final HealthProcessorConfiguration configuration;
