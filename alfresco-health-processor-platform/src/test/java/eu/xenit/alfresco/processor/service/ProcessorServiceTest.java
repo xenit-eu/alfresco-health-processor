@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class ProcessorServiceTest {
     @Spy
-    private ProcessorServiceImpl processorService;
+    private ProcessorService processorService;
     @Mock
     private ExecutorService executorService;
     @Mock
@@ -29,7 +29,7 @@ public class ProcessorServiceTest {
     public void validateHealthWhenDisabledTest() {
         when(configurationService.isEnabled())
                 .thenAnswer(i -> false);
-        processorService.setConfigurationService(configurationService);
+        processorService.setConfiguration(configurationService);
         processorService.validateHealth();
         verify(executorService, never())
                 .submit(any(Runnable.class));
@@ -44,7 +44,7 @@ public class ProcessorServiceTest {
             executed.set(true);
             return null;
         }).when(executorService).submit(any(Runnable.class));
-        processorService.setConfigurationService(configurationService);
+        processorService.setConfiguration(configurationService);
         processorService.setExecutorService(executorService);
         processorService.validateHealth();
         assertTrue(executed.get());
