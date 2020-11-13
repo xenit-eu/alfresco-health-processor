@@ -16,6 +16,7 @@ ext {
     alfrescoVersion = '6.1.2-ga'
     care4alfModulesVersion = '2.1.0'
     lombokVersion = '1.18.10'
+    enterpriseEnabled = rootProject.hasProperty("enterprise")
 }
 
 subprojects {
@@ -33,13 +34,14 @@ subprojects {
     apply from: "${rootProject.projectDir}/publish.gradle"
 }
 
-allprojects {
+allprojects { Project p ->
     group = 'eu.xenit.alfresco'
     version = '0.1.0'
 
     boolean isRelease = System.env.BRANCH_NAME?.startsWith("release")
-    if (!isRelease)
+    if (!isRelease) {
         version += "-SNAPSHOT"
+    }
 
     repositories {
         mavenCentral()
@@ -48,6 +50,15 @@ allprojects {
         }
         maven {
             url 'https://artifacts.alfresco.com/nexus/content/groups/public'
+        }
+        if(p.name.contains("enterprise") && enterpriseEnabled) {
+            maven {
+                url 'https://artifactory.xenit.eu/artifactory/alfresco-enterprise-cache'
+                credentials {
+                    username property("eu.xenit.artifactory.username")
+                    password property("eu.xenit.artifactory.password")
+                }
+            }
         }
     }
 }

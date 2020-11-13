@@ -33,7 +33,11 @@ test {
     }
 }
 
-subprojects {
+subprojects { Project p ->
+    if(p.name.contains("enterprise") && !rootProject.enterpriseEnabled) {
+        return;
+    }
+
     apply plugin: 'java'
 
     def alfrescoVersion = project.name[-2..-1]
