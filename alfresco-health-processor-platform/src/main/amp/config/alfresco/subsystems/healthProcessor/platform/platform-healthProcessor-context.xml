@@ -4,7 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd">
     <bean id="healthProcessorPlatform"
-          class="eu.xenit.alfresco.processor.service.ProcessorServiceImpl">
+          class="eu.xenit.alfresco.processor.service.ProcessorService">
         <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
         <property name="configurationService" ref="eu.xenit.alfresco.processor.service.healthProcessorConfiguration"/>
         <property name="processorAttributeService" ref="eu.xenit.alfresco.processor.service.processorAttributeService"/>

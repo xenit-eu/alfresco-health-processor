@@ -4,11 +4,11 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd">
     <bean id="eu.xenit.alfresco.processor.service.healthProcessorConfiguration"
-          class="eu.xenit.alfresco.processor.service.HealthProcessorConfigurationImpl">
+          class="eu.xenit.alfresco.processor.service.HealthProcessorConfiguration">
         <property name="globalProperties" ref="global-properties"/>
     </bean>
     <bean id="eu.xenit.alfresco.processor.service.processorAttributeService"
-          class="eu.xenit.alfresco.processor.service.ProcessorAttributeServiceImpl">
+          class="eu.xenit.alfresco.processor.service.ProcessorAttributeService">
         <property name="attributeService" ref="attributeService"/>
         <property name="descriptorService" ref="descriptorComponent"/>
     </bean>
