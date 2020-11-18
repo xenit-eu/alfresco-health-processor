@@ -6,7 +6,7 @@
 
     <bean id="eu.xenit.alfresco.processor.processorTask"
             class="eu.xenit.alfresco.processor.tasks.ProcessorTask">
-        <property name="processorService" ref="healthProcessorPlatform.proxy"/>
+        <constructor-arg name="processorService" ref="healthProcessorPlatform.proxy"/>
     </bean>
 
     <bean id="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.jobDetail"
