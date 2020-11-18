@@ -25,8 +25,8 @@ public class ProcessorAttributeService {
     public static final String ATTR_KEY_HEALTH_PROCESSOR = "HealthProcessor";
     public static final String ATTR_KEY_IS_RUNNING = "IsRunning";
 
-    protected AttributeService attributeService;
-    protected DescriptorService descriptorService;
+    protected final AttributeService attributeService;
+    protected final DescriptorService descriptorService;
 
     public <T extends Serializable> T getAttribute(final String key, final T defaultValue) {
         final List<T> returnValues = new ArrayList<>();
