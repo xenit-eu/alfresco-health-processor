@@ -3,7 +3,6 @@ package eu.xenit.alfresco.processor.service;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -55,7 +54,7 @@ public class ProcessorServiceTest {
                 Mockito.mock(ProcessorAttributeService.class);
         doReturn(false)
                 .when(processorAttributeService)
-                .getAttribute(anyString(), any(Serializable.class));
+                .getAttribute(anyString(), anyBoolean());
         ProcessorService processorService = createNewProcessorService(
                 executorService,
                 configurationService,

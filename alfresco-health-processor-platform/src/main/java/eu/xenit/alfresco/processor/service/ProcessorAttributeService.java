@@ -12,10 +12,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-/**
+/*
  * {@link AttributeService} wrapper that allows different Alfresco nodes to claim ranges of transactions.
  */
 public class ProcessorAttributeService {
@@ -25,11 +26,16 @@ public class ProcessorAttributeService {
     public static final String ATTR_KEY_HEALTH_PROCESSOR = "HealthProcessor";
     public static final String ATTR_KEY_IS_RUNNING = "IsRunning";
 
+    private static final int EXPECTED_ATTRIBUTE_KEYS_LENGTH = 3;
+    private static final int ATTRIBUTE_BASE_KEY_IDX = 0;
+    private static final int ATTRIBUTE_KEY_IDX = 1;
+    private static final int ATTRIBUTE_VALUE_IDX = 1;
+
     protected final AttributeService attributeService;
     protected final DescriptorService descriptorService;
 
-    public <T extends Serializable> T getAttribute(final String key, final T defaultValue) {
-        final List<T> returnValues = new ArrayList<>();
+    public boolean getAttribute(final String key, final boolean defaultValue) {
+        final List<Boolean> returnValues = new ArrayList<>();
 
         if(!attributeService.exists(ATTR_KEY_HEALTH_PROCESSOR,key)) {
             return defaultValue;
@@ -37,15 +43,15 @@ public class ProcessorAttributeService {
 
         attributeService.getAttributes((Long id, Serializable value, Serializable[] keys) -> {
             logger.debug("Processing attribute id: '{}', keys: '{}', value: '{}'", id, keys, value);
-            returnValues.add(extractTransactionStartId(key, keys));
+            returnValues.add(extractAttributeValue(key, keys));
             return true;
         }, ATTR_KEY_HEALTH_PROCESSOR, key);
 
-        return returnValues.stream().findFirst().get();
+        Optional<Boolean> firstResult = returnValues.stream().findFirst();
+        return firstResult.isPresent() && firstResult.get();
     }
 
-    public <T extends Serializable> void persistAttribute(final String key, final T value) {
-        ParameterCheck.mandatory("value", value);
+    public void persistAttribute(final String key, final boolean value) {
         try {
             attributeService.createAttribute(getRepositoryId(), ATTR_KEY_HEALTH_PROCESSOR, key, value);
         } catch (DuplicateAttributeException e) {
@@ -62,17 +68,17 @@ public class ProcessorAttributeService {
         return descriptorService.getCurrentRepositoryDescriptor().getId();
     }
 
-    static <T extends Serializable> T extractTransactionStartId(final String key, Serializable[] attributeKeys){
+    static boolean extractAttributeValue(final String key, Serializable[] attributeKeys){
         ParameterCheck.mandatory("attributeKeys", attributeKeys);
-        if (attributeKeys.length != 3
-            || !ATTR_KEY_HEALTH_PROCESSOR.equals(attributeKeys[0])
-            || !key.equals(attributeKeys[1])) {
+        if (attributeKeys.length != EXPECTED_ATTRIBUTE_KEYS_LENGTH
+            || !ATTR_KEY_HEALTH_PROCESSOR.equals(attributeKeys[ATTRIBUTE_BASE_KEY_IDX])
+            || !key.equals(attributeKeys[ATTRIBUTE_KEY_IDX])) {
             final String message = "Expected attribute key combination: '"
                     + ATTR_KEY_HEALTH_PROCESSOR + "." + key + ".[true|false]'"
                     + "but was: '" + toString(attributeKeys) + "'";
             throw new IllegalArgumentException(message);
         }
-        return (T) attributeKeys[2];
+        return Boolean.parseBoolean(attributeKeys[ATTRIBUTE_VALUE_IDX].toString());
     }
 
     static String toString(Serializable[] attributeKeys) {
