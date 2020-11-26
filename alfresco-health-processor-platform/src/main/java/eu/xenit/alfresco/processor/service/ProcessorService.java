@@ -14,6 +14,7 @@ public class ProcessorService {
     protected final RetryingTransactionHelper retryingTransactionHelper;
     protected final ExecutorService executorService;
     protected final HealthProcessorConfiguration configuration;
+    protected final ProcessorAttributeService processorAttributeService;
 
     public void validateHealth() {
         if(!configuration.isEnabled()) {
@@ -21,12 +22,20 @@ public class ProcessorService {
             return;
         }
 
+        if(processorAttributeService
+                .getAttribute(ProcessorAttributeService.ATTR_KEY_IS_RUNNING, false)) {
+            logger.info("Health validation initiated, but it is already running, aborting.");
+            return;
+        }
+
         executorService.submit(() -> {
             logger.trace("Current thread id: {}", Thread.currentThread().getId());
             doInTransaction(
-                    () -> {
-                      // do work
-                    }, false, true);
+                    () -> processorAttributeService
+                                .persistAttribute(ProcessorAttributeService.ATTR_KEY_IS_RUNNING, true),
+                    false, true);
+            // do work
+            processorAttributeService.cleanupAttributes();
         });
     }
 

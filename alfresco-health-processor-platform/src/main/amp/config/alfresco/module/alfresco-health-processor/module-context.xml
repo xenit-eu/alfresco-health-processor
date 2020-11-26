@@ -5,4 +5,5 @@
        http://www.springframework.org/schema/beans/spring-beans.xsd">
     <import resource="classpath:alfresco/module/alfresco-health-processor/context/service-context.xml" />
     <import resource="classpath:alfresco/module/alfresco-health-processor/context/subsystem-context.xml" />
+    <import resource="classpath:alfresco/module/alfresco-health-processor/context/job-scheduling-context.xml" />
 </beans>

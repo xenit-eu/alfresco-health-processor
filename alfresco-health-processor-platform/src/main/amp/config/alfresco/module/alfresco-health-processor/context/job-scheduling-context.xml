@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="eu.xenit.alfresco.processor.processorTask"
+            class="eu.xenit.alfresco.processor.tasks.ProcessorTask">
+        <constructor-arg name="processorService" ref="healthProcessorPlatform.proxy"/>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.jobDetail"
+            class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="name" value="healthProcessorTask" />
+        <property name="targetObject" ref="eu.xenit.alfresco.processor.processorTask"/>
+        <property name="targetMethod" value="execute"/>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.trigger"
+            class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="name" value="healthProcessorTrigger" />
+        <property name="jobDetail" ref="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.jobDetail"/>
+        <property name="cronExpression">
+            <value>${eu.xenit.alfresco.processor.task.cron}</value>
+        </property>
+        <property name="startDelay">
+            <value>${eu.xenit.alfresco.processor.task.delay}</value>
+        </property>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.processor.tasks.scheduler"
+            class="org.springframework.scheduling.quartz.SchedulerAccessorBean">
+        <property name="scheduler" ref="schedulerFactory"/>
+        <property name="triggers">
+            <list>
+                <ref bean="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.trigger"/>
+            </list>
+        </property>
+    </bean>
+</beans>

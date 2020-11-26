@@ -8,7 +8,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,12 +25,15 @@ public class ProcessorServiceTest {
                 Mockito.mock(ExecutorService.class);
         when(configurationService.isEnabled())
                 .thenAnswer(i -> false);
+        ProcessorAttributeService processorAttributeService =
+                Mockito.mock(ProcessorAttributeService.class);
         ProcessorService processorService = createNewProcessorService(
                 executorService,
-                configurationService);
+                configurationService,
+                processorAttributeService);
         processorService.validateHealth();
-        verify(executorService, never())
-                .submit(any(Runnable.class));
+        verify(processorAttributeService, never())
+                .getAttribute(anyString(), anyBoolean());
     }
 
     @Test
@@ -44,20 +50,28 @@ public class ProcessorServiceTest {
             executed.set(true);
             return null;
         }).when(executorService).submit(any(Runnable.class));
+        ProcessorAttributeService processorAttributeService =
+                Mockito.mock(ProcessorAttributeService.class);
+        doReturn(false)
+                .when(processorAttributeService)
+                .getAttribute(anyString(), anyBoolean());
         ProcessorService processorService = createNewProcessorService(
                 executorService,
-                configurationService);
+                configurationService,
+                processorAttributeService);
         processorService.validateHealth();
         assertTrue(executed.get());
     }
 
     private ProcessorService createNewProcessorService(
             ExecutorService executorService,
-            HealthProcessorConfiguration configuration) {
+            HealthProcessorConfiguration configuration,
+            ProcessorAttributeService processorAttributeService) {
         return new ProcessorService(
                 null,
                 executorService,
-                configuration
+                configuration,
+                processorAttributeService
         );
     }
 }
