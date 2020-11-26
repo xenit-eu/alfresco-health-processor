@@ -34,6 +34,12 @@ public class ProcessorAttributeService {
     protected final AttributeService attributeService;
     protected final DescriptorService descriptorService;
 
+    /**
+     *
+     * @param key Attribute Key to be read
+     * @param defaultValue Value to return in case the attribute does not exist
+     * @return Returns persisted value for the specified attribute. Any value != TRUE will return false.
+     */
     public boolean getAttribute(final String key, final boolean defaultValue) {
         final List<Boolean> returnValues = new ArrayList<>();
 
@@ -68,16 +74,16 @@ public class ProcessorAttributeService {
         return descriptorService.getCurrentRepositoryDescriptor().getId();
     }
 
+    /**
+     * @param key Attribute Key to be read
+     * @param attributeKeys Attribute Key collection to be scanned
+     * @return Any value != TRUE will return false.
+     */
     static boolean extractAttributeValue(final String key, Serializable[] attributeKeys){
         ParameterCheck.mandatory("attributeKeys", attributeKeys);
-        if (attributeKeys.length != EXPECTED_ATTRIBUTE_KEYS_LENGTH
-            || !ATTR_KEY_HEALTH_PROCESSOR.equals(attributeKeys[ATTRIBUTE_BASE_KEY_IDX])
-            || !key.equals(attributeKeys[ATTRIBUTE_KEY_IDX])) {
-            final String message = "Expected attribute key combination: '"
-                    + ATTR_KEY_HEALTH_PROCESSOR + "." + key + ".[true|false]'"
-                    + "but was: '" + toString(attributeKeys) + "'";
-            throw new IllegalArgumentException(message);
-        }
+        validateKeyLength(key, attributeKeys);
+        validateBaseAttributeKeyIsHealthProcessor(key, attributeKeys);
+        validateAttributeKey(key, attributeKeys);
         return Boolean.parseBoolean(attributeKeys[ATTRIBUTE_VALUE_IDX].toString());
     }
 
@@ -87,5 +93,38 @@ public class ProcessorAttributeService {
                 Arrays.stream(attributeKeys)
                             .map(Object::toString)
                             .collect(Collectors.toSet()));
+    }
+
+    private static void validateKeyLength(String key, Serializable[] attributeKeys) {
+        if (attributeKeys.length == EXPECTED_ATTRIBUTE_KEYS_LENGTH) {
+            return;
+        }
+        
+        final String message = "Expected attribute key length: 3 ('"
+                + ATTR_KEY_HEALTH_PROCESSOR + "." + key + ".[true|false]')"
+                + "but was: " + attributeKeys.length + "('" + toString(attributeKeys) + ")'";
+        throw new IllegalArgumentException(message);
+    }
+
+    private static void validateBaseAttributeKeyIsHealthProcessor(String key, Serializable[] attributeKeys) {
+        if (ATTR_KEY_HEALTH_PROCESSOR.equals(attributeKeys[ATTRIBUTE_BASE_KEY_IDX])) {
+            return;
+        }
+
+        final String message = "Expected first attribute key to be: '"
+                + ATTR_KEY_HEALTH_PROCESSOR
+                + "but was: '" + attributeKeys[ATTRIBUTE_BASE_KEY_IDX] + "'";
+        throw new IllegalArgumentException(message);
+    }
+
+    private static void validateAttributeKey(String key, Serializable[] attributeKeys) {
+        if (key.equals(attributeKeys[ATTRIBUTE_KEY_IDX])) {
+            return;
+        }
+
+        final String message = "Expected attribute key: '"
+                + ATTR_KEY_HEALTH_PROCESSOR + "." + key + ".[true|false]'"
+                + "but was: '" + toString(attributeKeys) + "'";
+        throw new IllegalArgumentException(message);
     }
 }
