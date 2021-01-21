@@ -32,6 +32,7 @@ public class CycleService {
     Cycle createCycle(HealthProcessorConfiguration configuration) {
         return new Cycle(
                 configuration.getFirstTransaction(),
+                100_000, // TODO replace with Max Txn from Solr
                 configuration.getTransactionBatchSize(),
                 configuration.getFirstTransaction(),
                 configuration.getTimeIncrementSeconds(),
@@ -45,7 +46,7 @@ public class CycleService {
 
         AtomicBoolean reachedMaxTx = new AtomicBoolean(false);
         retryingTransactionHelper.doInTransaction(() -> {
-            reachedMaxTx.set(reachedLastTx(cycle.getCurrentTransactionId()));
+            reachedMaxTx.set(cycle.getCurrentTransactionId() < cycle.getMaxTxn());
             return null;
         },false, true);
 
@@ -117,10 +118,6 @@ public class CycleService {
 
     boolean txnHistoryIsCatchingUp(long timeIncrementSec, long commitTimeMs) {
         return DateTimeUtil.xSecondsAgoToMs(timeIncrementSec) > commitTimeMs;
-    }
-
-    private boolean reachedLastTx(long currentTransactionId) {
-        return currentTransactionId < 100_000;
     }
 
     private List<Transaction> getNodeTransactions(long txnBatchSize, long    timeIncrementSeconds) {

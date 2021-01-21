@@ -14,6 +14,11 @@ public class Cycle {
       */
     private long firstTxn;
     /**
+     * Housekeeping: keep max txn ID to know when to stop
+     * TODO replace with Max Txn from Solr
+     */
+    private long maxTxn;
+    /**
      * Number of transactions to process at once
      */
     private long txnBatchSize;
