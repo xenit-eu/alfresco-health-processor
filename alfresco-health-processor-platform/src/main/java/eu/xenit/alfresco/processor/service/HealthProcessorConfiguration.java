@@ -1,12 +1,10 @@
 package eu.xenit.alfresco.processor.service;
 
+import eu.xenit.alfresco.processor.util.DateTimeUtil;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -17,9 +15,8 @@ public class HealthProcessorConfiguration {
     private static String PROP_PROC_ENABLED = "eu.xenit.alfresco.processor.enabled";
     private static String PROP_PROC_TRACKING_ENABLED = "eu.xenit.alfresco.processor.tracking.enabled";
     private static String PROP_PROC_RUN_ONCE = "eu.xenit.alfresco.processor.run-once";
-    private static String PROP_PROC_SCOPE = "eu.xenit.alfresco.processor.scope";
     private static String PROP_PROC_TXN_START = "eu.xenit.alfresco.processor.transaction.start";
-    private static String PROP_PROC_TXN_LIMIT = "eu.xenit.alfresco.processor.transaction.limit";
+    private static String PROP_PROC_TXN_LIMIT = "eu.xenit.alfresco.processor.transaction.batch-size";
     private static String PROP_PROC_TXN_COMMIT_TIME_INCREMENT = "eu.xenit.alfresco.processor.transaction.time.increment";
     private static String PROP_PROC_TXN_COMMIT_TIME_START = "eu.xenit.alfresco.processor.transaction.time.start";
 
@@ -39,11 +36,11 @@ public class HealthProcessorConfiguration {
                 Boolean::parseBoolean);
     }
 
-    public int getTransactionLimit() {
+    public long getTransactionLimit() {
         return getProperty(
                 PROP_PROC_TXN_LIMIT,
-                1000,
-                Integer::parseInt);
+                1000L,
+                Long::parseLong);
     }
 
     public long getFirstTransaction() {
@@ -53,27 +50,21 @@ public class HealthProcessorConfiguration {
                 Long::parseLong);
     }
 
-    public int getTimeIncrementSeconds() {
+    public long getTimeIncrementSeconds() {
         return getProperty(
                 PROP_PROC_TXN_COMMIT_TIME_INCREMENT,
-                15,
-                Integer::parseInt);
+                15L,
+                Long::parseLong);
     }
 
     public long getFirstCommitTime() {
-        return LocalDate.parse(
-                getFirstCommitTimeValue(),
-                DateTimeFormatter.ISO_LOCAL_DATE)
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli();
+        return DateTimeUtil.dateToEpochMs(getFirstCommitTimeValue());
     }
 
     private String getFirstCommitTimeValue() {
         return getProperty(
                 PROP_PROC_TXN_COMMIT_TIME_START,
-                LocalDate.now().minusYears(10)
-                        .format(DateTimeFormatter.ISO_LOCAL_DATE),
+                DateTimeUtil.fromTheLastXYears(10),
                 String::toString);
     }
 

@@ -9,11 +9,28 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class Cycle {
-    private int txnLimit;
+    /**
+     * Transaction ID to start scanning from
+      */
     private long firstTxn;
-    private int timeIncrementSeconds;
+    /**
+     * Number of transactions to process at once
+     */
+    private long txnBatchSize;
+    /**
+     * Housekeeping: the ID of the current transaction being processed
+     */
+    private long currentTransactionId;
+    /**
+     * Time window between transactions in seconds
+     */
+    private long timeIncrementSeconds;
+    /**
+     * Commit Time to start scanning from
+     */
     private long firstCommitTime;
-
-    private long transactionId;
-    private long commitTimeMs;
+    /**
+     * Housekeeping: the commit time of the current transaction being processed
+     */
+    private long currentCommitTimeMs;
 }

@@ -1,16 +1,13 @@
 package eu.xenit.alfresco.processor.service;
 
 import eu.xenit.alfresco.processor.model.Cycle;
+import eu.xenit.alfresco.processor.util.DateTimeUtil;
 import lombok.AllArgsConstructor;
 import org.alfresco.repo.solr.Transaction;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,7 +45,7 @@ public class CycleService {
 
         AtomicBoolean reachedMaxTx = new AtomicBoolean(false);
         retryingTransactionHelper.doInTransaction(() -> {
-            reachedMaxTx.set(reachedLastTx(cycle.getTransactionId()));
+            reachedMaxTx.set(reachedLastTx(cycle.getCurrentTransactionId()));
             return null;
         },false, true);
 
@@ -64,31 +61,28 @@ public class CycleService {
     }
 
     void start(Cycle cycle) {
-        int txnLimit = cycle.getTxnLimit();
-        int timeIncrementSeconds = cycle.getTimeIncrementSeconds();
-        long firstCommitTime = cycle.getFirstCommitTime();
+        long txnBatchSize = cycle.getTxnBatchSize();
+        long timeIncrementSec = cycle.getTimeIncrementSeconds();
 
-        logger.debug("Tracking changes ... Start commit time: {}", LocalDateTime
-                .ofInstant(Instant.ofEpochMilli(firstCommitTime), ZoneId.systemDefault())
-                .toString());
+        logger.debug("Tracking changes ... Start commit time: {}",
+                DateTimeUtil.toReadableString(cycle.getFirstCommitTime()));
 
-        processTxnRange(cycle, txnLimit, timeIncrementSeconds);
+        processTxnRange(cycle, txnBatchSize, timeIncrementSec);
 
-        long timeIncrementEpoch = timeIncrementSeconds * 1000L;
-        while(txnHistoryIsCatchingUp(timeIncrementEpoch, cycle.getCommitTimeMs())) {
-            cycle.setCommitTimeMs(cycle.getCommitTimeMs() + timeIncrementEpoch);
-            processTxnRange(cycle, txnLimit, timeIncrementSeconds);
+        while(txnHistoryIsCatchingUp(timeIncrementSec,cycle.getCurrentCommitTimeMs())){
+            cycle.setCurrentCommitTimeMs(cycle.getCurrentCommitTimeMs() + timeIncrementSec);
+            processTxnRange(cycle, txnBatchSize, timeIncrementSec);
         }
     }
 
-    void processTxnRange(Cycle cycle, int txnLimit, int timeIncrementSeconds) {
+    void processTxnRange(Cycle cycle, long txnBatchSize, long timeIncrementSeconds) {
         // Save current progress in case of transactions collection failure
-        long maxTxId = cycle.getTransactionId();
-        long maxCommitTimeMs = cycle.getCommitTimeMs();
+        long maxTxId = cycle.getCurrentTransactionId();
+        long maxCommitTimeMs = cycle.getCurrentCommitTimeMs();
 
         try {
             List<Transaction> txs = getNodeTransactions(
-                    txnLimit, timeIncrementSeconds);
+                    txnBatchSize, timeIncrementSeconds);
 
             logger.debug("Found {} transactions", txs.size());
 
@@ -111,24 +105,23 @@ public class CycleService {
                 }
             }
 
-            cycle.setTransactionId(maxTxId);
-            cycle.setCommitTimeMs( Long.max(maxCommitTimeMs, cycle.getCommitTimeMs()));
+            cycle.setCurrentCommitTimeMs(maxTxId);
+            cycle.setCurrentCommitTimeMs( Long.max(maxCommitTimeMs, cycle.getCurrentCommitTimeMs()));
 
         } catch (Exception ex) {
             logger.error("Impossible to read tracker info: " + ex.getMessage(), ex);
         }
     }
 
-    private boolean txnHistoryIsCatchingUp(long timeIncrementEpoch, long commitTimeMs) {
-        long supposedLastScanTime = OffsetDateTime.now().toInstant().toEpochMilli() - timeIncrementEpoch;
-        return supposedLastScanTime > commitTimeMs;
+    boolean txnHistoryIsCatchingUp(long timeIncrementSec, long commitTimeMs) {
+        return DateTimeUtil.xSecondsAgoToMs(timeIncrementSec) > commitTimeMs;
     }
 
-    private boolean reachedLastTx(long transactionId) {
-        return transactionId < 100_000;
+    private boolean reachedLastTx(long currentTransactionId) {
+        return currentTransactionId < 100_000;
     }
 
-    private List<Transaction> getNodeTransactions(int txnLimit, int timeIncrementSeconds) {
+    private List<Transaction> getNodeTransactions(long txnBatchSize, long    timeIncrementSeconds) {
         return new ArrayList<>();
     }
 }
