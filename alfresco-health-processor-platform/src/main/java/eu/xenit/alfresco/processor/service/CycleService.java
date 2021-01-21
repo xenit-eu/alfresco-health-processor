@@ -18,14 +18,14 @@ public class CycleService {
 
     protected final RetryingTransactionHelper retryingTransactionHelper;
 
-    public void execute(HealthProcessorConfiguration configurationService) {
-        Cycle cycle = createCycle( configurationService);
+    public void execute(HealthProcessorConfiguration configuration) {
+        Cycle cycle = createCycle( configuration);
         AtomicBoolean continueCycle = new AtomicBoolean();
-        run(configurationService, cycle, continueCycle);
-        while(configurationService.isEnabled()
-                && !configurationService.isRunOnce()
+        run(configuration, cycle, continueCycle);
+        while(configuration.isEnabled()
+                && !configuration.isRunOnce()
                 && continueCycle.get()) {
-            run(configurationService, cycle, continueCycle);
+            run(configuration, cycle, continueCycle);
         }
     }
 
@@ -40,7 +40,7 @@ public class CycleService {
         );
     }
 
-    void run(HealthProcessorConfiguration configurationService, Cycle cycle, AtomicBoolean continueCycle) {
+    void run(HealthProcessorConfiguration configuration, Cycle cycle, AtomicBoolean continueCycle) {
         start(cycle);
 
         AtomicBoolean reachedMaxTx = new AtomicBoolean(false);
@@ -52,7 +52,7 @@ public class CycleService {
         if(reachedMaxTx.get()) {
             try {
                 logger.error("Max transaction reached, entering idle state");
-                Thread.sleep(configurationService.getTimeIncrementSeconds() * 1000);
+                Thread.sleep(configuration.getTimeIncrementSeconds() * 1000);
             } catch (InterruptedException e) {
                 logger.error("Idling has failed, aborting...", e);
                 continueCycle.set(false);

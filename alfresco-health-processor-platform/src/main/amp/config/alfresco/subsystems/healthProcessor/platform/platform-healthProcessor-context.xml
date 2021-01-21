@@ -6,7 +6,7 @@
     <bean id="healthProcessorPlatform"
           class="eu.xenit.alfresco.processor.service.ProcessorService">
         <constructor-arg  name="retryingTransactionHelper" ref="retryingTransactionHelper" />
-        <constructor-arg  name="configurationService" ref="eu.xenit.alfresco.processor.service.healthProcessorConfiguration"/>
+        <constructor-arg  name="configuration" ref="eu.xenit.alfresco.processor.service.healthProcessorConfiguration"/>
         <constructor-arg  name="processorAttributeService" ref="eu.xenit.alfresco.processor.service.processorAttributeService"/>
         <constructor-arg  name="cycleService" ref="eu.xenit.alfresco.processor.service.cycleService"/>
     </bean>

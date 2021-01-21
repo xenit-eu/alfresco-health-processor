@@ -19,17 +19,17 @@ import static org.mockito.Mockito.when;
 public class ProcessorServiceTest {
     @Test
     public void validateHealthWhenDisabledTest() {
-        HealthProcessorConfiguration configurationService =
+        HealthProcessorConfiguration configuration =
                 Mockito.mock(HealthProcessorConfiguration.class);
         ExecutorService executorService =
                 Mockito.mock(ExecutorService.class);
-        when(configurationService.isEnabled())
+        when(configuration.isEnabled())
                 .thenAnswer(i -> false);
         ProcessorAttributeService processorAttributeService =
                 Mockito.mock(ProcessorAttributeService.class);
         ProcessorService processorService = createNewProcessorService(
                 executorService,
-                configurationService,
+                configuration,
                 processorAttributeService,
                 null);
         processorService.validateHealth();
@@ -39,9 +39,9 @@ public class ProcessorServiceTest {
 
     @Test
     public void validateHealthWhenEnabledTest() {
-        HealthProcessorConfiguration configurationService =
+        HealthProcessorConfiguration configuration =
                 Mockito.mock(HealthProcessorConfiguration.class);
-        when(configurationService.isEnabled())
+        when(configuration.isEnabled())
                 .thenAnswer(i -> true);
 
         final AtomicBoolean executed = new AtomicBoolean(false);
@@ -58,7 +58,7 @@ public class ProcessorServiceTest {
                 .getAttribute(anyString(), anyBoolean());
         ProcessorService processorService = createNewProcessorService(
                 executorService,
-                configurationService,
+                configuration,
                 processorAttributeService,
                 null);
         processorService.validateHealth();
