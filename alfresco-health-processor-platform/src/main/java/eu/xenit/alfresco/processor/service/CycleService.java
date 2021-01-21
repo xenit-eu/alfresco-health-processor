@@ -29,14 +29,14 @@ public class CycleService {
         }
     }
 
-    Cycle createCycle(HealthProcessorConfiguration configurationService) {
+    Cycle createCycle(HealthProcessorConfiguration configuration) {
         return new Cycle(
-                configurationService.getTransactionLimit(),
-                configurationService.getFirstTransaction(),
-                configurationService.getTimeIncrementSeconds(),
-                configurationService.getFirstCommitTime(),
-                configurationService.getFirstTransaction(),
-                configurationService.getFirstCommitTime()
+                configuration.getFirstTransaction(),
+                configuration.getTransactionBatchSize(),
+                configuration.getFirstTransaction(),
+                configuration.getTimeIncrementSeconds(),
+                configuration.getFirstCommitTime(),
+                configuration.getFirstCommitTime()
         );
     }
 

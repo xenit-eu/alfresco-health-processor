@@ -16,7 +16,7 @@ public class HealthProcessorConfiguration {
     private static String PROP_PROC_TRACKING_ENABLED = "eu.xenit.alfresco.processor.tracking.enabled";
     private static String PROP_PROC_RUN_ONCE = "eu.xenit.alfresco.processor.run-once";
     private static String PROP_PROC_TXN_START = "eu.xenit.alfresco.processor.transaction.start";
-    private static String PROP_PROC_TXN_LIMIT = "eu.xenit.alfresco.processor.transaction.batch-size";
+    private static String PROP_PROC_BATCH_SIZE = "eu.xenit.alfresco.processor.transaction.batch-size";
     private static String PROP_PROC_TXN_COMMIT_TIME_INCREMENT = "eu.xenit.alfresco.processor.transaction.time.increment";
     private static String PROP_PROC_TXN_COMMIT_TIME_START = "eu.xenit.alfresco.processor.transaction.time.start";
 
@@ -36,9 +36,9 @@ public class HealthProcessorConfiguration {
                 Boolean::parseBoolean);
     }
 
-    public long getTransactionLimit() {
+    public long getTransactionBatchSize() {
         return getProperty(
-                PROP_PROC_TXN_LIMIT,
+                PROP_PROC_BATCH_SIZE,
                 1000L,
                 Long::parseLong);
     }
