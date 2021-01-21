@@ -61,28 +61,30 @@ public class CycleService {
     }
 
     void start(Cycle cycle) {
-        long txnBatchSize = cycle.getTxnBatchSize();
         long timeIncrementSec = cycle.getTimeIncrementSeconds();
 
         logger.debug("Tracking changes ... Start commit time: {}",
                 DateTimeUtil.toReadableString(cycle.getFirstCommitTime()));
 
-        processTxnRange(cycle, txnBatchSize, timeIncrementSec);
+        processTxnRange(cycle);
 
         while(txnHistoryIsCatchingUp(timeIncrementSec,cycle.getCurrentCommitTimeMs())){
             cycle.setCurrentCommitTimeMs(cycle.getCurrentCommitTimeMs() + timeIncrementSec);
-            processTxnRange(cycle, txnBatchSize, timeIncrementSec);
+            processTxnRange(cycle);
         }
     }
 
-    void processTxnRange(Cycle cycle, long txnBatchSize, long timeIncrementSeconds) {
+    void processTxnRange(Cycle cycle) {
+        long txnBatchSize = cycle.getTxnBatchSize();
+        long timeIncrementSec = cycle.getTimeIncrementSeconds();
+
         // Save current progress in case of transactions collection failure
         long maxTxId = cycle.getCurrentTransactionId();
         long maxCommitTimeMs = cycle.getCurrentCommitTimeMs();
 
         try {
             List<Transaction> txs = getNodeTransactions(
-                    txnBatchSize, timeIncrementSeconds);
+                    txnBatchSize, timeIncrementSec);
 
             logger.debug("Found {} transactions", txs.size());
 
