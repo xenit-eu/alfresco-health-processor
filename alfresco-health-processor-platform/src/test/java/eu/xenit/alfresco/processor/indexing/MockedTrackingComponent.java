@@ -1,26 +1,25 @@
 package eu.xenit.alfresco.processor.indexing;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 public class MockedTrackingComponent implements TrackingComponent {
 
-    private final Map<Long, Set<Long>> transactions = new TreeMap<>();
+    private final Map<Long, Set<NodeRef>> transactions = new TreeMap<>();
     private int getNodeForTxnIdsInvocations = 0;
 
-    void addTransactions(Long txnId, Long... nodeIds) {
-        this.addTransactions(txnId, Arrays.asList(nodeIds));
+    void addTransaction(Long txnId, NodeRef... nodes) {
+        this.addTransaction(txnId, Arrays.asList(nodes));
     }
 
-    void addTransactions(Long txnId, List<Long> nodeIds) {
-        transactions.putIfAbsent(txnId, new TreeSet<>());
-        transactions.get(txnId).addAll(nodeIds);
+    void addTransaction(Long txnId, List<NodeRef> nodes) {
+        transactions.putIfAbsent(txnId, new HashSet<>());
+        transactions.get(txnId).addAll(nodes);
     }
 
     @Override
@@ -29,12 +28,16 @@ public class MockedTrackingComponent implements TrackingComponent {
     }
 
     @Override
-    public Set<Long> getNodesForTxnIds(List<Long> txnIds) {
+    public Set<NodeRef> getNodesForTxnIds(List<Long> txnIds) {
         getNodeForTxnIdsInvocations++;
 
-        return txnIds.stream()
-                .flatMap(id -> transactions.getOrDefault(id, Collections.emptySet()).stream())
-                .collect(Collectors.toCollection(TreeSet::new));
+        Set<NodeRef> ret = new HashSet<>();
+        transactions.forEach((key, value) -> {
+            if (txnIds.contains(key)) {
+                ret.addAll(value);
+            }
+        });
+        return ret;
     }
 
     public int numberOfGetNodeForTxnIdsInvocations() {

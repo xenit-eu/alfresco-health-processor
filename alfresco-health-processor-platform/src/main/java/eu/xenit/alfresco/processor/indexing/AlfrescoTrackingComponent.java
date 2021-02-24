@@ -6,6 +6,7 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.SOLRTrackingComponent;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 @AllArgsConstructor
 public class AlfrescoTrackingComponent implements TrackingComponent {
@@ -19,12 +20,12 @@ public class AlfrescoTrackingComponent implements TrackingComponent {
     }
 
     @Override
-    public Set<Long> getNodesForTxnIds(List<Long> txnIds) {
-        Set<Long> ret = new HashSet<>();
+    public Set<NodeRef> getNodesForTxnIds(List<Long> txnIds) {
+        Set<NodeRef> ret = new HashSet<>();
 
         solrTrackingComponent.getNodes(nodeParameters(txnIds), node -> {
             // TODO filter out deleted nodes?
-            ret.add(node.getId()); // TODO do we prefer NodeRef?
+            ret.add(node.getNodeRef());
             return true;
         });
 

@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +20,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(TxnIdBasedIndexingStrategy.class);
 
-    private final Queue<Long> nodeIdQueue = new LinkedBlockingQueue<>();
+    private final Queue<NodeRef> nodeIdQueue = new LinkedBlockingQueue<>();
     private long maxTxnIdInclusive;
     private boolean done = false;
     private long nextStartTxnIdToFetch;
@@ -45,8 +47,8 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
     }
 
     @Override
-    public Set<Long> getNextNodeIds(int amount) {
-        Set<Long> ret = new HashSet<>();
+    public Set<NodeRef> getNextNodeIds(int amount) {
+        Set<NodeRef> ret = new HashSet<>();
         while (!done && nodeIdQueue.size() < amount) {
             fetchMoreNodes();
         }

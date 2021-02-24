@@ -7,15 +7,29 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 import eu.xenit.alfresco.processor.indexing.TxnIdBasedIndexingStrategy.Configuration;
+import java.util.Arrays;
 import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
+import java.util.UUID;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class TxnIdBasedIndexingStrategyTest {
 
+    private static final int NUMBER_OF_TEST_REFS = 100;
+
+    private static final NodeRef[] REFS = new NodeRef[NUMBER_OF_TEST_REFS];
+
     private MockedTrackingComponent trackingComponent;
+
+    @BeforeAll
+    static void initializeTestNodeRefs() {
+        for (int i = 0; i < NUMBER_OF_TEST_REFS; i++) {
+            REFS[i] = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, UUID.randomUUID().toString());
+        }
+    }
 
     @BeforeEach
     void setup() {
@@ -27,8 +41,8 @@ public class TxnIdBasedIndexingStrategyTest {
         bulkInitTrackingComponent(10, 1);
         TxnIdBasedIndexingStrategy strategy = strategy();
 
-        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(1000L, 2000L, 3000L, 4000L, 5000L, 6000L));
-        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(7000L, 8000L, 9000L, 10000L));
+        assertThat(strategy.getNextNodeIds(6), hasSize(6));
+        assertThat(strategy.getNextNodeIds(6), hasSize(4));
         assertThat(strategy.getNextNodeIds(6), is(empty()));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(1));
     }
@@ -38,7 +52,7 @@ public class TxnIdBasedIndexingStrategyTest {
         bulkInitTrackingComponent(10, 1);
         TxnIdBasedIndexingStrategy strategy = strategy(new Configuration(2L, 6L, 1000L));
 
-        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(2000L, 3000L, 4000L, 5000L, 6000L));
+        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(REFS, 1, 6)));
         assertThat(strategy.getNextNodeIds(6), is(empty()));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(1));
     }
@@ -48,9 +62,9 @@ public class TxnIdBasedIndexingStrategyTest {
         bulkInitTrackingComponent(10, 1);
         TxnIdBasedIndexingStrategy strategy = strategy(new Configuration(-1L, 1000L, 2L));
 
-        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(1000L, 2000L, 3000L, 4000L, 5000L, 6000L));
+        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(REFS, 0, 6)));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(3));
-        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(7000L, 8000L, 9000L, 10000L));
+        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(REFS, 6, 10)));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(5));
     }
 
@@ -72,17 +86,17 @@ public class TxnIdBasedIndexingStrategyTest {
 
     @Test
     void reset() {
-        trackingComponent.addTransactions(1L, 10L, 11L, 12L);
+        trackingComponent.addTransaction(1L, REFS[0], REFS[1], REFS[2]);
         TxnIdBasedIndexingStrategy strategy = strategy();
 
-        assertThat(strategy.getNextNodeIds(100), containsInAnyOrder(10L, 11L, 12L));
+        assertThat(strategy.getNextNodeIds(100), containsInAnyOrder(Arrays.copyOfRange(REFS, 0, 3)));
         assertThat(strategy.getNextNodeIds(100), is(empty()));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(1));
 
-        trackingComponent.addTransactions(2L, 20L, 21L);
+        trackingComponent.addTransaction(2L, REFS[3], REFS[4]);
         strategy.reset();
 
-        assertThat(strategy.getNextNodeIds(100), containsInAnyOrder(10L, 11L, 12L, 20L, 21L));
+        assertThat(strategy.getNextNodeIds(100), containsInAnyOrder(Arrays.copyOfRange(REFS, 0, 5)));
         assertThat(strategy.getNextNodeIds(100), is(empty()));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(2));
     }
@@ -96,12 +110,11 @@ public class TxnIdBasedIndexingStrategyTest {
     }
 
     private void bulkInitTrackingComponent(int numberOfTransactions, int numberOfNodesPerTransaction) {
-        for (long l = 1L; l <= numberOfTransactions; l++) {
-            long nodeStart = l * 1000;
-            trackingComponent.addTransactions(l,
-                    LongStream.range(nodeStart, nodeStart + numberOfNodesPerTransaction)
-                            .boxed()
-                            .collect(Collectors.toList()));
+        int nodeRefPointer = 0;
+        for (long txnId = 1L; txnId <= numberOfTransactions; txnId++) {
+            for (int i = 0; i < numberOfNodesPerTransaction; i++) {
+                trackingComponent.addTransaction(txnId, REFS[nodeRefPointer++]);
+            }
         }
     }
 
