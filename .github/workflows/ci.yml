@@ -20,4 +20,4 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
-        run: ./gradlew sonarqube -Dsonar.projectKey=alfresco-health-processor -Dsonar.organization=xenit-eu -Dsonar.host.url=https://sonarcloud.io
+        run: ./gradlew sonarqube
