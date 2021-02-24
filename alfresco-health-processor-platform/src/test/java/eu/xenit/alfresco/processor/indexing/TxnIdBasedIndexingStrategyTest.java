@@ -49,7 +49,7 @@ public class TxnIdBasedIndexingStrategyTest {
     @Test
     void getNextNodeIds_limitedByConfiguration() {
         bulkInitTrackingComponent(10, 1);
-        TxnIdBasedIndexingStrategy strategy = strategy(config(2L, 6L, 1000));
+        TxnIdBasedIndexingStrategy strategy = strategy(IndexingConfigUtil.config(2L, 6L, 1000));
 
         assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(REFS, 1, 6)));
         assertThat(strategy.getNextNodeIds(6), is(empty()));
@@ -59,7 +59,7 @@ public class TxnIdBasedIndexingStrategyTest {
     @Test
     void getNextNodeIds_limitedByConfiguration_txnBatchSize() {
         bulkInitTrackingComponent(10, 1);
-        TxnIdBasedIndexingStrategy strategy = strategy(config(-1L, 1000L, 2));
+        TxnIdBasedIndexingStrategy strategy = strategy(IndexingConfigUtil.config(-1L, 1000L, 2));
 
         assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(REFS, 0, 6)));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(3));
@@ -70,7 +70,7 @@ public class TxnIdBasedIndexingStrategyTest {
     @Test
     void getNextNodeIds_limitedByConfiguration_txnBatchSize_twoNodesPerTransaction() {
         bulkInitTrackingComponent(10, 2); // = 20 nodes in total
-        TxnIdBasedIndexingStrategy strategy = strategy(config(-1L, 1000L, 2));
+        TxnIdBasedIndexingStrategy strategy = strategy(IndexingConfigUtil.config(-1L, 1000L, 2));
 
         assertThat(strategy.getNextNodeIds(6), hasSize(6));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(2));
@@ -100,16 +100,8 @@ public class TxnIdBasedIndexingStrategyTest {
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(2));
     }
 
-    private IndexingConfiguration config() {
-        return config(-1L, Long.MAX_VALUE, 1000);
-    }
-
-    private IndexingConfiguration config(long startTxnId, long stopTxnId, int txnBatchSize) {
-        return new IndexingConfiguration(IndexingStrategyKey.TXNID, startTxnId, stopTxnId, txnBatchSize);
-    }
-
     private TxnIdBasedIndexingStrategy strategy() {
-        return strategy(config());
+        return strategy(IndexingConfigUtil.defaultConfig());
     }
 
     private TxnIdBasedIndexingStrategy strategy(IndexingConfiguration configuration) {
