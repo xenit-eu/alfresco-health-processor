@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="eu.xenit.alfresco.processor.indexing.trackingComponent"
+            class="eu.xenit.alfresco.processor.indexing.AlfrescoTrackingComponent">
+        <constructor-arg name="solrTrackingComponent" ref="solrTrackingComponent"/>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.processor.indexing.strategy"
+            class="eu.xenit.alfresco.processor.indexing.IndexingStrategyFactoryBean">
+        <constructor-arg name="globalProperties" ref="global-properties"/>
+        <constructor-arg name="trackingComponent" ref="eu.xenit.alfresco.processor.indexing.trackingComponent"/>
+    </bean>
+</beans>

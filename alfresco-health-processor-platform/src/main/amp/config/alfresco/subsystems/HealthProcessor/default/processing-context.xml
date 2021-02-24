@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="eu.xenit.alfresco.processor.processing.configuration"
+            class="eu.xenit.alfresco.processor.processing.ProcessorConfiguration">
+        <constructor-arg name="globalProperties" ref="global-properties"/>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.processor.processing.processor"
+            class="eu.xenit.alfresco.processor.processing.Processor">
+        <constructor-arg name="configuration" ref="eu.xenit.alfresco.processor.processing.configuration"/>
+    </bean>
+</beans>
