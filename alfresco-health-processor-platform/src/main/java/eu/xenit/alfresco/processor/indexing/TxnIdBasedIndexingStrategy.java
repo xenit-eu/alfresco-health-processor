@@ -12,7 +12,6 @@ import java.util.stream.LongStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
