@@ -1,6 +1,5 @@
 apply plugin: "idea"
 apply plugin: 'java'
-apply plugin: 'jacoco'
 apply plugin: "eu.xenit.alfresco"
 apply plugin: "eu.xenit.amp"
 
@@ -34,7 +33,6 @@ test {
     testLogging {
         events "skipped", "failed"
     }
-    finalizedBy jacocoTestReport
 }
 
 publishing {
