@@ -62,8 +62,6 @@ subprojects { Project p ->
 
     dependencies {
         baseAlfrescoWar "${alfrescoBaseWar}"
-        alfrescoAmp("eu.xenit:alfresco-dynamic-extensions-repo-${alfrescoVersion}:2.0.4")
-        alfrescoAmp("eu.xenit.apix:apix-impl-${alfrescoVersion}-amp:2.7.0")
         alfrescoAmp project(path: ":alfresco-health-processor-platform", configuration: "amp")
     }
 

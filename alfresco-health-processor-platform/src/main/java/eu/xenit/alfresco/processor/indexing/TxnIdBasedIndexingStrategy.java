@@ -1,16 +1,11 @@
 package eu.xenit.alfresco.processor.indexing;
 
-import eu.xenit.alfresco.processor.PropertyConstants;
-import eu.xenit.alfresco.processor.util.PropertyUtil;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +19,10 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
     private boolean done = false;
     private long nextStartTxnIdToFetch;
 
-    private final Configuration configuration;
+    private final IndexingConfiguration configuration;
     private final TrackingComponent trackingComponent;
 
-    public TxnIdBasedIndexingStrategy(Properties globalProperties, TrackingComponent trackingComponent) {
-        this(new Configuration(globalProperties), trackingComponent);
-    }
-
-    public TxnIdBasedIndexingStrategy(Configuration configuration, TrackingComponent trackingComponent) {
+    public TxnIdBasedIndexingStrategy(IndexingConfiguration configuration, TrackingComponent trackingComponent) {
         this.configuration = configuration;
         this.trackingComponent = trackingComponent;
         reset();
@@ -88,25 +79,6 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     private long getNextStopTxnIdExclusive() {
         return Math.min(getNextStartTxnIdInclusive() + configuration.getTxnBatchSize(), maxTxnIdInclusive + 1);
-    }
-
-    @AllArgsConstructor
-    @Getter
-    public static class Configuration {
-
-        private final long startTxnId;
-        private final long stopTxnId;
-        private final long txnBatchSize;
-
-        public Configuration(Properties globalProperties) {
-            this(
-                    PropertyUtil.getOrDefaultLong(globalProperties, PropertyConstants.PROP_INDEXING_TXNID_START, -1L),
-                    PropertyUtil.getOrDefaultLong(globalProperties, PropertyConstants.PROP_INDEXING_TXNID_STOP,
-                            Long.MAX_VALUE),
-                    PropertyUtil.getOrDefaultLong(globalProperties, PropertyConstants.PROP_INDEXING_TXNID_TXNBATCHSIZE,
-                            1000L)
-            );
-        }
     }
 
 }

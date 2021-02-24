@@ -6,9 +6,8 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
-import eu.xenit.alfresco.processor.indexing.TxnIdBasedIndexingStrategy.Configuration;
+import eu.xenit.alfresco.processor.indexing.IndexingConfiguration.IndexingStrategyKey;
 import java.util.Arrays;
-import java.util.Properties;
 import java.util.UUID;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -50,7 +49,7 @@ public class TxnIdBasedIndexingStrategyTest {
     @Test
     void getNextNodeIds_limitedByConfiguration() {
         bulkInitTrackingComponent(10, 1);
-        TxnIdBasedIndexingStrategy strategy = strategy(new Configuration(2L, 6L, 1000L));
+        TxnIdBasedIndexingStrategy strategy = strategy(config(2L, 6L, 1000));
 
         assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(REFS, 1, 6)));
         assertThat(strategy.getNextNodeIds(6), is(empty()));
@@ -60,7 +59,7 @@ public class TxnIdBasedIndexingStrategyTest {
     @Test
     void getNextNodeIds_limitedByConfiguration_txnBatchSize() {
         bulkInitTrackingComponent(10, 1);
-        TxnIdBasedIndexingStrategy strategy = strategy(new Configuration(-1L, 1000L, 2L));
+        TxnIdBasedIndexingStrategy strategy = strategy(config(-1L, 1000L, 2));
 
         assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(REFS, 0, 6)));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(3));
@@ -71,7 +70,7 @@ public class TxnIdBasedIndexingStrategyTest {
     @Test
     void getNextNodeIds_limitedByConfiguration_txnBatchSize_twoNodesPerTransaction() {
         bulkInitTrackingComponent(10, 2); // = 20 nodes in total
-        TxnIdBasedIndexingStrategy strategy = strategy(new Configuration(-1L, 1000L, 2L));
+        TxnIdBasedIndexingStrategy strategy = strategy(config(-1L, 1000L, 2));
 
         assertThat(strategy.getNextNodeIds(6), hasSize(6));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(2));
@@ -101,11 +100,19 @@ public class TxnIdBasedIndexingStrategyTest {
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(2));
     }
 
-    private TxnIdBasedIndexingStrategy strategy() {
-        return strategy(new Configuration(new Properties()));
+    private IndexingConfiguration config() {
+        return config(-1L, Long.MAX_VALUE, 1000);
     }
 
-    private TxnIdBasedIndexingStrategy strategy(Configuration configuration) {
+    private IndexingConfiguration config(long startTxnId, long stopTxnId, int txnBatchSize) {
+        return new IndexingConfiguration(IndexingStrategyKey.TXNID, startTxnId, stopTxnId, txnBatchSize);
+    }
+
+    private TxnIdBasedIndexingStrategy strategy() {
+        return strategy(config());
+    }
+
+    private TxnIdBasedIndexingStrategy strategy(IndexingConfiguration configuration) {
         return new TxnIdBasedIndexingStrategy(configuration, trackingComponent);
     }
 

@@ -4,7 +4,7 @@ services:
     image: ${DOCKER_IMAGE}
     ports:
       - target: 8080
-        published: 80
+        published: 8080
         mode: host
     environment:
       - CATALINA_OPTS=-Xdebug -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000

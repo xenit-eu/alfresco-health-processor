@@ -7,7 +7,7 @@
     <bean id="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.jobDetail"
             class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
         <property name="name" value="eu.xenit.health-processor"/>
-        <property name="targetObject" ref="eu.xenit.alfresco.processor.processing.processor"/>
+        <property name="targetObject" ref="eu.xenit.alfresco.processor.processing.ProcessorTask"/>
         <property name="targetMethod" value="startIfNotRunning"/>
         <property name="concurrent" value="false"/>
     </bean>
