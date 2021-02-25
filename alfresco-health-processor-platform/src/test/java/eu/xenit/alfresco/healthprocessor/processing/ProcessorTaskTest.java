@@ -17,7 +17,7 @@ class ProcessorTaskTest {
     void startIfNotRunning() {
         ProcessorTask task = task();
 
-        task.startIfNotRunning();
+        task.startIfNotRunningAsUser();
 
         verify(processorService).execute();
     }

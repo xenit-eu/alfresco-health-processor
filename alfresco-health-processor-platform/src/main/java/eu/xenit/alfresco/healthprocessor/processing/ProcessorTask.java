@@ -2,6 +2,7 @@ package eu.xenit.alfresco.healthprocessor.processing;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 /**
  * Responsibilities: upon trigger ({@link #startIfNotRunning()}) decide if the processor should be triggered, trigger
@@ -15,7 +16,15 @@ public class ProcessorTask {
     private final ProcessorService processorService;
 //    private final ProcessorAttributeService processorAttributeService;
 
+    @SuppressWarnings("unused")
     public void startIfNotRunning() {
+        AuthenticationUtil.runAs(() -> {
+            startIfNotRunningAsUser();
+            return null;
+        }, configuration.getRunAsUser());
+    }
+
+    void startIfNotRunningAsUser() {
         if (configuration.isSingleTenant() && isAlreadyRunningOnAnyTenant()) {
             log.info("Processor triggered but process is already running...");
             return;

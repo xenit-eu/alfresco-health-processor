@@ -9,6 +9,7 @@
         <constructor-arg name="singleTenant" value="${eu.xenit.alfresco.healthprocessor.processing.single-tenant}"/>
         <constructor-arg name="nodeBatchSize" value="${eu.xenit.alfresco.healthprocessor.processing.node-batch-size}"/>
         <constructor-arg name="readOnly" value="${eu.xenit.alfresco.healthprocessor.processing.read-only}"/>
+        <constructor-arg name="runAsUser" value="${eu.xenit.alfresco.healthprocessor.processing.run-as-user}"/>
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.processing.ProcessorTask"

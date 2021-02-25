@@ -10,4 +10,5 @@ public class ProcessorConfiguration {
     private final boolean singleTenant;
     private final int nodeBatchSize;
     private final boolean readOnly;
+    private final String runAsUser;
 }
