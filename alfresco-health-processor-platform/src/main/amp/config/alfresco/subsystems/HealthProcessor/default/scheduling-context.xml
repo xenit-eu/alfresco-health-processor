@@ -4,21 +4,17 @@
         xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="eu.xenit.alfresco.processor.processorTask"
-            class="eu.xenit.alfresco.processor.tasks.ProcessorTask">
-        <constructor-arg name="processorService" ref="healthProcessorPlatform.proxy"/>
-    </bean>
-
     <bean id="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.jobDetail"
             class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-        <property name="name" value="healthProcessorTask" />
-        <property name="targetObject" ref="eu.xenit.alfresco.processor.processorTask"/>
-        <property name="targetMethod" value="execute"/>
+        <property name="name" value="eu.xenit.health-processor"/>
+        <property name="targetObject" ref="eu.xenit.alfresco.processor.processing.ProcessorTask"/>
+        <property name="targetMethod" value="startIfNotRunning"/>
+        <property name="concurrent" value="false"/>
     </bean>
 
     <bean id="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.trigger"
             class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="name" value="healthProcessorTrigger" />
+        <property name="name" value="healthProcessorTrigger"/>
         <property name="jobDetail" ref="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.jobDetail"/>
         <property name="cronExpression">
             <value>${eu.xenit.alfresco.processor.task.cron}</value>
