@@ -4,32 +4,32 @@
         xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.jobDetail"
+    <bean id="eu.xenit.alfresco.healthprocessor.tasks.processorTaskScheduler.jobDetail"
             class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
         <property name="name" value="eu.xenit.health-processor"/>
-        <property name="targetObject" ref="eu.xenit.alfresco.processor.processing.ProcessorTask"/>
+        <property name="targetObject" ref="eu.xenit.alfresco.healthprocessor.processing.ProcessorTask"/>
         <property name="targetMethod" value="startIfNotRunning"/>
         <property name="concurrent" value="false"/>
     </bean>
 
-    <bean id="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.trigger"
+    <bean id="eu.xenit.alfresco.healthprocessor.tasks.processorTaskScheduler.trigger"
             class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="name" value="healthProcessorTrigger"/>
-        <property name="jobDetail" ref="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.jobDetail"/>
+        <property name="jobDetail" ref="eu.xenit.alfresco.healthprocessor.tasks.processorTaskScheduler.jobDetail"/>
         <property name="cronExpression">
-            <value>${eu.xenit.alfresco.processor.task.cron}</value>
+            <value>${eu.xenit.alfresco.healthprocessor.task.cron}</value>
         </property>
         <property name="startDelay">
-            <value>${eu.xenit.alfresco.processor.task.delay}</value>
+            <value>${eu.xenit.alfresco.healthprocessor.task.delay}</value>
         </property>
     </bean>
 
-    <bean id="eu.xenit.alfresco.processor.tasks.scheduler"
+    <bean id="eu.xenit.alfresco.healthprocessor.tasks.scheduler"
             class="org.springframework.scheduling.quartz.SchedulerAccessorBean">
         <property name="scheduler" ref="schedulerFactory"/>
         <property name="triggers">
             <list>
-                <ref bean="eu.xenit.alfresco.processor.tasks.processorTaskScheduler.trigger"/>
+                <ref bean="eu.xenit.alfresco.healthprocessor.tasks.processorTaskScheduler.trigger"/>
             </list>
         </property>
     </bean>

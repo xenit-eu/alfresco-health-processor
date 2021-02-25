@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.processor.indexing;
+package eu.xenit.alfresco.healthprocessor.indexing;
 
 import lombok.Getter;
 

@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.processor.indexing;
+package eu.xenit.alfresco.healthprocessor.indexing;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -15,7 +15,6 @@ import org.alfresco.repo.domain.node.NodeVersionKey;
 import org.alfresco.repo.domain.node.StoreEntity;
 import org.alfresco.repo.domain.node.TransactionEntity;
 import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.alfresco.repo.solr.SOLRTrackingComponent.NodeQueryCallback;
 import org.alfresco.service.cmr.repository.NodeRef;

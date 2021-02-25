@@ -1,10 +1,10 @@
-package eu.xenit.alfresco.processor.indexing;
+package eu.xenit.alfresco.healthprocessor.indexing;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-import eu.xenit.alfresco.processor.indexing.IndexingConfiguration.IndexingStrategyKey;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration.IndexingStrategyKey;
 import org.junit.jupiter.api.Test;
 
 class IndexingConfigurationTest {

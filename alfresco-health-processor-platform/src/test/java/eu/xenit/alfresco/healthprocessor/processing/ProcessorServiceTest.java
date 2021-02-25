@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.processor.processing;
+package eu.xenit.alfresco.healthprocessor.processing;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import eu.xenit.alfresco.processor.indexing.IndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import java.util.Collections;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;

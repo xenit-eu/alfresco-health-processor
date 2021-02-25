@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.processor.indexing;
+package eu.xenit.alfresco.healthprocessor.indexing;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
