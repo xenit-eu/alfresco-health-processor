@@ -4,9 +4,9 @@
         xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin"
-            class="eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin">
-        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.noop.enabled}"/>
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter"
+            class="eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled}"/>
     </bean>
 
 </beans>
