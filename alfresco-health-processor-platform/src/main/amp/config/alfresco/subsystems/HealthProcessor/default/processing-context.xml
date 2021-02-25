@@ -18,7 +18,7 @@
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.processing.ProcessorService"
-            class="eu.xenit.alfresco.healthprocessor.processing.ProcessorService">
+            class="eu.xenit.alfresco.healthprocessor.processing.ProcessorService" autowire="constructor">
         <constructor-arg name="configuration" ref="eu.xenit.alfresco.healthprocessor.processing.configuration"/>
         <constructor-arg name="indexingStrategy" ref="eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy"/>
         <constructor-arg name="retryingTransactionHelper" ref="retryingTransactionHelper"/>

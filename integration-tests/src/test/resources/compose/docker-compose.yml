@@ -10,6 +10,8 @@ services:
       - CATALINA_OPTS=-Xdebug -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
       - INDEX=noindex
       - ENABLE_CLUSTERING=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.task.cron=0/5 * * * * ? *
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.log.enabled=true
     depends_on:
         - postgresql
 
