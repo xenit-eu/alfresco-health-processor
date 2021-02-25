@@ -4,12 +4,12 @@ import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
 
@@ -19,19 +19,20 @@ public class ProcessorService {
 
     private final ProcessorConfiguration configuration;
     private final IndexingStrategy indexingStrategy;
-    private final RetryingTransactionHelper retryingTransactionHelper;
+    private final TransactionHelper transactionHelper;
     private final Set<HealthProcessorPlugin> plugins;
     private final Set<HealthReporter> reporters;
 
     public void execute() {
-        indexingStrategy.reset();
-
         if (hasNoEnabledPlugins()) {
             log.warn("Health-Processor scheduled but not a single enabled plugin found.");
             return;
         }
 
         log.debug("Health-Processor: STARTING...");
+
+        indexingStrategy.reset();
+
         forEachEnabledReporter(HealthReporter::onStart);
 
         Set<NodeRef> nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
@@ -48,11 +49,10 @@ public class ProcessorService {
         ParameterCheck.mandatory("nodesToProcess", nodesToProcess);
 
         for (HealthProcessorPlugin plugin : plugins) {
-            retryingTransactionHelper.doInTransaction(() -> {
+            transactionHelper.inNewTransaction(() -> {
                 Set<NodeRef> copy = new HashSet<>(nodesToProcess);
                 this.processNodeBatchInTransaction(copy, plugin);
-                return null;
-            }, configuration.isReadOnly(), true);
+            }, configuration.isReadOnly());
         }
     }
 

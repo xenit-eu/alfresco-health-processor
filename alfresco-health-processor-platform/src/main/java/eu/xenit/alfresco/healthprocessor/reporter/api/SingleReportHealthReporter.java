@@ -7,7 +7,7 @@ import java.util.Set;
 
 public abstract class SingleReportHealthReporter extends ToggleableHealthReporter {
 
-    public static final Set<NodeHealthStatus> STATUSES_TO_HANDLE =
+    protected static final Set<NodeHealthStatus> STATUSES_TO_HANDLE =
             new HashSet<>(Arrays.asList(NodeHealthStatus.values()));
 
     protected Set<NodeHealthStatus> statusesToHandle() {

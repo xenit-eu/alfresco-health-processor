@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
+import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import java.util.Arrays;
 import java.util.UUID;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -16,22 +17,11 @@ import org.junit.jupiter.api.Test;
 
 public class TxnIdBasedIndexingStrategyTest {
 
-    private static final int NUMBER_OF_TEST_REFS = 100;
-
-    private static final NodeRef[] REFS = new NodeRef[NUMBER_OF_TEST_REFS];
-
-    private MockedTrackingComponent trackingComponent;
-
-    @BeforeAll
-    static void initializeTestNodeRefs() {
-        for (int i = 0; i < NUMBER_OF_TEST_REFS; i++) {
-            REFS[i] = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, UUID.randomUUID().toString());
-        }
-    }
+    private FakeTrackingComponent trackingComponent;
 
     @BeforeEach
     void setup() {
-        trackingComponent = new MockedTrackingComponent();
+        trackingComponent = new FakeTrackingComponent();
     }
 
     @Test
@@ -50,7 +40,7 @@ public class TxnIdBasedIndexingStrategyTest {
         bulkInitTrackingComponent(10, 1);
         TxnIdBasedIndexingStrategy strategy = strategy(IndexingConfigUtil.config(2L, 6L, 1000));
 
-        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(REFS, 1, 6)));
+        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(TestNodeRefs.REFS, 1, 6)));
         assertThat(strategy.getNextNodeIds(6), is(empty()));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(1));
     }
@@ -60,9 +50,9 @@ public class TxnIdBasedIndexingStrategyTest {
         bulkInitTrackingComponent(10, 1);
         TxnIdBasedIndexingStrategy strategy = strategy(IndexingConfigUtil.config(-1L, 1000L, 2));
 
-        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(REFS, 0, 6)));
+        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(TestNodeRefs.REFS, 0, 6)));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(3));
-        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(REFS, 6, 10)));
+        assertThat(strategy.getNextNodeIds(6), containsInAnyOrder(Arrays.copyOfRange(TestNodeRefs.REFS, 6, 10)));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(5));
     }
 
@@ -84,17 +74,17 @@ public class TxnIdBasedIndexingStrategyTest {
 
     @Test
     void reset() {
-        trackingComponent.addTransaction(1L, REFS[0], REFS[1], REFS[2]);
+        trackingComponent.addTransaction(1L, TestNodeRefs.REFS[0], TestNodeRefs.REFS[1], TestNodeRefs.REFS[2]);
         TxnIdBasedIndexingStrategy strategy = strategy();
 
-        assertThat(strategy.getNextNodeIds(100), containsInAnyOrder(Arrays.copyOfRange(REFS, 0, 3)));
+        assertThat(strategy.getNextNodeIds(100), containsInAnyOrder(Arrays.copyOfRange(TestNodeRefs.REFS, 0, 3)));
         assertThat(strategy.getNextNodeIds(100), is(empty()));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(1));
 
-        trackingComponent.addTransaction(2L, REFS[3], REFS[4]);
+        trackingComponent.addTransaction(2L, TestNodeRefs.REFS[3], TestNodeRefs.REFS[4]);
         strategy.reset();
 
-        assertThat(strategy.getNextNodeIds(100), containsInAnyOrder(Arrays.copyOfRange(REFS, 0, 5)));
+        assertThat(strategy.getNextNodeIds(100), containsInAnyOrder(Arrays.copyOfRange(TestNodeRefs.REFS, 0, 5)));
         assertThat(strategy.getNextNodeIds(100), is(empty()));
         assertThat(trackingComponent.numberOfGetNodeForTxnIdsInvocations(), is(2));
     }
@@ -111,7 +101,7 @@ public class TxnIdBasedIndexingStrategyTest {
         int nodeRefPointer = 0;
         for (long txnId = 1L; txnId <= numberOfTransactions; txnId++) {
             for (int i = 0; i < numberOfNodesPerTransaction; i++) {
-                trackingComponent.addTransaction(txnId, REFS[nodeRefPointer++]);
+                trackingComponent.addTransaction(txnId, TestNodeRefs.REFS[nodeRefPointer++]);
             }
         }
     }

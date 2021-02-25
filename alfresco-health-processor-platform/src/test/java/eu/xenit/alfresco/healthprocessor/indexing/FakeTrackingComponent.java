@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-public class MockedTrackingComponent implements TrackingComponent {
+public class FakeTrackingComponent implements TrackingComponent {
 
     private final Map<Long, Set<NodeRef>> transactions = new TreeMap<>();
     private int getNodeForTxnIdsInvocations = 0;
