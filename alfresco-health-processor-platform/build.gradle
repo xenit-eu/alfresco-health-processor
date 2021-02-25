@@ -30,6 +30,7 @@ dependencies {
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
     testImplementation "org.hamcrest:hamcrest-all:${hamcrestVersion}"
     testImplementation "commons-logging:commons-logging"
+    testImplementation 'org.slf4j:slf4j-simple:1.7.25'
 
     // all required just to be able to mock the RetryingTransactionHelper (static initializer): --'
     testRuntimeOnly "org.springframework:spring-aop"
