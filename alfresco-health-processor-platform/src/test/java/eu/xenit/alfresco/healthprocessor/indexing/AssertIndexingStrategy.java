@@ -2,7 +2,6 @@ package eu.xenit.alfresco.healthprocessor.indexing;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 
 import java.util.Arrays;
@@ -16,12 +15,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class AssertIndexingStrategy implements IndexingStrategy {
 
     private final Queue<NodeRef> nodeQueue = new LinkedBlockingQueue<>();
-    private int numberOfResetInvocations;
+    private int numberOfOnStartInvocations;
     private int numberOfGetNextNodeIdsInvocations;
 
     @Override
-    public void reset() {
-        numberOfResetInvocations++;
+    public void onStart() {
+        numberOfOnStartInvocations++;
     }
 
     @Override
@@ -46,8 +45,8 @@ public class AssertIndexingStrategy implements IndexingStrategy {
         nodeQueue.addAll(nodes);
     }
 
-    public void expectResetInvocations(int amount) {
-        assertThat(numberOfResetInvocations, is(equalTo(amount)));
+    public void expectOnStartInvocation(int amount) {
+        assertThat(numberOfOnStartInvocations, is(equalTo(amount)));
     }
 
     public void expectGetNextNodeIdsInvocations(int amount) {

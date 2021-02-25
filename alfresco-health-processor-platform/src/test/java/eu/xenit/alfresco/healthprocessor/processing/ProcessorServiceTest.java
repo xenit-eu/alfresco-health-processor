@@ -47,7 +47,7 @@ class ProcessorServiceTest {
                 .build()
                 .execute();
 
-        indexingStrategy.expectResetInvocations(0);
+        indexingStrategy.expectOnStartInvocation(0);
         indexingStrategy.expectGetNextNodeIdsInvocations(0);
         processorPlugin.expectNoInvocation();
     }
@@ -59,7 +59,7 @@ class ProcessorServiceTest {
                 .build()
                 .execute();
 
-        indexingStrategy.expectResetInvocations(1);
+        indexingStrategy.expectOnStartInvocation(1);
         indexingStrategy.expectGetNextNodeIdsInvocations(2);
         processorPlugin.expectInvocation(TestNodeRefs.REFS[1], TestNodeRefs.REFS[0]);
     }

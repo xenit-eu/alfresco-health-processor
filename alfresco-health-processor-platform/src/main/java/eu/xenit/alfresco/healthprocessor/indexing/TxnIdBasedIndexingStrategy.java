@@ -25,15 +25,18 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
     public TxnIdBasedIndexingStrategy(IndexingConfiguration configuration, TrackingComponent trackingComponent) {
         this.configuration = configuration;
         this.trackingComponent = trackingComponent;
-        reset();
     }
 
     @Override
-    public void reset() {
-        nodeIdQueue.clear();
+    public void onStart() {
         nextStartTxnIdToFetch = -1L;
         done = false;
         maxTxnIdInclusive = Math.min(trackingComponent.getMaxTxnId(), configuration.getStopTxnId());
+    }
+
+    @Override
+    public void onStop() {
+        nodeIdQueue.clear();
     }
 
     @Override

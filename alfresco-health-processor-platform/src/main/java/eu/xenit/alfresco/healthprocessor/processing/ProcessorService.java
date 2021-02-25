@@ -31,8 +31,7 @@ public class ProcessorService {
 
         log.debug("Health-Processor: STARTING...");
 
-        indexingStrategy.reset();
-
+        indexingStrategy.onStart();
         forEachEnabledReporter(HealthReporter::onStart);
 
         Set<NodeRef> nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
@@ -41,6 +40,7 @@ public class ProcessorService {
             nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
         }
 
+        indexingStrategy.onStop();
         forEachEnabledReporter(HealthReporter::onStop);
         log.debug("Health-Processor: DONE");
     }

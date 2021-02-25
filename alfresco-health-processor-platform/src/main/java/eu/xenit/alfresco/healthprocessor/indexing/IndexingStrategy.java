@@ -3,11 +3,24 @@ package eu.xenit.alfresco.healthprocessor.indexing;
 import java.util.Set;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+/**
+ * Strategy used by the Health-Processor to iterate over (a subset of) Alfresco nodes. Once {@link #getNextNodeIds(int)}
+ * returns an empty set, the Health-Processor considers the iteration done and the current cycle will be terminated.
+ * Implementations can use the {@link #onStart()} and {@link #onStart()} to (re-)initialize state or open and close
+ * additional resources.
+ *
+ * @see eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategyFactoryBean
+ */
 public interface IndexingStrategy {
 
-    void reset();
+    default void onStart() {
+
+    }
 
     Set<NodeRef> getNextNodeIds(final int amount);
 
+    default void onStop() {
+
+    }
 
 }
