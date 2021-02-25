@@ -3,6 +3,7 @@ package eu.xenit.alfresco.healthprocessor.example;
 import eu.xenit.alfresco.healthprocessor.plugins.api.SingleNodeHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
+import java.util.Objects;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -52,5 +53,26 @@ public class ExampleHealthProcessorPlugin extends SingleNodeHealthProcessorPlugi
 
     public long getNumberOfNodesProcessed() {
         return numberOfNodesProcessed;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ExampleHealthProcessorPlugin that = (ExampleHealthProcessorPlugin) o;
+        return numberOfNodesProcessed == that.numberOfNodesProcessed && Objects
+                .equals(nodeService, that.nodeService);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), nodeService, numberOfNodesProcessed);
     }
 }

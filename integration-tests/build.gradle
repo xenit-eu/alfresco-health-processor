@@ -23,6 +23,7 @@ dependencies {
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
     testImplementation "org.hamcrest:hamcrest-all:${hamcrestVersion}"
     testImplementation "io.rest-assured:rest-assured:${restAssuredVersion}"
+    testImplementation "org.awaitility:awaitility:${awaitilityVersion}"
 
     testImplementation group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jVersion}"
     testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: "${slf4jVersion}"
@@ -92,7 +93,7 @@ subprojects { Project p ->
         // Uncomment for quick iterations when developing integration tests
         // stopContainers = false
 
-        environment.put 'COMPOSE_INFLOW_TCP_8080', project.findProperty('random_ports') ? '8080': '8080:8080'
+        environment.put 'COMPOSE_INFLOW_TCP_8080', project.findProperty('random_ports') ? '8080' : '8080:8080'
 
         isRequiredBy(project.tasks.integrationTest)
     }
