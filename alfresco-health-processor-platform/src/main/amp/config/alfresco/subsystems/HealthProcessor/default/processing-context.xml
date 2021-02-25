@@ -4,23 +4,23 @@
         xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="eu.xenit.alfresco.processor.processing.configuration"
-            class="eu.xenit.alfresco.processor.processing.ProcessorConfiguration">
-        <constructor-arg name="singleTenant" value="${eu.xenit.alfresco.processor.processing.single-tenant}"/>
-        <constructor-arg name="nodeBatchSize" value="${eu.xenit.alfresco.processor.processing.node-batch-size}"/>
-        <constructor-arg name="readOnly" value="${eu.xenit.alfresco.processor.processing.read-only}"/>
+    <bean id="eu.xenit.alfresco.healthprocessor.processing.configuration"
+            class="eu.xenit.alfresco.healthprocessor.processing.ProcessorConfiguration">
+        <constructor-arg name="singleTenant" value="${eu.xenit.alfresco.healthprocessor.processing.single-tenant}"/>
+        <constructor-arg name="nodeBatchSize" value="${eu.xenit.alfresco.healthprocessor.processing.node-batch-size}"/>
+        <constructor-arg name="readOnly" value="${eu.xenit.alfresco.healthprocessor.processing.read-only}"/>
     </bean>
 
-    <bean id="eu.xenit.alfresco.processor.processing.ProcessorTask"
-            class="eu.xenit.alfresco.processor.processing.ProcessorTask">
-        <constructor-arg name="configuration" ref="eu.xenit.alfresco.processor.processing.configuration"/>
-        <constructor-arg name="processorService" ref="eu.xenit.alfresco.processor.processing.ProcessorService"/>
+    <bean id="eu.xenit.alfresco.healthprocessor.processing.ProcessorTask"
+            class="eu.xenit.alfresco.healthprocessor.processing.ProcessorTask">
+        <constructor-arg name="configuration" ref="eu.xenit.alfresco.healthprocessor.processing.configuration"/>
+        <constructor-arg name="processorService" ref="eu.xenit.alfresco.healthprocessor.processing.ProcessorService"/>
     </bean>
 
-    <bean id="eu.xenit.alfresco.processor.processing.ProcessorService"
-            class="eu.xenit.alfresco.processor.processing.ProcessorService">
-        <constructor-arg name="configuration" ref="eu.xenit.alfresco.processor.processing.configuration"/>
-        <constructor-arg name="indexingStrategy" ref="eu.xenit.alfresco.processor.indexing.IndexingStrategy"/>
+    <bean id="eu.xenit.alfresco.healthprocessor.processing.ProcessorService"
+            class="eu.xenit.alfresco.healthprocessor.processing.ProcessorService">
+        <constructor-arg name="configuration" ref="eu.xenit.alfresco.healthprocessor.processing.configuration"/>
+        <constructor-arg name="indexingStrategy" ref="eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy"/>
         <constructor-arg name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
     </bean>
 </beans>

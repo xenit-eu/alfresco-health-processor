@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.processor.indexing;
+package eu.xenit.alfresco.healthprocessor.indexing;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
-import eu.xenit.alfresco.processor.indexing.IndexingConfiguration.IndexingStrategyKey;
 import java.util.Arrays;
 import java.util.UUID;
 import org.alfresco.service.cmr.repository.NodeRef;

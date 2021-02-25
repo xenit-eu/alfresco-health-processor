@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.processor.processing;
+package eu.xenit.alfresco.healthprocessor.processing;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

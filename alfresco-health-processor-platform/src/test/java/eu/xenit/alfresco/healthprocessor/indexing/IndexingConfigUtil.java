@@ -1,6 +1,6 @@
-package eu.xenit.alfresco.processor.indexing;
+package eu.xenit.alfresco.healthprocessor.indexing;
 
-import eu.xenit.alfresco.processor.indexing.IndexingConfiguration.IndexingStrategyKey;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration.IndexingStrategyKey;
 
 public class IndexingConfigUtil {
 

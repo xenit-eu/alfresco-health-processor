@@ -1,6 +1,6 @@
-package eu.xenit.alfresco.processor.processing;
+package eu.xenit.alfresco.healthprocessor.processing;
 
-import eu.xenit.alfresco.processor.indexing.IndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

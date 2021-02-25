@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.processor.processing;
+package eu.xenit.alfresco.healthprocessor.processing;
 
 import static org.mockito.Mockito.verify;
 

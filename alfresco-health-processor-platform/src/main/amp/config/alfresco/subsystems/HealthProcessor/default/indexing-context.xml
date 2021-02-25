@@ -4,22 +4,23 @@
         xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="eu.xenit.alfresco.processor.indexing.TrackingComponent"
-            class="eu.xenit.alfresco.processor.indexing.AlfrescoTrackingComponent">
+    <bean id="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent"
+            class="eu.xenit.alfresco.healthprocessor.indexing.AlfrescoTrackingComponent">
         <constructor-arg name="solrTrackingComponent" ref="solrTrackingComponent"/>
     </bean>
 
-    <bean id="eu.xenit.alfresco.processor.indexing.IndexingConfiguration"
-            class="eu.xenit.alfresco.processor.indexing.IndexingConfiguration">
-        <constructor-arg name="indexingStrategyKey" value="${eu.xenit.alfresco.processor.indexing.strategy}"/>
-        <constructor-arg name="startTxnId" value="${eu.xenit.alfresco.processor.indexing.txn-id.start}"/>
-        <constructor-arg name="stopTxnId" value="${eu.xenit.alfresco.processor.indexing.txn-id.stop}"/>
-        <constructor-arg name="txnBatchSize" value="${eu.xenit.alfresco.processor.indexing.txn-id.txn-batch-size}"/>
+    <bean id="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration"
+            class="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration">
+        <constructor-arg name="indexingStrategyKey" value="${eu.xenit.alfresco.healthprocessor.indexing.strategy}"/>
+        <constructor-arg name="startTxnId" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-id.start}"/>
+        <constructor-arg name="stopTxnId" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-id.stop}"/>
+        <constructor-arg name="txnBatchSize"
+                value="${eu.xenit.alfresco.healthprocessor.indexing.txn-id.txn-batch-size}"/>
     </bean>
 
-    <bean id="eu.xenit.alfresco.processor.indexing.IndexingStrategy"
-            class="eu.xenit.alfresco.processor.indexing.IndexingStrategyFactoryBean">
-        <constructor-arg name="configuration" ref="eu.xenit.alfresco.processor.indexing.IndexingConfiguration"/>
-        <constructor-arg name="trackingComponent" ref="eu.xenit.alfresco.processor.indexing.TrackingComponent"/>
+    <bean id="eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy"
+            class="eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategyFactoryBean">
+        <constructor-arg name="configuration" ref="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration"/>
+        <constructor-arg name="trackingComponent" ref="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent"/>
     </bean>
 </beans>
