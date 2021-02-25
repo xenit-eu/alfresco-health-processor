@@ -92,15 +92,8 @@ subprojects { Project p ->
         // Uncomment for quick iterations when developing integration tests
         // stopContainers = false
 
-        // expose alfresco/inflow on a random port, comment to use default port (8080)
-        environment.put "ALFRESCO_TCP_8080", "8080"
+        environment.put 'COMPOSE_INFLOW_TCP_8080', project.findProperty('random_ports') ? '8080': '8080:8080'
 
         isRequiredBy(project.tasks.integrationTest)
-
-        dev {
-            useComposeFiles = [
-                    "${project.parent.projectDir}/src/test/resources/compose/docker-compose.yml"
-            ]
-        }
     }
 }

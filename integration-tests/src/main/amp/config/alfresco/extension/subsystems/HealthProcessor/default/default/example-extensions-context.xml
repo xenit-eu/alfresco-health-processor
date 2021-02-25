@@ -4,7 +4,7 @@
         xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="ExampleHealthProcessorPlugin"
+    <bean id="eu.xenit.alfresco.healthprocessor.example.ExampleHealthProcessorPlugin"
             class="eu.xenit.alfresco.healthprocessor.example.ExampleHealthProcessorPlugin">
         <constructor-arg name="nodeService" ref="NodeService"/>
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.example.enabled}"/>

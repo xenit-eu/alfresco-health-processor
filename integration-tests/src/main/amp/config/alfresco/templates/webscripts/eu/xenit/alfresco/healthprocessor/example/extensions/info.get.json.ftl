@@ -1,0 +1,6 @@
+{
+    "plugin" :
+        {
+            "processed"          : ${numberOfNodesProcessed?c}
+        }
+}

@@ -16,6 +16,11 @@ public class ExampleHealthProcessorPlugin extends SingleNodeHealthProcessorPlugi
 
     private final NodeService nodeService;
 
+    /**
+     * For testing purposes, we keep track of the number of nodes this plugin has processed.
+     */
+    private long numberOfNodesProcessed;
+
     public ExampleHealthProcessorPlugin(NodeService nodeService) {
         this.nodeService = nodeService;
     }
@@ -31,6 +36,8 @@ public class ExampleHealthProcessorPlugin extends SingleNodeHealthProcessorPlugi
             logger.debug("Ignoring '{}', since we are only interested in workspace://SpacesStore nodes", nodeRef);
             return null;
         }
+        numberOfNodesProcessed++;
+
         if (!nodeService.exists(nodeRef) || nodeService.getNodeStatus(nodeRef).isDeleted()) {
             return new NodeHealthReport(NodeHealthStatus.NONE, nodeRef, "Node does not exist or is deleted");
         }
@@ -41,5 +48,9 @@ public class ExampleHealthProcessorPlugin extends SingleNodeHealthProcessorPlugi
                 NodeHealthStatus.UNHEALTHY : NodeHealthStatus.HEALTHY;
 
         return new NodeHealthReport(status, nodeRef);
+    }
+
+    public long getNumberOfNodesProcessed() {
+        return numberOfNodesProcessed;
     }
 }

@@ -4,13 +4,17 @@
         xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<!--    <bean id="ExampleHealthProcessorPlugin.proxy" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">-->
-<!--        <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>-->
-<!--        <property name="sourceBeanName" value="ExampleHealthProcessorPlugin"/>-->
-<!--        <property name="interfaces">-->
-<!--            <list>-->
-<!--                <value>eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin</value>-->
-<!--            </list>-->
-<!--        </property>-->
-<!--    </bean>-->
+    <!--
+        Proxy required to make webscript available in main Spring context
+    -->
+    <bean id="webscript.eu.xenit.alfresco.healthprocessor.example.extensions.info.get"
+            class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>
+        <property name="sourceBeanName" value="ExampleExtensionsGetInfoWebScript"/>
+        <property name="interfaces">
+            <list>
+                <value>org.springframework.extensions.webscripts.WebScript</value>
+            </list>
+        </property>
+    </bean>
 </beans>

@@ -1,0 +1,8 @@
+<webscript>
+    <shortname>Health Processor Example Extensions WebScript</shortname>
+    <description>For integration testing purposes</description>
+    <url>/xenit/healthprocessor/example/info</url>
+    <authentication>user</authentication>
+    <format default="json"/>
+    <family>Health Processor Test</family>
+</webscript>

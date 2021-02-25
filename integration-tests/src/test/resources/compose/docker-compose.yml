@@ -3,17 +3,13 @@ services:
   alfresco:
     image: ${DOCKER_IMAGE}
     ports:
-      - target: 8080
-        published: 8080
-        mode: host
-      - target: 8000
-        published: 8000
-        mode: host
+      - ${COMPOSE_INFLOW_TCP_8080:-8080}
+#      - 8000:8000
     environment:
       - DEBUG=true
       - INDEX=noindex
       - ENABLE_CLUSTERING=true
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.task.cron=0/5 * * * * ? *
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.task.cron=0/20 * * * * ? *
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.noop.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled=true
     depends_on:
