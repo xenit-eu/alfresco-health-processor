@@ -3,6 +3,5 @@ rootProject.name = 'alfresco-health-processor'
 include 'alfresco-health-processor-platform'
 include 'integration-tests'
 ["52", "60", "61", "62"].each { version ->
-    include ":integration-tests:alfresco-enterprise-${version}"
     include ":integration-tests:alfresco-community-${version}"
 }
