@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.processing;
 
+import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -14,6 +15,7 @@ public class ProcessorTask {
 
     private final ProcessorConfiguration configuration;
     private final ProcessorService processorService;
+    private final TransactionHelper transactionHelper;
 //    private final ProcessorAttributeService processorAttributeService;
 
     @SuppressWarnings("unused")
@@ -25,6 +27,10 @@ public class ProcessorTask {
     }
 
     void startIfNotRunningAsUser() {
+        transactionHelper.inTransaction(this::startIfNotRunningAsUserInTransaction, configuration.isReadOnly());
+    }
+
+    void startIfNotRunningAsUserInTransaction() {
         if (configuration.isSingleTenant() && isAlreadyRunningOnAnyTenant()) {
             log.info("Processor triggered but process is already running...");
             return;
@@ -35,6 +41,7 @@ public class ProcessorTask {
             start();
         } catch (Exception e) {
             // TODO cleanup attributes
+            throw e;
         }
     }
 

@@ -16,6 +16,8 @@
             class="eu.xenit.alfresco.healthprocessor.processing.ProcessorTask">
         <constructor-arg name="configuration" ref="eu.xenit.alfresco.healthprocessor.processing.configuration"/>
         <constructor-arg name="processorService" ref="eu.xenit.alfresco.healthprocessor.processing.ProcessorService"/>
+        <constructor-arg name="transactionHelper"
+                ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoTransactionHelper"/>
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.util.AlfrescoTransactionHelper"

@@ -10,7 +10,7 @@ public class AlfrescoTransactionHelper implements TransactionHelper {
     private final RetryingTransactionHelper retryingTransactionHelper;
 
     @Override
-    public <T> T inNewTransaction(Supplier<T> supplier, boolean readOnly) {
-        return retryingTransactionHelper.doInTransaction(supplier::get, readOnly, true);
+    public <T> T inTransaction(Supplier<T> supplier, boolean readOnly, boolean requiresNew) {
+        return retryingTransactionHelper.doInTransaction(supplier::get, readOnly, requiresNew);
     }
 }
