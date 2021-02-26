@@ -18,6 +18,10 @@ public class IndexingConfiguration {
     public IndexingConfiguration(IndexingStrategyKey indexingStrategy, long startTxnId, long stopTxnId,
             int txnBatchSize) {
         this.indexingStrategy = indexingStrategy;
+        if (startTxnId > stopTxnId) {
+            final String msg = "Invalid configuration, startTxnId (" + startTxnId + ") > stopId (" + stopTxnId + ")";
+            throw new IllegalArgumentException(msg);
+        }
         this.startTxnId = startTxnId;
         this.stopTxnId = stopTxnId;
         this.txnBatchSize = txnBatchSize;

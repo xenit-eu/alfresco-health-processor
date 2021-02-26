@@ -1,50 +1,67 @@
 package eu.xenit.alfresco.healthprocessor.processing;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import eu.xenit.alfresco.healthprocessor.indexing.AssertIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
+import eu.xenit.alfresco.healthprocessor.util.AssertTransactionHelper;
+import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
+import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import java.util.Collections;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import java.util.HashSet;
+import java.util.Set;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
 
-@ExtendWith(MockitoExtension.class)
 class ProcessorServiceTest {
 
-    private RetryingTransactionHelper retryingTransactionHelper;
-    @Mock
-    private IndexingStrategy indexingStrategy;
+    private AssertTransactionHelper transactionHelper;
+    private AssertHealthProcessorPlugin processorPlugin;
+    private AssertIndexingStrategy indexingStrategy;
+
+    private ProcessorServiceBuilder builder;
 
     @BeforeEach
     void setup() {
-        retryingTransactionHelper = mock(RetryingTransactionHelper.class);
-        Answer<?> answer = invocation -> invocation.getArgument(0, RetryingTransactionCallback.class).execute();
-        lenient().when(retryingTransactionHelper.doInTransaction(any())).thenAnswer(answer);
-        lenient().when(retryingTransactionHelper.doInTransaction(any(), anyBoolean())).thenAnswer(answer);
-        lenient().when(retryingTransactionHelper.doInTransaction(any(), anyBoolean(), anyBoolean())).thenAnswer(answer);
+        transactionHelper = new AssertTransactionHelper();
+        processorPlugin = new AssertHealthProcessorPlugin();
+        indexingStrategy = new AssertIndexingStrategy();
+        builder = ProcessorServiceBuilder.create()
+                .config(ProcConfigUtil.defaultConfig())
+                .indexingStrategy(indexingStrategy)
+                .transactionHelper(transactionHelper)
+                .plugin(processorPlugin);
     }
 
     @Test
-    void execute_resetBeforeFetchNodes() {
-        ProcessorService service = service();
+    void execute_noPluginsAvailable_indexingNotStarted() {
+        builder
+                .plugins(null)
+                .build()
+                .execute();
+        builder
+                .plugins(Collections.emptySet())
+                .build()
+                .execute();
 
-        when(indexingStrategy.getNextNodeIds(anyInt())).thenReturn(Collections.emptySet());
+        indexingStrategy.expectOnStartInvocation(0);
+        indexingStrategy.expectGetNextNodeIdsInvocations(0);
+        processorPlugin.expectNoInvocation();
+    }
 
-        service.execute();
+    @Test
+    void execute() {
+        indexingStrategy.nextAnswer(TestNodeRefs.REFS[0], TestNodeRefs.REFS[1]);
+        builder
+                .build()
+                .execute();
 
-        verify(indexingStrategy).reset();
-        verify(indexingStrategy).getNextNodeIds(anyInt());
+        indexingStrategy.expectOnStartInvocation(1);
+        indexingStrategy.expectGetNextNodeIdsInvocations(2);
+        processorPlugin.expectInvocation(TestNodeRefs.REFS[1], TestNodeRefs.REFS[0]);
     }
 
     private ProcessorService service() {
@@ -52,7 +69,43 @@ class ProcessorServiceTest {
     }
 
     private ProcessorService service(ProcessorConfiguration config) {
-        return new ProcessorService(config, indexingStrategy, retryingTransactionHelper);
+        return new ProcessorService(config, indexingStrategy, transactionHelper, Collections.emptySet(),
+                Collections.emptySet());
+    }
+
+    @Setter
+    @Accessors(fluent = true, chain = true)
+    private static class ProcessorServiceBuilder {
+
+        static ProcessorServiceBuilder create() {
+            return new ProcessorServiceBuilder();
+        }
+
+        private ProcessorConfiguration config;
+        private IndexingStrategy indexingStrategy;
+        private TransactionHelper transactionHelper;
+        private Set<HealthProcessorPlugin> plugins;
+        private Set<HealthReporter> reporters;
+
+        ProcessorServiceBuilder plugin(HealthProcessorPlugin plugin) {
+            if (plugins == null) {
+                plugins = new HashSet<>();
+            }
+            plugins.add(plugin);
+            return this;
+        }
+
+        ProcessorServiceBuilder reporter(HealthReporter reporter) {
+            if (reporters == null) {
+                reporters = new HashSet<>();
+            }
+            reporters.add(reporter);
+            return this;
+        }
+
+        ProcessorService build() {
+            return new ProcessorService(config, indexingStrategy, transactionHelper, plugins, reporters);
+        }
     }
 
 }

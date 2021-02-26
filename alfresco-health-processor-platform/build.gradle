@@ -22,11 +22,15 @@ dependencies {
     alfrescoProvided("org.springframework:spring-beans") { transitive = false }
     alfrescoProvided 'org.slf4j:slf4j-api'
 
+    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
     testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
     testImplementation "org.hamcrest:hamcrest-all:${hamcrestVersion}"
     testImplementation "commons-logging:commons-logging"
+    testImplementation 'org.slf4j:slf4j-simple:1.7.25'
 
     // all required just to be able to mock the RetryingTransactionHelper (static initializer): --'
     testRuntimeOnly "org.springframework:spring-aop"
