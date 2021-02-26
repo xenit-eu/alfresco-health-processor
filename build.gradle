@@ -18,6 +18,7 @@ sonarqube {
         property "sonar.projectKey", "xenit-eu_alfresco-health-processor"
         property "sonar.organization", "xenit-eu"
         property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.coverage.exclusions", "**/eu/xenit/alfresco/healthprocessor/example/*"
     }
 }
 
