@@ -36,13 +36,13 @@ public class ProcessorTask {
             return;
         }
 
-        try {
-            // TODO persist multi-tenant-wide state wide state with attributeService
+//        try {
+//            // TODO persist multi-tenant-wide state wide state with attributeService
             start();
-        } catch (Exception e) {
-            // TODO cleanup attributes
-            throw e;
-        }
+//        } catch (Exception e) {
+//            // TODO cleanup attributes
+//            throw e;
+//        }
     }
 
     private boolean isAlreadyRunningOnAnyTenant() {

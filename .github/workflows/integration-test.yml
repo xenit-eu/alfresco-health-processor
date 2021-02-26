@@ -3,7 +3,6 @@ name: integration-test
 on:
   push:
     branches:
-      - include-example
       - master*
       - release*
   pull_request:

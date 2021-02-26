@@ -42,12 +42,9 @@ public class ExampleHealthProcessorPlugin extends SingleNodeHealthProcessorPlugi
         if (!nodeService.exists(nodeRef) || nodeService.getNodeStatus(nodeRef).isDeleted()) {
             return new NodeHealthReport(NodeHealthStatus.NONE, nodeRef, "Node does not exist or is deleted");
         }
-        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY)) {
-            return new NodeHealthReport(NodeHealthStatus.UNHEALTHY, nodeRef);
-        }
+        
         NodeHealthStatus status = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) ?
                 NodeHealthStatus.UNHEALTHY : NodeHealthStatus.HEALTHY;
-
         return new NodeHealthReport(status, nodeRef);
     }
 
