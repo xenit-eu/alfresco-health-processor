@@ -44,4 +44,16 @@ class AlfrescoTransactionHelperTest {
         verifyNoMoreInteractions(retryingTransactionHelper);
     }
 
+    @Test
+    void inTransaction_assertDoesNotRequireNew() {
+        transactionHelper.inTransaction(() -> assertThat(2, is(equalTo(1 + 1))), true);
+        verify(retryingTransactionHelper).doInTransaction(any(), eq(true), eq(false));
+        verifyNoMoreInteractions(retryingTransactionHelper);
+        reset(retryingTransactionHelper);
+
+        transactionHelper.inTransaction(() -> assertThat(2, is(equalTo(1 + 1))), false);
+        verify(retryingTransactionHelper).doInTransaction(any(), eq(false), eq(false));
+        verifyNoMoreInteractions(retryingTransactionHelper);
+    }
+
 }

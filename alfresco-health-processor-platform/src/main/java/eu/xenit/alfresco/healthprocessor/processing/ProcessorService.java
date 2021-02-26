@@ -6,8 +6,10 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -20,8 +22,8 @@ public class ProcessorService {
     private final ProcessorConfiguration configuration;
     private final IndexingStrategy indexingStrategy;
     private final TransactionHelper transactionHelper;
-    private final Set<HealthProcessorPlugin> plugins;
-    private final Set<HealthReporter> reporters;
+    private final List<HealthProcessorPlugin> plugins;
+    private final List<HealthReporter> reporters;
 
     public void execute() {
         if (hasNoEnabledPlugins()) {
@@ -29,7 +31,8 @@ public class ProcessorService {
             return;
         }
 
-        log.debug("Health-Processor: STARTING...");
+        log.debug("Health-Processor: STARTING... Registered plugins: {}",
+                plugins.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList()));
 
         indexingStrategy.onStart();
         forEachEnabledReporter(HealthReporter::onStart);

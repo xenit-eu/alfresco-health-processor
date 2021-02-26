@@ -18,6 +18,7 @@ sonarqube {
         property "sonar.projectKey", "xenit-eu_alfresco-health-processor"
         property "sonar.organization", "xenit-eu"
         property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.coverage.exclusions", "**/eu/xenit/alfresco/healthprocessor/example/*"
     }
 }
 
@@ -38,7 +39,8 @@ subprojects {
         junitJupiterVersion = '5.6.2'
         mockitoVersion = '3.3.3'
         hamcrestVersion = '1.3'
-        restAssuredVersion = '4.3.0'
+        restAssuredVersion = '4.0.0'
+        awaitilityVersion = '4.0.3'
     }
 
     apply from: "${rootProject.projectDir}/publish.gradle"

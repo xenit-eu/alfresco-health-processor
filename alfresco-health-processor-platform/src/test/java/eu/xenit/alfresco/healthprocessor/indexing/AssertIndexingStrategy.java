@@ -15,6 +15,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class AssertIndexingStrategy implements IndexingStrategy {
 
     private final Queue<NodeRef> nodeQueue = new LinkedBlockingQueue<>();
+    private RuntimeException toThrow;
     private int numberOfOnStartInvocations;
     private int numberOfGetNextNodeIdsInvocations;
 
@@ -26,6 +27,9 @@ public class AssertIndexingStrategy implements IndexingStrategy {
     @Override
     public Set<NodeRef> getNextNodeIds(int amount) {
         numberOfGetNextNodeIdsInvocations++;
+        if (toThrow != null) {
+            throw toThrow;
+        }
         Set<NodeRef> ret = new HashSet<>();
 
         for (int i = 0; i < amount; i++) {
@@ -35,6 +39,10 @@ public class AssertIndexingStrategy implements IndexingStrategy {
         }
 
         return ret;
+    }
+
+    public void nextThrow(RuntimeException e) {
+        toThrow = e;
     }
 
     public void nextAnswer(NodeRef... nodes) {

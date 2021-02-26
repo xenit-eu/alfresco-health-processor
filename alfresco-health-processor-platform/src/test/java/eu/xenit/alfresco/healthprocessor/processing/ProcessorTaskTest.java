@@ -2,6 +2,8 @@ package eu.xenit.alfresco.healthprocessor.processing;
 
 import static org.mockito.Mockito.verify;
 
+import eu.xenit.alfresco.healthprocessor.util.AssertTransactionHelper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -12,14 +14,29 @@ class ProcessorTaskTest {
 
     @Mock
     private ProcessorService processorService;
+    private AssertTransactionHelper transactionHelper;
+
+    @BeforeEach
+    void setup() {
+        transactionHelper = new AssertTransactionHelper();
+    }
 
     @Test
-    void startIfNotRunning() {
+    void startIfNotRunning_invokesProcessorService() {
         ProcessorTask task = task();
 
-        task.startIfNotRunning();
+        task.startIfNotRunningAsUser();
 
         verify(processorService).execute();
+    }
+
+    @Test
+    void startIfNotRunning_requiresATransaction() {
+        ProcessorTask task = task();
+
+        task.startIfNotRunningAsUser();
+
+        transactionHelper.expectInvocation(true, false);
     }
 
     private ProcessorTask task() {
@@ -27,7 +44,7 @@ class ProcessorTaskTest {
     }
 
     private ProcessorTask task(ProcessorConfiguration configuration) {
-        return new ProcessorTask(configuration, processorService);
+        return new ProcessorTask(configuration, processorService, transactionHelper);
     }
 
 }

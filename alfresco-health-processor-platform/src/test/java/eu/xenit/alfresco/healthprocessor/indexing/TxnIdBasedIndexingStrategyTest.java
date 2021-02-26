@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration.IndexingStrategyKey;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +49,8 @@ public class TxnIdBasedIndexingStrategyTest {
     void getNextNodeIds_startIdLargerThenStopId() {
         bulkInitTrackingComponent(10, 1);
 
-        assertThrows(IllegalArgumentException.class, () -> strategy(IndexingConfigUtil.config(6L, 2L, 1000)));
+        assertThrows(IllegalArgumentException.class,
+                () -> new IndexingConfiguration(IndexingStrategyKey.TXNID, 6L, 2L, 1000));
     }
 
     @Test
