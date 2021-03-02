@@ -6,10 +6,10 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.util.QNameUtil;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.ServiceRegistry;
@@ -24,6 +24,7 @@ import org.alfresco.util.ParameterCheck;
 import org.slf4j.Logger;
 
 @Slf4j
+@EqualsAndHashCode(callSuper = true)
 public class ContentValidationHealthProcessorPlugin extends SingleNodeHealthProcessorPlugin {
 
     private final NodeService nodeService;
@@ -88,9 +89,13 @@ public class ContentValidationHealthProcessorPlugin extends SingleNodeHealthProc
             }
         }
 
-        NodeHealthStatus status = nodeHasContent ?
-                failures.isEmpty() ? NodeHealthStatus.HEALTHY : NodeHealthStatus.UNHEALTHY
-                : NodeHealthStatus.NONE;
+        NodeHealthStatus status;
+        if (nodeHasContent) {
+            status = failures.isEmpty() ? NodeHealthStatus.HEALTHY : NodeHealthStatus.UNHEALTHY;
+        } else {
+            status = NodeHealthStatus.NONE;
+        }
+
         return new NodeHealthReport(status, nodeRef, toStringSet(failures));
     }
 

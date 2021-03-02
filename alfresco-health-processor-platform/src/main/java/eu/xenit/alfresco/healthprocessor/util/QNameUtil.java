@@ -8,7 +8,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.util.StringUtils;
