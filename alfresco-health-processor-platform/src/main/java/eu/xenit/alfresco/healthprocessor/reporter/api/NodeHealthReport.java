@@ -1,6 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.reporter.api;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,7 +18,11 @@ public class NodeHealthReport {
     }
 
     public NodeHealthReport(NodeHealthStatus status, NodeRef nodeRef, String... messages) {
-        this(status, nodeRef, new HashSet<>(Arrays.asList(messages)));
+        this(status, nodeRef, Arrays.asList(messages));
+    }
+
+    public NodeHealthReport(NodeHealthStatus status, NodeRef nodeRef, Collection<String> messages) {
+        this(status, nodeRef, new HashSet<>(messages));
     }
 
     NodeHealthStatus status;
