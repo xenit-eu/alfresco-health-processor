@@ -9,4 +9,12 @@
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.noop.enabled}"/>
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.ContentValidationHealthProcessorPlugin"
+            class="eu.xenit.alfresco.healthprocessor.plugins.ContentValidationHealthProcessorPlugin">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled}"/>
+        <constructor-arg name="serviceRegistry" ref="ServiceRegistry"/>
+        <constructor-arg name="propertyQNamesToValidate"
+                value="${eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties}"/>
+    </bean>
+
 </beans>

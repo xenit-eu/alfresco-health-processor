@@ -75,7 +75,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     private long getNextStartTxnIdInclusive() {
         if (nextStartTxnIdToFetch < 1) {
-            return nextStartTxnIdToFetch = Math.max(configuration.getStartTxnId(), 1L);
+            nextStartTxnIdToFetch = Math.max(configuration.getStartTxnId(), 1L);
         }
         return nextStartTxnIdToFetch;
     }
