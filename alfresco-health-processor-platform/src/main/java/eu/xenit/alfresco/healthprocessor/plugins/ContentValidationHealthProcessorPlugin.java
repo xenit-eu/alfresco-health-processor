@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -27,6 +29,7 @@ public class ContentValidationHealthProcessorPlugin extends SingleNodeHealthProc
     private final NodeService nodeService;
     private final ContentService contentService;
 
+    @Getter(value = AccessLevel.PACKAGE)
     private final Collection<QName> propertyQNamesToValidate;
 
     public ContentValidationHealthProcessorPlugin(ServiceRegistry serviceRegistry,
