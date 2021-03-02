@@ -13,24 +13,14 @@ import static org.mockito.Mockito.when;
 
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Locale;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -56,6 +46,8 @@ class ContentValidationHealthProcessorPluginTest {
     private ContentService contentService;
     @Mock
     private DictionaryService dictionaryService;
+    @Mock
+    private ContentReader contentReader;
 
     @Test
     void initialize_usingServiceRegistry() {
@@ -115,7 +107,8 @@ class ContentValidationHealthProcessorPluginTest {
 
         when(nodeService.exists(NODE_REF)).thenReturn(true);
         when(nodeService.getNodeStatus(NODE_REF)).thenReturn(new Status(100L, NODE_REF, null, 10L, false));
-        when(contentService.getReader(NODE_REF, Q_NAME)).thenReturn(new MockContentReader(true));
+        when(contentService.getReader(NODE_REF, Q_NAME)).thenReturn(contentReader);
+        when(contentReader.exists()).thenReturn(true);
 
         NodeHealthReport report = plugin.process(NODE_REF);
         assertThat(report, is(notNullValue()));
@@ -129,7 +122,8 @@ class ContentValidationHealthProcessorPluginTest {
 
         when(nodeService.exists(NODE_REF)).thenReturn(true);
         when(nodeService.getNodeStatus(NODE_REF)).thenReturn(new Status(100L, NODE_REF, null, 10L, false));
-        when(contentService.getReader(NODE_REF, Q_NAME)).thenReturn(new MockContentReader(false));
+        when(contentService.getReader(NODE_REF, Q_NAME)).thenReturn(contentReader);
+        when(contentReader.exists()).thenReturn(false);
 
         NodeHealthReport report = plugin.process(NODE_REF);
         assertThat(report, is(notNullValue()));
@@ -141,122 +135,6 @@ class ContentValidationHealthProcessorPluginTest {
     private ContentValidationHealthProcessorPlugin initialize(Collection<QName> propertyQNamesToValidate) {
         return new ContentValidationHealthProcessorPlugin(nodeService, contentService, dictionaryService,
                 propertyQNamesToValidate);
-    }
-
-    @AllArgsConstructor
-    private static class MockContentReader implements ContentReader {
-
-        private final boolean exists;
-
-        @Override
-        public ContentReader getReader() throws ContentIOException {
-            return null;
-        }
-
-        @Override
-        public boolean exists() {
-            return exists;
-        }
-
-        @Override
-        public long getLastModified() {
-            return 0;
-        }
-
-        @Override
-        public boolean isClosed() {
-            return false;
-        }
-
-        @Override
-        public ReadableByteChannel getReadableChannel() throws ContentIOException {
-            return null;
-        }
-
-        @Override
-        public FileChannel getFileChannel() throws ContentIOException {
-            return null;
-        }
-
-        @Override
-        public InputStream getContentInputStream() throws ContentIOException {
-            return null;
-        }
-
-        @Override
-        public void getContent(OutputStream os) throws ContentIOException {
-
-        }
-
-        @Override
-        public void getContent(File file) throws ContentIOException {
-
-        }
-
-        @Override
-        public String getContentString() throws ContentIOException {
-            return null;
-        }
-
-        @Override
-        public String getContentString(int length) throws ContentIOException {
-            return null;
-        }
-
-        @Override
-        public boolean isChannelOpen() {
-            return false;
-        }
-
-        @Override
-        public void addListener(ContentStreamListener listener) {
-
-        }
-
-        @Override
-        public long getSize() {
-            return 0;
-        }
-
-        @Override
-        public ContentData getContentData() {
-            return null;
-        }
-
-        @Override
-        public String getContentUrl() {
-            return null;
-        }
-
-        @Override
-        public String getMimetype() {
-            return null;
-        }
-
-        @Override
-        public void setMimetype(String mimetype) {
-
-        }
-
-        @Override
-        public String getEncoding() {
-            return null;
-        }
-
-        @Override
-        public void setEncoding(String encoding) {
-
-        }
-
-        @Override
-        public Locale getLocale() {
-            return null;
-        }
-
-        @Override
-        public void setLocale(Locale locale) {
-
-        }
     }
 
 }
