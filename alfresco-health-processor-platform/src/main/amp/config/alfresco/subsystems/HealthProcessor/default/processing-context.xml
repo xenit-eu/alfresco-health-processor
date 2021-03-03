@@ -18,6 +18,7 @@
         <constructor-arg name="processorService" ref="eu.xenit.alfresco.healthprocessor.processing.ProcessorService"/>
         <constructor-arg name="transactionHelper"
                 ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoTransactionHelper"/>
+        <constructor-arg name="jobLockService" ref="jobLockService"/>
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.util.AlfrescoTransactionHelper"

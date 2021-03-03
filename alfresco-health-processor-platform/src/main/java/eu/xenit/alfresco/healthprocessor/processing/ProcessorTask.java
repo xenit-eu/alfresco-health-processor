@@ -1,22 +1,31 @@
 package eu.xenit.alfresco.healthprocessor.processing;
 
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
-import lombok.AllArgsConstructor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Responsibilities: upon trigger ({@link #startIfNotRunning()}) decide if the processor should be triggered, trigger
  * processor, persist state so other Alfresco nodes can decide if the processor should be triggered.
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class ProcessorTask {
+
+    private static final long LOCK_TTL = 5000L;
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "HealthProcessor");
 
     private final ProcessorConfiguration configuration;
     private final ProcessorService processorService;
     private final TransactionHelper transactionHelper;
-//    private final ProcessorAttributeService processorAttributeService;
+    //    private final ProcessorAttributeService attributeService;
+    private final JobLockService jobLockService;
 
     @SuppressWarnings("unused")
     public void startIfNotRunning() {
@@ -31,26 +40,43 @@ public class ProcessorTask {
     }
 
     void startIfNotRunningAsUserInTransaction() {
-        if (configuration.isSingleTenant() && isAlreadyRunningOnAnyTenant()) {
-            log.info("Processor triggered but process is already running...");
+        if (!configuration.isSingleTenant()) {
+            start();
             return;
         }
 
-//        try {
-//            // TODO persist multi-tenant-wide state wide state with attributeService
-            start();
-//        } catch (Exception e) {
-//            // TODO cleanup attributes
-//            throw e;
-//        }
-    }
+        LockCallback lockCallback = new LockCallback();
+        try {
+            String lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
+            log.debug("Successfully claimed job lock. QName: {}, TTL: {}, token: {}", LOCK_QNAME, LOCK_TTL, lockToken);
+            jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, lockCallback);
 
-    private boolean isAlreadyRunningOnAnyTenant() {
-        return false; // TODO fetch multi-tenant-wide state with attributeService
+            start();
+        } catch (LockAcquisitionException e) {
+            log.info("HealthProcessor already active on other node, skipping...");
+            log.debug("Exception thrown while trying to claim lock '{}'", LOCK_QNAME, e);
+        } finally {
+            lockCallback.running.set(false);
+        }
     }
 
     private void start() {
         processorService.execute();
+    }
+
+    private static class LockCallback implements JobLockService.JobLockRefreshCallback {
+
+        final AtomicBoolean running = new AtomicBoolean(true);
+
+        @Override
+        public boolean isActive() {
+            return running.get();
+        }
+
+        @Override
+        public void lockReleased() {
+            running.set(false);
+        }
     }
 
 }
