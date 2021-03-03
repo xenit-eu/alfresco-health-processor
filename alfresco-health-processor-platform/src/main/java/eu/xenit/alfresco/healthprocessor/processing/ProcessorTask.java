@@ -18,13 +18,12 @@ import org.alfresco.service.namespace.QName;
 @Slf4j
 public class ProcessorTask {
 
-    private static final long LOCK_TTL = 5000L;
-    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "HealthProcessor");
+    static final long LOCK_TTL = 5000L;
+    static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "HealthProcessor");
 
     private final ProcessorConfiguration configuration;
     private final ProcessorService processorService;
     private final TransactionHelper transactionHelper;
-    //    private final ProcessorAttributeService attributeService;
     private final JobLockService jobLockService;
 
     @SuppressWarnings("unused")
@@ -47,9 +46,8 @@ public class ProcessorTask {
 
         LockCallback lockCallback = new LockCallback();
         try {
-            String lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
+            String lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL, lockCallback);
             log.debug("Successfully claimed job lock. QName: {}, TTL: {}, token: {}", LOCK_QNAME, LOCK_TTL, lockToken);
-            jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, lockCallback);
 
             start();
         } catch (LockAcquisitionException e) {
