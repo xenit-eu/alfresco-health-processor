@@ -2,6 +2,7 @@ package eu.xenit.alfresco.healthprocessor.plugins;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -129,7 +130,7 @@ class ContentValidationHealthProcessorPluginTest {
         assertThat(report, is(notNullValue()));
         assertThat(report.getStatus(), is(equalTo(NodeHealthStatus.UNHEALTHY)));
         assertThat(report.getNodeRef(), is(equalTo(NODE_REF)));
-        assertThat(report.getMessages(), contains(Q_NAME.toString()));
+        assertThat(report.getMessages(), contains(containsString(Q_NAME.toString())));
     }
 
     private ContentValidationHealthProcessorPlugin initialize(Collection<QName> propertyQNamesToValidate) {

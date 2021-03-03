@@ -25,7 +25,6 @@ class SummaryLoggingHealthReporterTest {
         reporter.onStart();
         reporter.processReports(set(REPORT_1, REPORT_2), AssertHealthProcessorPlugin.class);
         reporter.onStop();
-
     }
 
 }

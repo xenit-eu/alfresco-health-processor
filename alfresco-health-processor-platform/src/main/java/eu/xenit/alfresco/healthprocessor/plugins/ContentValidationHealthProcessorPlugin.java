@@ -20,6 +20,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.slf4j.Logger;
 
@@ -72,7 +73,7 @@ public class ContentValidationHealthProcessorPlugin extends SingleNodeHealthProc
         }
 
         boolean nodeHasContent = false;
-        Set<QName> failures = new HashSet<>();
+        Set<Pair<QName, String>> failedPropertiesWithContentUrl = new HashSet<>();
         for (QName dContentPropertyKey : propertyQNamesToValidate) {
             getLogger().debug("Validating d:content property '{}' for node '{}'", dContentPropertyKey, nodeRef);
             ContentReader reader = contentService.getReader(nodeRef, dContentPropertyKey);
@@ -85,21 +86,25 @@ public class ContentValidationHealthProcessorPlugin extends SingleNodeHealthProc
                     dContentPropertyKey, nodeRef);
             nodeHasContent = true;
             if (!reader.exists()) {
-                failures.add(dContentPropertyKey);
+                failedPropertiesWithContentUrl.add(new Pair<>(dContentPropertyKey, reader.getContentUrl()));
             }
         }
 
         NodeHealthStatus status;
         if (nodeHasContent) {
-            status = failures.isEmpty() ? NodeHealthStatus.HEALTHY : NodeHealthStatus.UNHEALTHY;
+            status = failedPropertiesWithContentUrl.isEmpty() ? NodeHealthStatus.HEALTHY : NodeHealthStatus.UNHEALTHY;
         } else {
             status = NodeHealthStatus.NONE;
         }
 
-        return new NodeHealthReport(status, nodeRef, toStringSet(failures));
+        return new NodeHealthReport(status, nodeRef, toMessages(failedPropertiesWithContentUrl));
     }
 
-    private static Set<String> toStringSet(Set<QName> qNames) {
-        return qNames.stream().map(QName::toString).collect(Collectors.toSet());
+    private static Set<String> toMessages(Set<Pair<QName, String>> qNames) {
+        return qNames.stream().map(ContentValidationHealthProcessorPlugin::toMessage).collect(Collectors.toSet());
+    }
+
+    private static String toMessage(Pair<QName, String> failure) {
+        return "Property: '" + failure.getFirst().toString() + "', contentUrl: '" + failure.getSecond() + "'";
     }
 }
