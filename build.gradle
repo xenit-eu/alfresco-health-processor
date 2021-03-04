@@ -40,7 +40,7 @@ allprojects { Project p ->
     group = 'eu.xenit.alfresco'
     version = '0.1.0'
 
-    boolean isRelease = System.env.BRANCH_NAME?.startsWith("release")
+    boolean isRelease = System.env.GITHUB_REF?.startsWith("refs/heads/release")
     if (!isRelease) {
         version += "-SNAPSHOT"
     }

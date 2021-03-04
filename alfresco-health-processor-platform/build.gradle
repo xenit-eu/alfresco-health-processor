@@ -65,11 +65,10 @@ apply from: "${rootDir}/gradle/publish.gradle"
 publishing {
     publications {
         java(MavenPublication) {
-            from components.java
-            artifact amp
-        }
-        shadow(MavenPublication) {
             artifact tasks.shadowJar
+            artifact tasks.javadocJar
+            artifact tasks.sourcesJar
+            artifact amp
         }
     }
 }
