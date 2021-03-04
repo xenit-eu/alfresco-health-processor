@@ -22,6 +22,10 @@
         <property name="startDelay">
             <value>${eu.xenit.alfresco.healthprocessor.task.delay}</value>
         </property>
+        <property name="misfireInstruction">
+            <!-- MISFIRE_INSTRUCTION_DO_NOTHING -->
+            <value>2</value>
+        </property>
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.tasks.scheduler"

@@ -13,6 +13,8 @@ services:
       - INDEX=noindex
       - ENABLE_CLUSTERING=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.task.cron=0/20 * * * * ? *
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.node-batch-size=100
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.max-batches-per-second=1
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.noop.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled=true

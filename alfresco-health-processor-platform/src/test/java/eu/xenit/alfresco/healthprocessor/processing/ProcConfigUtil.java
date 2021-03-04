@@ -11,6 +11,6 @@ public class ProcConfigUtil {
     }
 
     public static ProcessorConfiguration config(boolean singleTenant) {
-        return new ProcessorConfiguration(singleTenant, 1000, true, "System");
+        return new ProcessorConfiguration(singleTenant, 1000, -1, true, "System");
     }
 }

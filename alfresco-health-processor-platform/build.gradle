@@ -1,9 +1,14 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "6.1.0"
+}
+
 apply plugin: "idea"
 apply plugin: 'java'
 apply plugin: "eu.xenit.alfresco"
 apply plugin: "eu.xenit.amp"
 
 java {
+    jar.archiveClassifier.set('unbundled')
     sourceCompatibility = JavaVersion.VERSION_1_8
     withJavadocJar()
     withSourcesJar()
@@ -13,8 +18,11 @@ dependencies {
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
-    alfrescoProvided(enforcedPlatform("eu.xenit.alfresco:alfresco-community-bom:${alfrescoVersion}"))
-    alfrescoProvided("org.alfresco:alfresco-repository")
+    alfrescoProvided(platform("eu.xenit.alfresco:alfresco-community-bom:${alfrescoVersion}"))
+    alfrescoProvided("org.alfresco:alfresco-repository") {
+        exclude module: 'spring-social-facebook-web'
+    }
+    implementation 'com.google.guava:guava:30.1-jre'
 
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
@@ -26,6 +34,21 @@ dependencies {
     testImplementation 'org.slf4j:slf4j-simple:1.7.25'
 }
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = "shadow.eu.xenit.alfresco.healthprocessor"
+}
+
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
+tasks.assemble.dependsOn tasks.shadowJar
+
+shadowJar {
+    minimize()
+    archiveClassifier.set('')
+}
+
 test {
     useJUnitPlatform()
     testLogging {
@@ -33,11 +56,18 @@ test {
     }
 }
 
+amp {
+    libs = shadowJar.outputs.files
+}
+
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        java(MavenPublication) {
             from components.java
             artifact amp
+        }
+        shdow(MavenPublication) {
+            artifact tasks.shadowJar
         }
     }
 }
