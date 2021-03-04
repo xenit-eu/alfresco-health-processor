@@ -87,6 +87,8 @@ subprojects { Project p ->
                 "${project.parent.projectDir}/src/test/resources/compose/docker-compose.yml",
         ]
 
+//        scale = [alfresco: 2]
+
         removeVolumes = true
         captureContainersOutput = false
 

@@ -5,7 +5,8 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.util.QNameUtil;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
@@ -72,7 +73,7 @@ public class ContentValidationHealthProcessorPlugin extends SingleNodeHealthProc
         }
 
         boolean nodeHasContent = false;
-        Set<QName> failures = new HashSet<>();
+        Map<QName, String> failedPropertiesWithContentUrl = new HashMap<>();
         for (QName dContentPropertyKey : propertyQNamesToValidate) {
             getLogger().debug("Validating d:content property '{}' for node '{}'", dContentPropertyKey, nodeRef);
             ContentReader reader = contentService.getReader(nodeRef, dContentPropertyKey);
@@ -85,21 +86,27 @@ public class ContentValidationHealthProcessorPlugin extends SingleNodeHealthProc
                     dContentPropertyKey, nodeRef);
             nodeHasContent = true;
             if (!reader.exists()) {
-                failures.add(dContentPropertyKey);
+                failedPropertiesWithContentUrl.put(dContentPropertyKey, reader.getContentUrl());
             }
         }
 
         NodeHealthStatus status;
         if (nodeHasContent) {
-            status = failures.isEmpty() ? NodeHealthStatus.HEALTHY : NodeHealthStatus.UNHEALTHY;
+            status = failedPropertiesWithContentUrl.isEmpty() ? NodeHealthStatus.HEALTHY : NodeHealthStatus.UNHEALTHY;
         } else {
             status = NodeHealthStatus.NONE;
         }
 
-        return new NodeHealthReport(status, nodeRef, toStringSet(failures));
+        return new NodeHealthReport(status, nodeRef, toMessages(failedPropertiesWithContentUrl));
     }
 
-    private static Set<String> toStringSet(Set<QName> qNames) {
-        return qNames.stream().map(QName::toString).collect(Collectors.toSet());
+    private static Set<String> toMessages(Map<QName, String> propQNamesWithContentUrl) {
+        return propQNamesWithContentUrl.entrySet().stream()
+                .map(entry -> toMessage(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toSet());
+    }
+
+    private static String toMessage(QName property, String contentUrl) {
+        return "Property: '" + property + "', contentUrl: '" + contentUrl + "'";
     }
 }
