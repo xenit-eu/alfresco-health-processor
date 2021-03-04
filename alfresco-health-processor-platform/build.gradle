@@ -66,7 +66,7 @@ publishing {
             from components.java
             artifact amp
         }
-        shdow(MavenPublication) {
+        shadow(MavenPublication) {
             artifact tasks.shadowJar
         }
     }
