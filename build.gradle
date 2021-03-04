@@ -41,7 +41,7 @@ subprojects {
         awaitilityVersion = '4.0.3'
     }
 
-    apply from: "${rootProject.projectDir}/publish.gradle"
+    apply from: "${rootProject.projectDir}/gradle/publish.gradle"
 }
 
 allprojects { Project p ->
