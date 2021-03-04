@@ -23,9 +23,7 @@ sonarqube {
 }
 
 ext {
-    shortDotLessAlfrescoVersion = '61'
-    alfrescoVersion = '6.1.2-ga'
-    care4alfModulesVersion = '2.1.0'
+    alfrescoVersion = '5.2.f'
     lombokVersion = '1.18.10'
     enterpriseEnabled = rootProject.hasProperty("enterprise")
 }

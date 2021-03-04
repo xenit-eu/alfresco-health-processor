@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.processing;
 
+import com.google.common.util.concurrent.RateLimiter;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
@@ -10,12 +11,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class ProcessorService {
 
@@ -25,17 +26,15 @@ public class ProcessorService {
     private final List<HealthProcessorPlugin> plugins;
     private final List<HealthReporter> reporters;
 
+    private RateLimiter rateLimiter;
+
     public void execute() {
         if (hasNoEnabledPlugins()) {
             log.warn("Health-Processor scheduled but not a single enabled plugin found.");
             return;
         }
 
-        log.debug("Health-Processor: STARTING... Registered plugins: {}",
-                plugins.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList()));
-
-        indexingStrategy.onStart();
-        forEachEnabledReporter(HealthReporter::onStart);
+        onStart();
 
         Set<NodeRef> nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
         while (!nodesToProcess.isEmpty()) {
@@ -43,20 +42,43 @@ public class ProcessorService {
             nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
         }
 
+        onStop();
+    }
+
+    private void onStart() {
+        log.info("Health-Processor: STARTING... Registered plugins: {}",
+                plugins.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList()));
+
+        indexingStrategy.onStart();
+        forEachEnabledReporter(HealthReporter::onStart);
+        initializeRateLimiter();
+    }
+
+    private void onStop() {
         indexingStrategy.onStop();
         forEachEnabledReporter(HealthReporter::onStop);
-        log.debug("Health-Processor: DONE");
+
+        log.info("Health-Processor: DONE");
     }
 
     private void processNodeBatch(Set<NodeRef> nodesToProcess) {
         ParameterCheck.mandatory("nodesToProcess", nodesToProcess);
 
         for (HealthProcessorPlugin plugin : plugins) {
-            transactionHelper.inNewTransaction(() -> {
-                Set<NodeRef> copy = new HashSet<>(nodesToProcess);
-                this.processNodeBatchInTransaction(copy, plugin);
-            }, configuration.isReadOnly());
+            Set<NodeRef> copy = new HashSet<>(nodesToProcess);
+            this.processNodeBatchRateLimited(copy, plugin);
         }
+    }
+
+    private void processNodeBatchRateLimited(Set<NodeRef> nodesToProcessCopy, HealthProcessorPlugin plugin) {
+        if (rateLimiter != null) {
+            log.debug("Trying to acquire rateLimiter...");
+            rateLimiter.acquire();
+        }
+        transactionHelper.inNewTransaction(
+                () -> this.processNodeBatchInTransaction(nodesToProcessCopy, plugin),
+                configuration.isReadOnly()
+        );
     }
 
     private void processNodeBatchInTransaction(Set<NodeRef> nodesToProcess, HealthProcessorPlugin plugin) {
@@ -97,5 +119,10 @@ public class ProcessorService {
             return true;
         }
         return plugins.stream().noneMatch(HealthProcessorPlugin::isEnabled);
+    }
+
+    private void initializeRateLimiter() {
+        this.rateLimiter = configuration.getMaxBatchesPerSecond() > 0 ?
+                RateLimiter.create(configuration.getMaxBatchesPerSecond()) : null;
     }
 }

@@ -15,7 +15,9 @@ java {
 dependencies {
     alfrescoProvided project(":alfresco-health-processor-platform")
     alfrescoProvided(enforcedPlatform("eu.xenit.alfresco:alfresco-community-bom:${alfrescoVersion}"))
-    alfrescoProvided("org.alfresco:alfresco-repository")
+    alfrescoProvided("org.alfresco:alfresco-repository") {
+        exclude module: 'spring-social-facebook-web'
+    }
 
     testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-params:${junitJupiterVersion}"
@@ -88,6 +90,7 @@ subprojects { Project p ->
         ]
 
 //        scale = [alfresco: 2]
+        ignorePullFailure = false
 
         removeVolumes = true
         captureContainersOutput = false

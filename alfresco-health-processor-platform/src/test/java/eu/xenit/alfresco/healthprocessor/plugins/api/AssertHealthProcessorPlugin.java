@@ -36,6 +36,10 @@ public class AssertHealthProcessorPlugin extends ToggleableHealthProcessorPlugin
         return null;
     }
 
+    public int getNumberOfInvocations() {
+        return invocations.size();
+    }
+
     public void expectNoInvocation() {
         assertThat(invocations.peek(), nullValue());
     }

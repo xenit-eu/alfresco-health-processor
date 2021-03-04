@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 
 @Slf4j
 @EqualsAndHashCode(callSuper = true)
@@ -19,14 +20,19 @@ public class SummaryLoggingHealthReporter extends SingleReportHealthReporter {
     Map<Class<? extends HealthProcessorPlugin>, EnumMap<NodeHealthStatus, Long>> data = new HashMap<>();
     Map<Class<? extends HealthProcessorPlugin>, List<NodeHealthReport>> failures = new HashMap<>();
 
+    long startMs;
+
     @Override
     public void onStart() {
-        log.debug("Health-Processor started.");
+        startMs = System.currentTimeMillis();
     }
 
     @Override
     public void onStop() {
-        log.info("Health-Processor done.");
+        if (log.isInfoEnabled()) {
+            long elapsedMs = System.currentTimeMillis() - startMs;
+            log.info("Health-Processor done in {}", DurationFormatUtils.formatDurationHMS(elapsedMs));
+        }
         logSummary();
         logUnhealthyNodes();
         reset();
