@@ -22,6 +22,9 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
+## [0.2.0] - UNRELEASED
+
+
 ## [0.1.0] - 2021-03-04
 
 Initial, early access release.

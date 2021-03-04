@@ -1,5 +1,6 @@
 # Alfresco Health Processor
 
+[![Maven Central](https://img.shields.io/maven-central/v/eu.xenit.alfresco/alfresco-health-processor-platform.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22eu.xenit.alfresco%22%20AND%20a%3A%22alfresco-health-processor-platform%22)
 [![CI](https://github.com/xenit-eu/alfresco-health-processor/workflows/CI/badge.svg)](https://github.com/xenit-eu/alfresco-health-processor/actions?query=workflow%3ACI+branch%3Amaster)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 
