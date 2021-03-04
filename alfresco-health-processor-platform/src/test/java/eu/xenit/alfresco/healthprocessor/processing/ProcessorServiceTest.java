@@ -1,5 +1,9 @@
 package eu.xenit.alfresco.healthprocessor.processing;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import eu.xenit.alfresco.healthprocessor.indexing.AssertIndexingStrategy;
@@ -11,6 +15,7 @@ import eu.xenit.alfresco.healthprocessor.util.AssertTransactionHelper;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import lombok.Setter;
@@ -70,6 +75,37 @@ class ProcessorServiceTest {
         indexingStrategy.nextThrow(new RuntimeException("Hammertime"));
         ProcessorService processorService = builder.build();
         assertThrows(RuntimeException.class, processorService::execute, "Hammertime");
+    }
+
+    @Test
+    void execute_withoutRateLimit() {
+        int numberOfNodes = 10;
+        indexingStrategy.nextAnswer(Arrays.copyOfRange(TestNodeRefs.REFS, 0, numberOfNodes));
+
+        long startTime = System.currentTimeMillis();
+        ProcessorService unlimitedService = builder
+                .config(new ProcessorConfiguration(true, 1, -1, true, "Superman"))
+                .build();
+        unlimitedService.execute();
+        long durationMs = System.currentTimeMillis() - startTime;
+
+        assertThat(durationMs, is(lessThan(1000L)));
+    }
+
+    @Test
+    void execute_withRateLimit() {
+        int numberOfNodes = 10;
+        indexingStrategy.nextAnswer(Arrays.copyOfRange(TestNodeRefs.REFS, 0, numberOfNodes));
+
+        long startTime = System.currentTimeMillis();
+        ProcessorService unlimitedService = builder
+                .config(new ProcessorConfiguration(true, 1, 2, true, "Superman"))
+                .build();
+        unlimitedService.execute();
+        long durationMs = System.currentTimeMillis() - startTime;
+
+        assertThat(durationMs, is(greaterThan(4000L)));
+        assertThat(durationMs, is(lessThan(6000L)));
     }
 
     @Setter
