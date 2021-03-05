@@ -2,6 +2,8 @@ plugins {
     id "com.github.johnrengelman.shadow" version "6.1.0"
 }
 
+description = "A background processor capable of performing various operations on the nodes in your Alfresco repository, in a batched and controlled manner"
+
 apply plugin: "idea"
 apply plugin: 'java'
 apply plugin: "eu.xenit.alfresco"
