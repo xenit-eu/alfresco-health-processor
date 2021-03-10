@@ -3,12 +3,11 @@ package eu.xenit.alfresco.healthprocessor.reporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TestReports {
-
-    private TestReports() {
-        // private ctor to hide implicit public one
-    }
 
     private static int testRefsPointer = 0;
 

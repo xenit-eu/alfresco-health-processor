@@ -17,7 +17,7 @@ public interface HealthReporter {
 
     }
 
-    static HealthReporter DISABLED() {
+    static HealthReporter disabled() {
         return new DisabledHealthReporter();
     }
 

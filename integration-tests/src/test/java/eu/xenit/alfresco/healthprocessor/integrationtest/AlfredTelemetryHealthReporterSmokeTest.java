@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class AlfredTelemetryHealthReporterSmokeTest extends RestAssuredTest {
+class AlfredTelemetryHealthReporterSmokeTest extends RestAssuredTest {
 
     private static final String URI_BASE_METRICS = "s/alfred/telemetry/metrics/";
 

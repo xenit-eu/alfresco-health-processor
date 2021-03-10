@@ -1,10 +1,10 @@
 package eu.xenit.alfresco.healthprocessor.processing;
 
-public class ProcConfigUtil {
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-    private ProcConfigUtil() {
-        // private ctor to hide implicit public one
-    }
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class ProcConfigUtil {
 
     public static ProcessorConfiguration defaultConfig() {
         return config(true);

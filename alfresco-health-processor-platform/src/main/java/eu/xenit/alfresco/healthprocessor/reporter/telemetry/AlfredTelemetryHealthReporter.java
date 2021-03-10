@@ -16,8 +16,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
+@EqualsAndHashCode(callSuper = true)
 public class AlfredTelemetryHealthReporter extends SingleReportHealthReporter {
 
     private final AtomicBoolean isActive = new AtomicBoolean(false);

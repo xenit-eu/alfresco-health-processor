@@ -12,6 +12,6 @@ public final class DisabledHealthReporter implements HealthReporter {
 
     @Override
     public void processReports(Set<NodeHealthReport> reports, Class<? extends HealthProcessorPlugin> pluginClass) {
-
+        throw new UnsupportedOperationException("The DisabledHealthReporter shouldn't process reports");
     }
 }

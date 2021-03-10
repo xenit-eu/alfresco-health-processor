@@ -1,27 +1,34 @@
 package eu.xenit.alfresco.healthprocessor.reporter.telemetry;
 
-public interface Constants {
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-    interface Key {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class Constants {
 
-        String BASE = "health-processor";
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Key {
 
-        String ACTIVE = BASE + ".active";
-        String PLUGINS = BASE + ".plugins";
-        String REPORTS = BASE + ".reports";
+        public static final String BASE = "health-processor";
 
-    }
-
-    interface Tag {
-
-        String PLUGIN = "plugin";
-        String STATUS = "status";
+        public static final String ACTIVE = BASE + ".active";
+        public static final String PLUGINS = BASE + ".plugins";
+        public static final String REPORTS = BASE + ".reports";
 
     }
 
-    interface Description {
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Tag {
 
-        String PLUGINS = "Number of registered, active HealthProcessorPlugin implementations";
+        public static final String PLUGIN = "plugin";
+        public static final String STATUS = "status";
+
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Description {
+
+        public static final String PLUGINS = "Number of registered, active HealthProcessorPlugin implementations";
     }
 
 }
