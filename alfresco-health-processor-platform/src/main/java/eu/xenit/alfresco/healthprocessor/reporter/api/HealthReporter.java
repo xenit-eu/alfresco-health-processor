@@ -7,10 +7,18 @@ public interface HealthReporter {
 
     boolean isEnabled();
 
-    void onStart();
+    default void onStart() {
+
+    }
 
     void processReports(Set<NodeHealthReport> reports, Class<? extends HealthProcessorPlugin> pluginClass);
 
-    void onStop();
+    default void onStop() {
+
+    }
+
+    static HealthReporter DISABLED() {
+        return new DisabledHealthReporter();
+    }
 
 }

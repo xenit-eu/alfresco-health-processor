@@ -71,6 +71,7 @@ subprojects { Project p ->
         baseAlfrescoWar "${alfrescoBaseWar}"
         alfrescoAmp project(path: ":integration-tests", configuration: "amp")
         alfrescoAmp project(path: ":alfresco-health-processor-platform", configuration: "amp")
+        alfrescoAmp "eu.xenit.alfred.telemetry:alfred-telemetry-platform:${alfredTelemetryVersion}@amp"
     }
 
     dockerAlfresco {

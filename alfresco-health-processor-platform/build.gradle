@@ -24,6 +24,7 @@ dependencies {
     alfrescoProvided("org.alfresco:alfresco-repository") {
         exclude module: 'spring-social-facebook-web'
     }
+    alfrescoProvided "io.micrometer:micrometer-core:${micrometerVersion}"
     implementation 'com.google.guava:guava:30.1-jre'
 
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"

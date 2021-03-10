@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.is;
 
 import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
+import eu.xenit.alfresco.healthprocessor.reporter.TestReports;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -15,10 +15,8 @@ import org.junit.jupiter.api.Test;
 
 class SingleReportHealthReporterTest {
 
-    private static final NodeHealthReport REPORT_1 =
-            new NodeHealthReport(NodeHealthStatus.HEALTHY, TestNodeRefs.REFS[0]);
-    private static final NodeHealthReport REPORT_2 =
-            new NodeHealthReport(NodeHealthStatus.UNHEALTHY, TestNodeRefs.REFS[1]);
+    private static final NodeHealthReport REPORT_1 = TestReports.healthy();
+    private static final NodeHealthReport REPORT_2 = TestReports.unhealthy();
 
     @Test
     void toggleable() {
