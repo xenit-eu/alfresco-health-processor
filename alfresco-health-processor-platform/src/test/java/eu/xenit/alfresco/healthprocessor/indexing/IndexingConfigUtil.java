@@ -1,12 +1,11 @@
 package eu.xenit.alfresco.healthprocessor.indexing;
 
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration.IndexingStrategyKey;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class IndexingConfigUtil {
-
-    private IndexingConfigUtil() {
-        // private ctor to hide implicit public one
-    }
 
     public static IndexingConfiguration defaultConfig() {
         return config(-1L, Long.MAX_VALUE, 1000);

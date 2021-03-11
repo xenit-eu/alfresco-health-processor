@@ -19,6 +19,8 @@ sonarqube {
 
 ext {
     alfrescoVersion = '5.2.f'
+    alfredTelemetryVersion = '0.4.0'
+    micrometerVersion = '1.0.6'
     lombokVersion = '1.18.10'
     enterpriseEnabled = rootProject.hasProperty("enterprise")
 }

@@ -12,10 +12,8 @@ import org.junit.jupiter.api.Test;
 
 class SummaryLoggingHealthReporterTest {
 
-    private static final NodeHealthReport REPORT_1 =
-            new NodeHealthReport(NodeHealthStatus.HEALTHY, TestNodeRefs.REFS[0]);
-    private static final NodeHealthReport REPORT_2 =
-            new NodeHealthReport(NodeHealthStatus.UNHEALTHY, TestNodeRefs.REFS[1]);
+    private static final NodeHealthReport REPORT_1 = TestReports.healthy();
+    private static final NodeHealthReport REPORT_2 = TestReports.unhealthy();
 
     @Test
     void smokeTest() {
