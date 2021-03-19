@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -26,6 +27,8 @@ public class ProcessorService {
     private final List<HealthProcessorPlugin> plugins;
     private final List<HealthReporter> reporters;
 
+    @Getter
+    private boolean active;
     private RateLimiter rateLimiter;
 
     public void execute() {
@@ -49,6 +52,7 @@ public class ProcessorService {
         log.info("Health-Processor: STARTING... Registered plugins: {}",
                 plugins.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList()));
 
+        active = true;
         indexingStrategy.onStart();
         forEachEnabledReporter(HealthReporter::onStart);
         initializeRateLimiter();
@@ -58,6 +62,7 @@ public class ProcessorService {
         indexingStrategy.onStop();
         forEachEnabledReporter(HealthReporter::onStop);
 
+        active = false;
         log.info("Health-Processor: DONE");
     }
 
