@@ -77,6 +77,23 @@ implementations. Any reports received will be offered for processing to all avai
   Since the Alfresco Health Processor is basically a scheduled job, it needs to run as a certain user. The default
   is `System` but it is possible to assign a dedicated user.
 
+## Admin Console dashboard
+
+To get insight in the current state of the Health-Processor, the module includes a custom
+[Repository Admin Console](https://docs.alfresco.com/content-services/latest/admin/admin-console/) dashboard.
+
+This dashboard is read-only. If your system requires the capability to trigger or change the Health-Processor
+configuration at runtime, we advise installing and using the
+[Order Of The Bee Support tools](https://github.com/OrderOfTheBee/ootbee-support-tools) extension. This module contains
+a [command console](https://github.com/OrderOfTheBee/ootbee-support-tools/wiki/Command-Console#subsystems-plugin-commands)
+that makes it possible to change and persist Subsystem configuration at runtime. Furthermore it contains an overview
+of [scheduled jobs](https://github.com/OrderOfTheBee/ootbee-support-tools/wiki/Scheduled-Jobs) with the possibility to
+manually trigger a job.
+
+The Order Of The Bee Support tools works for both Alfresco Community (ACE) and Enterprise Edition (AEE). For AEE it is
+also possible to use JMX for persistent subsystem configuration and the out of the box scheduled jobs admin dashboard to
+manually trigger the job.
+
 ## Out of the box functionality
 
 Next to the core framework, this module contains a list of useful tools that contain basic integrity check for your
@@ -130,8 +147,8 @@ from Alfresco's `DictionaryService`.
 
 Activation property: `eu.xenit.alfresco.healthprocessor.reporter.alfred-telemetry.enabled=true`
 
-Integration with [Alfred Telemetry](https://github.com/xenit-eu/alfred-telemetry) that can be used to expose 
-HealthProcessor metrics to various monitoring systems. 
+Integration with [Alfred Telemetry](https://github.com/xenit-eu/alfred-telemetry) that can be used to expose
+HealthProcessor metrics to various monitoring systems.
 
 Exposed metrics:
 
@@ -140,10 +157,11 @@ Exposed metrics:
   A gauge with value 0 or 1, indicating if the reporter and hence by extension the Health-Processor is active
 * `health-processor.plugins`  
   Available tags: /  
-  A gauge indicating the number of active `HealthProcessorPlugin` implementations. 
+  A gauge indicating the number of active `HealthProcessorPlugin` implementations.
 * `health-processor.reports`  
-  Available tags: `status`  (HEALTHY, UNHEALTHY or NONE), `plugin` (the class name of the HealthProcessorPlugin implementation).  
-  A counter indicating the total number of processed reports, with the specific status and plugin as tag values. 
+  Available tags: `status`  (HEALTHY, UNHEALTHY or NONE), `plugin` (the class name of the HealthProcessorPlugin
+  implementation).  
+  A counter indicating the total number of processed reports, with the specific status and plugin as tag values.
 
 #### Logging
 
