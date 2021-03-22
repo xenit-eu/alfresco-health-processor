@@ -1,6 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.webscripts.console.model;
 
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -17,7 +18,7 @@ public class ReportersView {
 
     private static List<Reporter> toViewModel(List<HealthReporter> reporters) {
         if (reporters == null) {
-            return null;
+            return Collections.emptyList();
         }
         return reporters.stream()
                 .map(ReportersView::toViewModel)

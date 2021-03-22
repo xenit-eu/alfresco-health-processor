@@ -17,7 +17,7 @@ import org.alfresco.service.cmr.module.ModuleDetails;
 @Setter
 public class ResponseViewRenderer {
 
-    public final static String MODULE_ID = "alfresco-health-processor-platform";
+    public static final String MODULE_ID = "alfresco-health-processor-platform";
 
     private ModuleDetails moduleDetails;
     private ProcessorService processorService;

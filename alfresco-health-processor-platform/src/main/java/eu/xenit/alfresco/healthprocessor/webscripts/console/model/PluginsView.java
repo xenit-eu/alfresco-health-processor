@@ -1,6 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.webscripts.console.model;
 
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -17,7 +18,7 @@ public class PluginsView {
 
     private static List<Plugin> toViewModel(List<HealthProcessorPlugin> plugins) {
         if (plugins == null) {
-            return null;
+            return Collections.emptyList();
         }
         return plugins.stream()
                 .map(PluginsView::toViewModel)
