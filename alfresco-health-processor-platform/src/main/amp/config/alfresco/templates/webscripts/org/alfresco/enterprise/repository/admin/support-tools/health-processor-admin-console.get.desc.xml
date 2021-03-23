@@ -1,0 +1,10 @@
+<webscript>
+    <shortname>Health Processor</shortname>
+    <description>Health Processor Admin Console</description>
+    <url>/enterprise/admin/health-processor</url>
+    <family>AdminConsole</family>
+    <format default="html">argument</format>
+    <authentication>admin</authentication>
+    <lifecycle>internal</lifecycle>
+    <transaction allow="readonly">required</transaction>
+</webscript>

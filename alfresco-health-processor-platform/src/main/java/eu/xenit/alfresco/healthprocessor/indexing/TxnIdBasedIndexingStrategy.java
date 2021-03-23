@@ -1,6 +1,8 @@
 package eu.xenit.alfresco.healthprocessor.indexing;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -25,6 +27,18 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
     public TxnIdBasedIndexingStrategy(IndexingConfiguration configuration, TrackingComponent trackingComponent) {
         this.configuration = configuration;
         this.trackingComponent = trackingComponent;
+    }
+
+    @Override
+    public Map<String, String> getState() {
+        Map<String, String> ret = new HashMap<>();
+
+        ret.put("max-txn-id-inclusive", Long.toString(maxTxnIdInclusive));
+        ret.put("next-txn-id", Long.toString(nextStartTxnIdToFetch));
+        ret.put("nodes-in-queue", Integer.toString(nodeIdQueue.size()));
+        ret.put("done", Boolean.toString(done));
+
+        return ret;
     }
 
     @Override

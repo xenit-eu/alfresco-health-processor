@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="eu.xenit.alfresco.healthprocessor.webscripts.console.AdminConsoleWebScript"
+            class="eu.xenit.alfresco.healthprocessor.webscripts.console.AdminConsoleWebScript"
+            parent="webscript">
+        <constructor-arg ref="Admin-Console.ResponseViewRenderer"/>
+    </bean>
+
+    <bean id="Admin-Console.ResponseViewRenderer"
+            class="eu.xenit.alfresco.healthprocessor.webscripts.console.ResponseViewRenderer"
+            parent="webscript" autowire="byType">
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
+
+</beans>

@@ -10,4 +10,19 @@
         <property name="autoStart" value="true"/>
     </bean>
 
+    <!--
+    Proxy required to make Admin Console WebScript available in main Spring context
+    -->
+    <bean id="webscript.org.alfresco.enterprise.repository.admin.support-tools.health-processor-admin-console.get"
+            class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>
+        <property name="sourceBeanName"
+                value="eu.xenit.alfresco.healthprocessor.webscripts.console.AdminConsoleWebScript"/>
+        <property name="interfaces">
+            <list>
+                <value>org.springframework.extensions.webscripts.WebScript</value>
+            </list>
+        </property>
+    </bean>
+
 </beans>
