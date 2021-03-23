@@ -41,7 +41,7 @@ subprojects {
 
 allprojects { Project p ->
     group = 'eu.xenit.alfresco'
-    version = '0.2.0'
+    version = '0.3.0'
 
     boolean isRelease = ci.branch?.startsWith("release")
     if (!isRelease) {

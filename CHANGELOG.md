@@ -22,6 +22,8 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
+## [0.3.0] - UNRELEASED
+
 ## [0.2.0] - 2021-03-23
 ### Added
 * [[#17](https://github.com/xenit-eu/alfresco-health-processor/issues/17)] 
