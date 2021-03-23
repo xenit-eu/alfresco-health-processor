@@ -22,9 +22,14 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.2.0] - UNRELEASED
-
+## [0.2.0] - 2021-03-23
+### Added
+* [[#17](https://github.com/xenit-eu/alfresco-health-processor/issues/17)] 
+  AlfredTelemetryHealthReporter
+* [[#21](https://github.com/xenit-eu/alfresco-health-processor/issues/21)] 
+  Admin console dashboard
 
 ## [0.1.0] - 2021-03-04
 
-Initial, early access release.
+Initial, early access release containing core framework, `SummaryLoggingHealthReporter`, 
+`ContentValidationHealthProcessorPlugin`, ...
