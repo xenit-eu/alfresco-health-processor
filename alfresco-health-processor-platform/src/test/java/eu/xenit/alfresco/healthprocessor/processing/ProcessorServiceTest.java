@@ -71,10 +71,11 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void execute_pluginThrowsException() {
+    void execute_indexingStrategyThrowsException() {
         indexingStrategy.nextThrow(new RuntimeException("Hammertime"));
         ProcessorService processorService = builder.build();
         assertThrows(RuntimeException.class, processorService::execute, "Hammertime");
+        assertThat(processorService.isActive(), is(false));
     }
 
     @Test
