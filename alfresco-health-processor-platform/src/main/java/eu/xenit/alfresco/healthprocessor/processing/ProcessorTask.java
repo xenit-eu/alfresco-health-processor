@@ -35,7 +35,7 @@ public class ProcessorTask {
     }
 
     void startIfNotRunningAsUser() {
-        log.debug("HealthProcessor initializing as user: {}", AuthenticationUtil.getRunAsUser());
+        log.debug("Health-Processor initializing as user: {}", AuthenticationUtil.getRunAsUser());
         transactionHelper.inTransaction(this::startIfNotRunningAsUserInTransaction, configuration.isReadOnly());
     }
 
@@ -52,7 +52,7 @@ public class ProcessorTask {
 
             start();
         } catch (LockAcquisitionException e) {
-            log.info("HealthProcessor already active on other node, skipping...");
+            log.info("Health-Processor already active on other node, skipping...");
             log.debug("Exception thrown while trying to claim lock '{}'", LOCK_QNAME, e);
         } finally {
             lockCallback.running.set(false);

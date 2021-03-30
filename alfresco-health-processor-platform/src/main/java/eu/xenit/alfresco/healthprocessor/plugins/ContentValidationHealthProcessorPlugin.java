@@ -4,6 +4,7 @@ import eu.xenit.alfresco.healthprocessor.plugins.api.SingleNodeHealthProcessorPl
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.util.QNameUtil;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -72,21 +74,22 @@ public class ContentValidationHealthProcessorPlugin extends SingleNodeHealthProc
             return null;
         }
 
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+
         boolean nodeHasContent = false;
         Map<QName, String> failedPropertiesWithContentUrl = new HashMap<>();
         for (QName dContentPropertyKey : propertyQNamesToValidate) {
-            getLogger().debug("Validating d:content property '{}' for node '{}'", dContentPropertyKey, nodeRef);
-            ContentReader reader = contentService.getReader(nodeRef, dContentPropertyKey);
-            if (reader == null) {
-                getLogger().debug("No ContentRead found for property '{}', node '{}', skipping.", dContentPropertyKey,
-                        nodeRef);
+            String contentUrl = safeExtractContentUrl(properties, nodeRef, dContentPropertyKey);
+            if (contentUrl == null) {
                 continue;
             }
-            getLogger().debug("ContentReader found for property '{}', node '{}'. Going to check if exists",
-                    dContentPropertyKey, nodeRef);
+
+            getLogger().debug("Node '{}', property '{}', will try to retrieve ContentReader (ContentUrl: '{}')",
+                    nodeRef, dContentPropertyKey, contentUrl);
+            ContentReader reader = contentService.getRawReader(contentUrl);
             nodeHasContent = true;
-            if (!reader.exists()) {
-                failedPropertiesWithContentUrl.put(dContentPropertyKey, reader.getContentUrl());
+            if (reader == null || !reader.exists()) {
+                failedPropertiesWithContentUrl.put(dContentPropertyKey, contentUrl);
             }
         }
 
@@ -98,6 +101,33 @@ public class ContentValidationHealthProcessorPlugin extends SingleNodeHealthProc
         }
 
         return new NodeHealthReport(status, nodeRef, toMessages(failedPropertiesWithContentUrl));
+    }
+
+    private String safeExtractContentUrl(Map<QName, Serializable> properties, NodeRef nodeRef,
+            QName dContentPropertyKey) {
+        if (!properties.containsKey(dContentPropertyKey)) {
+            getLogger().trace("Node '{}', properties don't contain d:content property '{}', skipping.",
+                    nodeRef, dContentPropertyKey);
+            return null;
+        }
+
+        Serializable contentDataValue = properties.get(dContentPropertyKey);
+        if (contentDataValue == null) {
+            getLogger().debug("Node '{}', property '{}', ContentData is null", nodeRef, dContentPropertyKey);
+            return null;
+        }
+        if (!(contentDataValue instanceof ContentData)) {
+            getLogger().warn("Node '{}', property '{}', not of type d:content",
+                    nodeRef, dContentPropertyKey);
+            return null;
+        }
+        ContentData contentData = (ContentData) contentDataValue;
+        if (contentData.getContentUrl() == null) {
+            getLogger().debug("Node '{}', property '{}', ContentUrl is null",
+                    nodeRef, dContentPropertyKey);
+            return null;
+        }
+        return contentData.getContentUrl();
     }
 
     private static Set<String> toMessages(Map<QName, String> propQNamesWithContentUrl) {
