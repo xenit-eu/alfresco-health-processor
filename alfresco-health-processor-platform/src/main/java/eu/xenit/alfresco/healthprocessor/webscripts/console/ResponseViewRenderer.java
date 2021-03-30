@@ -34,7 +34,7 @@ public class ResponseViewRenderer {
     public AdminConsoleResponseView renderView() {
         return new AdminConsoleResponseView(
                 moduleDetails,
-                processorService.isActive() ? "ACTIVE" : "IDLE",
+                processorService.getState().toString(),
                 new IndexingStrategyView(indexingConfiguration, indexingStrategy),
                 new PluginsView(plugins),
                 new ReportersView(reporters)
