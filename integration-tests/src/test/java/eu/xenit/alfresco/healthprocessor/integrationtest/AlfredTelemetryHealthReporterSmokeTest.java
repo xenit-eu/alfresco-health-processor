@@ -1,7 +1,10 @@
 package eu.xenit.alfresco.healthprocessor.integrationtest;
 
 import static io.restassured.RestAssured.given;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.equalTo;
 
+import java.time.Duration;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -21,12 +24,18 @@ class AlfredTelemetryHealthReporterSmokeTest extends RestAssuredTest {
     @ParameterizedTest
     @MethodSource("namesOfMetersThatShouldBeAvailable")
     void assertMeterAvailable(String meterName) {
-        given()
+        await()
+                .atMost(Duration.ofSeconds(MAX_POLL_TIME_SECONDS))
+                .pollInterval(Duration.ofSeconds(2))
+                .until(() -> getMeter(meterName), equalTo(200));
+    }
+
+    private int getMeter(String meterName) {
+        return given()
                 .log().ifValidationFails()
                 .when()
                 .get(URI_BASE_METRICS + meterName)
-                .then()
-                .statusCode(200);
+                .getStatusCode();
     }
 
 }

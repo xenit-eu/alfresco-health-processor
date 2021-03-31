@@ -13,6 +13,12 @@ public abstract class RestAssuredTest {
 
     private static final Logger logger = LoggerFactory.getLogger(RestAssuredTest.class);
 
+    /**
+     * Should be in sync with the cron expression configured in the docker-compose test setup.
+     */
+    protected static final int SCHEDULE_INTERVAL_SECONDS = 20;
+    protected static final int MAX_POLL_TIME_SECONDS = SCHEDULE_INTERVAL_SECONDS * 2;
+
     private static final String ALFRESCO_USERNAME = "admin";
     private static final String ALFRESCO_PASSWORD = "admin";
 
