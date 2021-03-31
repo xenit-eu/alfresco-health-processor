@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -14,12 +15,15 @@ import static org.mockito.Mockito.when;
 
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.UUID;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -27,6 +31,7 @@ import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -35,6 +40,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ContentValidationHealthProcessorPluginTest {
 
+    private static final String CONTENT_URL = "s3://abc.bin";
     private static final QName Q_NAME = QName.createQName("foobar", "baz");
     private static final NodeRef NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
             UUID.randomUUID().toString());
@@ -49,6 +55,16 @@ class ContentValidationHealthProcessorPluginTest {
     private DictionaryService dictionaryService;
     @Mock
     private ContentReader contentReader;
+
+    @BeforeEach
+    void setup() {
+        lenient().when(nodeService.exists(NODE_REF)).thenReturn(true);
+        lenient().when(nodeService.getNodeStatus(NODE_REF)).thenReturn(new Status(100L, NODE_REF, null, 10L, false));
+        lenient().when(nodeService.getProperties(NODE_REF)).thenReturn(new HashMap<QName, Serializable>() {{
+            put(Q_NAME, new ContentData(CONTENT_URL, "plain/text", 10, "UTF-8"));
+        }});
+        lenient().when(contentService.getRawReader(CONTENT_URL)).thenReturn(contentReader);
+    }
 
     @Test
     void initialize_usingServiceRegistry() {
@@ -92,9 +108,61 @@ class ContentValidationHealthProcessorPluginTest {
     void process_propertyHasNoContentReader() {
         ContentValidationHealthProcessorPlugin plugin = initialize(Collections.singletonList(Q_NAME));
 
-        when(nodeService.exists(NODE_REF)).thenReturn(true);
-        when(nodeService.getNodeStatus(NODE_REF)).thenReturn(new Status(100L, NODE_REF, null, 10L, false));
-        when(contentService.getReader(NODE_REF, Q_NAME)).thenReturn(null);
+        when(contentService.getRawReader(CONTENT_URL)).thenReturn(null);
+
+        NodeHealthReport report = plugin.process(NODE_REF);
+        assertThat(report, is(notNullValue()));
+        assertThat(report.getStatus(), is(equalTo(NodeHealthStatus.UNHEALTHY)));
+        assertThat(report.getNodeRef(), is(equalTo(NODE_REF)));
+    }
+
+    @Test
+    void process_nodeDoesNotHaveApplicableProperty() {
+        ContentValidationHealthProcessorPlugin plugin = initialize(Collections.singletonList(Q_NAME));
+
+        when(nodeService.getProperties(NODE_REF)).thenReturn(new HashMap<>());
+
+        NodeHealthReport report = plugin.process(NODE_REF);
+        assertThat(report, is(notNullValue()));
+        assertThat(report.getStatus(), is(equalTo(NodeHealthStatus.NONE)));
+        assertThat(report.getNodeRef(), is(equalTo(NODE_REF)));
+    }
+
+    @Test
+    void process_nodeHasApplicableProperty_withNullValue() {
+        ContentValidationHealthProcessorPlugin plugin = initialize(Collections.singletonList(Q_NAME));
+
+        when(nodeService.getProperties(NODE_REF)).thenReturn(new HashMap<QName, Serializable>() {{
+            put(Q_NAME, null);
+        }});
+
+        NodeHealthReport report = plugin.process(NODE_REF);
+        assertThat(report, is(notNullValue()));
+        assertThat(report.getStatus(), is(equalTo(NodeHealthStatus.NONE)));
+        assertThat(report.getNodeRef(), is(equalTo(NODE_REF)));
+    }
+
+    @Test
+    void process_nodeHasApplicableProperty_withInvalidPropertyType() {
+        ContentValidationHealthProcessorPlugin plugin = initialize(Collections.singletonList(Q_NAME));
+
+        when(nodeService.getProperties(NODE_REF)).thenReturn(new HashMap<QName, Serializable>() {{
+            put(Q_NAME, "Invalid Type (expected d:content)");
+        }});
+
+        NodeHealthReport report = plugin.process(NODE_REF);
+        assertThat(report, is(notNullValue()));
+        assertThat(report.getStatus(), is(equalTo(NodeHealthStatus.NONE)));
+        assertThat(report.getNodeRef(), is(equalTo(NODE_REF)));
+    }
+
+    @Test
+    void process_nodeHasApplicableProperty_withNoContentUrl() {
+        ContentValidationHealthProcessorPlugin plugin = initialize(Collections.singletonList(Q_NAME));
+
+        when(nodeService.getProperties(NODE_REF)).thenReturn(new HashMap<QName, Serializable>() {{
+            put(Q_NAME, new ContentData(null, "plain/text", 10, "UTF-8"));
+        }});
 
         NodeHealthReport report = plugin.process(NODE_REF);
         assertThat(report, is(notNullValue()));
@@ -106,9 +174,6 @@ class ContentValidationHealthProcessorPluginTest {
     void process_propertyHasContentReader_contentExists() {
         ContentValidationHealthProcessorPlugin plugin = initialize(Collections.singletonList(Q_NAME));
 
-        when(nodeService.exists(NODE_REF)).thenReturn(true);
-        when(nodeService.getNodeStatus(NODE_REF)).thenReturn(new Status(100L, NODE_REF, null, 10L, false));
-        when(contentService.getReader(NODE_REF, Q_NAME)).thenReturn(contentReader);
         when(contentReader.exists()).thenReturn(true);
 
         NodeHealthReport report = plugin.process(NODE_REF);
@@ -121,9 +186,6 @@ class ContentValidationHealthProcessorPluginTest {
     void process_propertyHasContentReader_contentDoesNotExist() {
         ContentValidationHealthProcessorPlugin plugin = initialize(Collections.singletonList(Q_NAME));
 
-        when(nodeService.exists(NODE_REF)).thenReturn(true);
-        when(nodeService.getNodeStatus(NODE_REF)).thenReturn(new Status(100L, NODE_REF, null, 10L, false));
-        when(contentService.getReader(NODE_REF, Q_NAME)).thenReturn(contentReader);
         when(contentReader.exists()).thenReturn(false);
 
         NodeHealthReport report = plugin.process(NODE_REF);
