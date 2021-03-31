@@ -17,6 +17,7 @@ import eu.xenit.alfresco.healthprocessor.indexing.TxnIdBasedIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.processing.ProcessorService;
+import eu.xenit.alfresco.healthprocessor.processing.ProcessorState;
 import eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.webscripts.console.model.AdminConsoleResponseView;
@@ -38,7 +39,7 @@ class ResponseViewRendererTest {
         renderer.setModuleDetails(moduleDetails);
 
         ProcessorService processorService = mock(ProcessorService.class);
-        when(processorService.isActive()).thenReturn(true);
+        when(processorService.getState()).thenReturn(ProcessorState.ACTIVE);
         renderer.setProcessorService(processorService);
 
         IndexingConfiguration indexingConfiguration = new IndexingConfiguration("txn-id", 10, 20, 2);

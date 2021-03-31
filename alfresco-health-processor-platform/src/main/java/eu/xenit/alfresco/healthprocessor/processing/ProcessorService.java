@@ -28,7 +28,7 @@ public class ProcessorService {
     private final List<HealthReporter> reporters;
 
     @Getter
-    private boolean active;
+    private ProcessorState state = ProcessorState.IDLE;
     private RateLimiter rateLimiter;
 
     public void execute() {
@@ -36,6 +36,18 @@ public class ProcessorService {
             log.warn("Health-Processor scheduled but not a single enabled plugin found.");
             return;
         }
+
+        try {
+            state = ProcessorState.ACTIVE;
+            executeInternal();
+            state = ProcessorState.IDLE;
+        } catch (Exception e) {
+            state = ProcessorState.FAILED;
+            throw e;
+        }
+    }
+
+    private void executeInternal() {
 
         onStart();
 
@@ -46,13 +58,13 @@ public class ProcessorService {
         }
 
         onStop();
+
     }
 
     private void onStart() {
         log.info("Health-Processor: STARTING... Registered plugins: {}",
                 plugins.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList()));
 
-        active = true;
         indexingStrategy.onStart();
         forEachEnabledReporter(HealthReporter::onStart);
         initializeRateLimiter();
@@ -62,7 +74,6 @@ public class ProcessorService {
         indexingStrategy.onStop();
         forEachEnabledReporter(HealthReporter::onStop);
 
-        active = false;
         log.info("Health-Processor: DONE");
     }
 

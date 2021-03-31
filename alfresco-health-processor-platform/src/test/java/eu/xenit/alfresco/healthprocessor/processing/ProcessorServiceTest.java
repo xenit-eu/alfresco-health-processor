@@ -61,9 +61,11 @@ class ProcessorServiceTest {
     @Test
     void execute() {
         indexingStrategy.nextAnswer(TestNodeRefs.REFS[0], TestNodeRefs.REFS[1]);
-        builder
-                .build()
-                .execute();
+        ProcessorService processorService = builder.build();
+
+        assertThat(processorService.getState(), is(ProcessorState.IDLE));
+        processorService.execute();
+        assertThat(processorService.getState(), is(ProcessorState.IDLE));
 
         indexingStrategy.expectOnStartInvocation(1);
         indexingStrategy.expectGetNextNodeIdsInvocations(2);
@@ -71,10 +73,11 @@ class ProcessorServiceTest {
     }
 
     @Test
-    void execute_pluginThrowsException() {
+    void execute_indexingStrategyThrowsException() {
         indexingStrategy.nextThrow(new RuntimeException("Hammertime"));
         ProcessorService processorService = builder.build();
         assertThrows(RuntimeException.class, processorService::execute, "Hammertime");
+        assertThat(processorService.getState(), is(ProcessorState.FAILED));
     }
 
     @Test

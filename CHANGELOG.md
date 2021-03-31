@@ -24,6 +24,8 @@ Version template:
 
 ## [0.2.1] - UNRELEASED
 ### Fixed
+* [[#24](https://github.com/xenit-eu/alfresco-health-processor/issues/24)] 
+  Admin Console dashboard: status stays ACTIVE after failure
 * [[#25](https://github.com/xenit-eu/alfresco-health-processor/issues/25)] 
   ContentValidationHealthProcessorPlugin performance improvements
 
