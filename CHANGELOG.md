@@ -22,7 +22,7 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.2.1] - UNRELEASED
+## [0.2.1] - 2021-03-31
 ### Fixed
 * [[#24](https://github.com/xenit-eu/alfresco-health-processor/issues/24)] 
   Admin Console dashboard: status stays ACTIVE after failure
