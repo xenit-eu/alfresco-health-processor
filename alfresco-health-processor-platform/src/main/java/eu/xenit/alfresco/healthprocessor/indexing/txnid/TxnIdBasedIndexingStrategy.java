@@ -3,12 +3,13 @@ package eu.xenit.alfresco.healthprocessor.indexing.txnid;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
+import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -19,7 +20,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(TxnIdBasedIndexingStrategy.class);
 
-    private final Queue<NodeRef> nodeIdQueue = new LinkedBlockingQueue<>();
+    private final Queue<NodeInfo> nodeQueue = new PriorityQueue<>();
     private long maxTxnIdInclusive;
     private boolean done = false;
     private long nextStartTxnIdToFetch;
@@ -38,7 +39,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
         ret.put("max-txn-id-inclusive", Long.toString(maxTxnIdInclusive));
         ret.put("next-txn-id", Long.toString(nextStartTxnIdToFetch));
-        ret.put("nodes-in-queue", Integer.toString(nodeIdQueue.size()));
+        ret.put("nodes-in-queue", Integer.toString(nodeQueue.size()));
         ret.put("done", Boolean.toString(done));
 
         return ret;
@@ -53,19 +54,19 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     @Override
     public void onStop() {
-        nodeIdQueue.clear();
+        nodeQueue.clear();
     }
 
     @Override
     public Set<NodeRef> getNextNodeIds(int amount) {
         Set<NodeRef> ret = new HashSet<>();
-        while (!done && nodeIdQueue.size() < amount) {
+        while (!done && nodeQueue.size() < amount) {
             fetchMoreNodes();
         }
 
         for (int i = 0; i < amount; i++) {
-            if (nodeIdQueue.peek() != null) {
-                ret.add(nodeIdQueue.poll());
+            if (nodeQueue.peek() != null) {
+                ret.add(nodeQueue.poll().getNodeRef());
             }
         }
 
@@ -78,7 +79,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
         logger.debug("Fetching more nodes. startTxn={}, endTxnExclusive={}", startTxn, endTxnExclusive);
 
-        nodeIdQueue.addAll(
+        nodeQueue.addAll(
                 trackingComponent.getNodesForTxnIds(
                         LongStream.range(startTxn, endTxnExclusive).boxed().collect(Collectors.toList())));
 

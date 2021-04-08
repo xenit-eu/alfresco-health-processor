@@ -52,8 +52,8 @@ class AlfrescoTrackingComponentTest {
         doAnswer(invocation -> {
             NodeQueryCallback cb = invocation.getArgument(1);
 
-            cb.handleNode(nodeEntity("abc-123"));
-            cb.handleNode(nodeEntity("xyz-987"));
+            cb.handleNode(nodeEntity(1L, 101L, "abc-123"));
+            cb.handleNode(nodeEntity(1L, 102L, "xyz-987"));
 
             return null;
         }).when(solrTrackingComponent).getNodes(any(), any());
@@ -64,7 +64,7 @@ class AlfrescoTrackingComponentTest {
                         new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "xyz-987")));
     }
 
-    private Node nodeEntity(String uuid) {
+    private Node nodeEntity(long txnId, long nodeId, String uuid) {
         return new Node() {
             @Override
             public NodeVersionKey getNodeVersionKey() {
@@ -123,7 +123,9 @@ class AlfrescoTrackingComponentTest {
 
             @Override
             public TransactionEntity getTransaction() {
-                return null;
+                TransactionEntity ret = new TransactionEntity();
+                ret.setId(txnId);
+                return ret;
             }
 
             @Override
@@ -138,7 +140,7 @@ class AlfrescoTrackingComponentTest {
 
             @Override
             public Long getId() {
-                return null;
+                return nodeId;
             }
 
             @Override
