@@ -12,6 +12,8 @@ import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.util.AssertTransactionHelper;
+import eu.xenit.alfresco.healthprocessor.util.AttributeHelper;
+import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeHelper;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import java.util.ArrayList;
@@ -142,7 +144,8 @@ class ProcessorServiceTest {
         }
 
         ProcessorService build() {
-            return new ProcessorService(config, indexingStrategy, transactionHelper, plugins, reporters);
+            return new ProcessorService(config, indexingStrategy, transactionHelper, new InMemoryAttributeHelper(),
+                    plugins, reporters);
         }
     }
 

@@ -5,6 +5,7 @@ import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import eu.xenit.alfresco.healthprocessor.util.AttributeHelper;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import java.util.HashSet;
 import java.util.List;
@@ -24,11 +25,10 @@ public class ProcessorService {
     private final ProcessorConfiguration configuration;
     private final IndexingStrategy indexingStrategy;
     private final TransactionHelper transactionHelper;
+    private final AttributeHelper attributeHelper;
     private final List<HealthProcessorPlugin> plugins;
     private final List<HealthReporter> reporters;
 
-    @Getter
-    private ProcessorState state = ProcessorState.IDLE;
     private RateLimiter rateLimiter;
 
     public void execute() {
@@ -38,43 +38,45 @@ public class ProcessorService {
         }
 
         try {
-            state = ProcessorState.ACTIVE;
+            onStart();
             executeInternal();
-            state = ProcessorState.IDLE;
+            onStop();
         } catch (Exception e) {
-            state = ProcessorState.FAILED;
+            onError(e);
             throw e;
         }
-    }
-
-    private void executeInternal() {
-
-        onStart();
-
-        Set<NodeRef> nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
-        while (!nodesToProcess.isEmpty()) {
-            this.processNodeBatch(nodesToProcess);
-            nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
-        }
-
-        onStop();
-
     }
 
     private void onStart() {
         log.info("Health-Processor: STARTING... Registered plugins: {}",
                 plugins.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList()));
 
+        attributeHelper.setAttribute(ProcessorState.ACTIVE, AttributeHelper.KEY_STATE);
+
         indexingStrategy.onStart();
         forEachEnabledReporter(HealthReporter::onStart);
         initializeRateLimiter();
     }
 
+    private void onError(Exception e) {
+        attributeHelper.setAttribute(ProcessorState.FAILED, AttributeHelper.KEY_STATE);
+    }
+
     private void onStop() {
         indexingStrategy.onStop();
         forEachEnabledReporter(HealthReporter::onStop);
+        attributeHelper.clearAttributes();
 
         log.info("Health-Processor: DONE");
+
+    }
+
+    private void executeInternal() {
+        Set<NodeRef> nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
+        while (!nodesToProcess.isEmpty()) {
+            this.processNodeBatch(nodesToProcess);
+            nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
+        }
     }
 
     private void processNodeBatch(Set<NodeRef> nodesToProcess) {
@@ -140,5 +142,9 @@ public class ProcessorService {
     private void initializeRateLimiter() {
         this.rateLimiter = configuration.getMaxBatchesPerSecond() > 0 ?
                 RateLimiter.create(configuration.getMaxBatchesPerSecond()) : null;
+    }
+
+    public ProcessorState getState() {
+        return attributeHelper.getAttributeOrDefault(AttributeHelper.KEY_STATE, ProcessorState.IDLE);
     }
 }

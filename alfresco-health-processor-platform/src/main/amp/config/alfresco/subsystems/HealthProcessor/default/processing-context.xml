@@ -8,7 +8,8 @@
             class="eu.xenit.alfresco.healthprocessor.processing.ProcessorConfiguration">
         <constructor-arg name="singleTenant" value="${eu.xenit.alfresco.healthprocessor.processing.single-tenant}"/>
         <constructor-arg name="nodeBatchSize" value="${eu.xenit.alfresco.healthprocessor.processing.node-batch-size}"/>
-        <constructor-arg name="maxBatchesPerSecond" value="${eu.xenit.alfresco.healthprocessor.processing.max-batches-per-second}"/>
+        <constructor-arg name="maxBatchesPerSecond"
+                value="${eu.xenit.alfresco.healthprocessor.processing.max-batches-per-second}"/>
         <constructor-arg name="readOnly" value="${eu.xenit.alfresco.healthprocessor.processing.read-only}"/>
         <constructor-arg name="runAsUser" value="${eu.xenit.alfresco.healthprocessor.processing.run-as-user}"/>
     </bean>
@@ -27,11 +28,17 @@
         <constructor-arg name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeHelper"
+            class="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeHelper">
+        <constructor-arg name="attributeService" ref="attributeService"/>
+    </bean>
+
     <bean id="eu.xenit.alfresco.healthprocessor.processing.ProcessorService"
             class="eu.xenit.alfresco.healthprocessor.processing.ProcessorService" autowire="constructor">
         <constructor-arg name="configuration" ref="eu.xenit.alfresco.healthprocessor.processing.configuration"/>
         <constructor-arg name="indexingStrategy" ref="eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy"/>
         <constructor-arg name="transactionHelper"
                 ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoTransactionHelper"/>
+        <constructor-arg name="attributeHelper" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeHelper"/>
     </bean>
 </beans>
