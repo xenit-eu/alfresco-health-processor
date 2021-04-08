@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.indexing;
+package eu.xenit.alfresco.healthprocessor.indexing.txnid;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -7,6 +7,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import eu.xenit.alfresco.healthprocessor.indexing.FakeTrackingComponent;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfigUtil;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration.IndexingStrategyKey;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import java.util.Arrays;

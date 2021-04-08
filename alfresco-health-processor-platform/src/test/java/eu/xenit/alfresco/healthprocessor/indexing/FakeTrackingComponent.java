@@ -13,11 +13,11 @@ public class FakeTrackingComponent implements TrackingComponent {
     private final Map<Long, Set<NodeRef>> transactions = new TreeMap<>();
     private int getNodeForTxnIdsInvocations = 0;
 
-    void addTransaction(Long txnId, NodeRef... nodes) {
+    public void addTransaction(Long txnId, NodeRef... nodes) {
         this.addTransaction(txnId, Arrays.asList(nodes));
     }
 
-    void addTransaction(Long txnId, List<NodeRef> nodes) {
+    public void addTransaction(Long txnId, List<NodeRef> nodes) {
         transactions.putIfAbsent(txnId, new HashSet<>());
         transactions.get(txnId).addAll(nodes);
     }

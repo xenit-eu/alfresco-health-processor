@@ -1,5 +1,8 @@
-package eu.xenit.alfresco.healthprocessor.indexing;
+package eu.xenit.alfresco.healthprocessor.indexing.txnid;
 
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

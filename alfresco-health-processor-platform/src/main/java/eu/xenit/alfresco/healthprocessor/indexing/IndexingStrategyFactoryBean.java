@@ -1,6 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.indexing;
 
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration.IndexingStrategyKey;
+import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrategy;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 
