@@ -11,6 +11,7 @@ public class AlfrescoAttributeHelper implements AttributeHelper {
 
     private final AttributeService attributeService;
 
+    @Override
     public <T> T getAttribute(Serializable key1, Serializable key2) {
         Serializable ret = attributeService.getAttribute(ATTR_KEY_HEALTH_PROCESSOR, key1, key2);
         if (ret == null) {
@@ -20,8 +21,14 @@ public class AlfrescoAttributeHelper implements AttributeHelper {
         return (T) ret;
     }
 
+    @Override
     public void setAttribute(Serializable value, Serializable key1, Serializable key2) {
         attributeService.setAttribute(value, ATTR_KEY_HEALTH_PROCESSOR, key1, key2);
+    }
+
+    @Override
+    public void removeAttributes(Serializable key1, Serializable key2) {
+        attributeService.removeAttributes(ATTR_KEY_HEALTH_PROCESSOR, key1, key2);
     }
 
     public void clearAttributes() {

@@ -20,6 +20,7 @@ import eu.xenit.alfresco.healthprocessor.processing.ProcessorService;
 import eu.xenit.alfresco.healthprocessor.processing.ProcessorState;
 import eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
+import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeHelper;
 import eu.xenit.alfresco.healthprocessor.webscripts.console.model.AdminConsoleResponseView;
 import java.util.Collections;
 import org.alfresco.repo.module.ModuleVersionNumber;
@@ -46,7 +47,7 @@ class ResponseViewRendererTest {
         renderer.setIndexingConfiguration(indexingConfiguration);
 
         IndexingStrategy indexingStrategy = new TxnIdBasedIndexingStrategy(indexingConfiguration,
-                new FakeTrackingComponent());
+                new FakeTrackingComponent(), new InMemoryAttributeHelper());
         renderer.setIndexingStrategy(indexingStrategy);
 
         HealthProcessorPlugin plugin = new AssertHealthProcessorPlugin();

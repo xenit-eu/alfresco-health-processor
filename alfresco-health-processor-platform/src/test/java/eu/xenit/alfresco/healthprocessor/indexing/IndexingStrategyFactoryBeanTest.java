@@ -5,6 +5,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
+import eu.xenit.alfresco.healthprocessor.util.AttributeHelper;
+import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -15,6 +17,7 @@ public class IndexingStrategyFactoryBeanTest {
 
     @Mock
     private TrackingComponent trackingComponent;
+    private AttributeHelper attributeHelper = new InMemoryAttributeHelper();
 
     @Test
     void getObjectType() {
@@ -31,6 +34,6 @@ public class IndexingStrategyFactoryBeanTest {
     }
 
     private IndexingStrategyFactoryBean factoryBean(IndexingConfiguration configuration) {
-        return new IndexingStrategyFactoryBean(configuration, trackingComponent);
+        return new IndexingStrategyFactoryBean(configuration, trackingComponent, attributeHelper);
     }
 }

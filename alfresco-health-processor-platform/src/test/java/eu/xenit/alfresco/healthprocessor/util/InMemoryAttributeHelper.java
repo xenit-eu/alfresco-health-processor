@@ -21,6 +21,11 @@ public class InMemoryAttributeHelper implements AttributeHelper {
     }
 
     @Override
+    public void removeAttributes(Serializable key1, Serializable key2) {
+        attributes.remove(new Pair<>(key1, key2));
+    }
+
+    @Override
     public void clearAttributes() {
         attributes.clear();
     }

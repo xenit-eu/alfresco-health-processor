@@ -23,6 +23,12 @@ public interface AttributeHelper {
 
     void setAttribute(Serializable value, Serializable key1, Serializable key2);
 
+    default void removeAttributes(Serializable key1) {
+        this.removeAttributes(key1, null);
+    }
+
+    void removeAttributes(Serializable key1, Serializable key2);
+
     void clearAttributes();
 
 }

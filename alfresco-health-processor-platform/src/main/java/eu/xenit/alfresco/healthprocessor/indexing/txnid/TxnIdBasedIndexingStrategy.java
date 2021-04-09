@@ -4,6 +4,7 @@ import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
+import eu.xenit.alfresco.healthprocessor.util.AttributeHelper;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -12,13 +13,17 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import lombok.RequiredArgsConstructor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@RequiredArgsConstructor
 public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(TxnIdBasedIndexingStrategy.class);
+
+    static final String ATTR_KEY_LAST_PROCESSED_TXN_ID = "last-processed-txn-id";
 
     private final Queue<NodeInfo> nodeQueue = new PriorityQueue<>();
     private long maxTxnIdInclusive;
@@ -27,11 +32,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     private final IndexingConfiguration configuration;
     private final TrackingComponent trackingComponent;
-
-    public TxnIdBasedIndexingStrategy(IndexingConfiguration configuration, TrackingComponent trackingComponent) {
-        this.configuration = configuration;
-        this.trackingComponent = trackingComponent;
-    }
+    private final AttributeHelper attributeHelper;
 
     @Override
     public Map<String, String> getState() {
@@ -47,14 +48,15 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     @Override
     public void onStart() {
-        nextStartTxnIdToFetch = -1L;
         done = false;
-        maxTxnIdInclusive = Math.min(trackingComponent.getMaxTxnId(), configuration.getStopTxnId());
+        nodeQueue.clear();
+        initializeStartTxnId();
+        initializeMaxTxnId();
     }
 
     @Override
     public void onStop() {
-        nodeQueue.clear();
+        attributeHelper.removeAttributes(ATTR_KEY_LAST_PROCESSED_TXN_ID);
     }
 
     @Override
@@ -65,16 +67,30 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
         }
 
         for (int i = 0; i < amount; i++) {
-            if (nodeQueue.peek() != null) {
-                ret.add(nodeQueue.poll().getNodeRef());
+            NodeInfo nodeInfo = nodeQueue.poll();
+            if (nodeInfo == null) {
+                break;
             }
+            if (i == 0) {
+                attributeHelper.setAttribute(nodeInfo.getTxnId(), ATTR_KEY_LAST_PROCESSED_TXN_ID);
+            }
+            ret.add(nodeInfo.getNodeRef());
         }
 
         return ret;
     }
 
+    private void initializeStartTxnId() {
+        Long lastProcessedTxnId = attributeHelper.getAttributeOrDefault(ATTR_KEY_LAST_PROCESSED_TXN_ID, 1L);
+        nextStartTxnIdToFetch = Math.max(configuration.getStartTxnId(), lastProcessedTxnId);
+    }
+
+    private void initializeMaxTxnId() {
+        maxTxnIdInclusive = Math.min(trackingComponent.getMaxTxnId(), configuration.getStopTxnId());
+    }
+
     private void fetchMoreNodes() {
-        long startTxn = getNextStartTxnIdInclusive();
+        long startTxn = nextStartTxnIdToFetch;
         long endTxnExclusive = getNextStopTxnIdExclusive();
 
         logger.debug("Fetching more nodes. startTxn={}, endTxnExclusive={}", startTxn, endTxnExclusive);
@@ -91,15 +107,8 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
         }
     }
 
-    private long getNextStartTxnIdInclusive() {
-        if (nextStartTxnIdToFetch < 1) {
-            nextStartTxnIdToFetch = Math.max(configuration.getStartTxnId(), 1L);
-        }
-        return nextStartTxnIdToFetch;
-    }
-
     private long getNextStopTxnIdExclusive() {
-        return Math.min(getNextStartTxnIdInclusive() + configuration.getTxnBatchSize(), maxTxnIdInclusive + 1);
+        return Math.min(nextStartTxnIdToFetch + configuration.getTxnBatchSize(), maxTxnIdInclusive + 1);
     }
 
 }
