@@ -41,7 +41,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
         ret.put("max-txn-id-inclusive", Long.toString(maxTxnIdInclusive));
         ret.put("next-txn-id", Long.toString(nextStartTxnIdToFetch));
         ret.put("nodes-in-queue", Integer.toString(nodeQueue.size()));
-        ret.put("done", Boolean.toString(done));
+        ret.put("fetching-nodes-done", Boolean.toString(done));
 
         return ret;
     }

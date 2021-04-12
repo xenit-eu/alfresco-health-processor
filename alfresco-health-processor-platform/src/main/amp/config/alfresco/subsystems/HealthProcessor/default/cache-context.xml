@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="eu.xenit.alfresco.healthprocessor.processing.StateCache"
+            class="eu.xenit.alfresco.healthprocessor.processing.StateCache">
+        <constructor-arg name="cache" ref="healthProcessorSharedCache"/>
+    </bean>
+
+    <bean name="healthProcessorSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+        <constructor-arg value="cache.healthProcessorGeneralCache"/>
+    </bean>
+
+    <bean name="healthProcessorCache" class="org.alfresco.repo.cache.TransactionalCache">
+        <property name="sharedCache" ref="healthProcessorSharedCache"/>
+        <property name="name" value="xenit.health-processor.cache"/>
+        <property name="maxCacheSize" value="${cache.healthProcessorCache.tx.maxItems}"/>
+        <property name="mutable" value="true"/>
+        <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}"/>
+        <property name="tenantAware" value="false"/>
+        <property name="cacheStats" ref="cacheStatistics"/>
+        <property name="cacheStatsEnabled" value="${cache.healthProcessorCache.tx.statsEnabled}"/>
+    </bean>
+</beans>

@@ -5,14 +5,12 @@ import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
-import eu.xenit.alfresco.healthprocessor.util.AttributeHelper;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -25,9 +23,9 @@ public class ProcessorService {
     private final ProcessorConfiguration configuration;
     private final IndexingStrategy indexingStrategy;
     private final TransactionHelper transactionHelper;
-    private final AttributeHelper attributeHelper;
     private final List<HealthProcessorPlugin> plugins;
     private final List<HealthReporter> reporters;
+    private final StateCache stateCache;
 
     private RateLimiter rateLimiter;
 
@@ -48,10 +46,14 @@ public class ProcessorService {
     }
 
     private void onStart() {
+        transactionHelper.inNewTransaction(this::onStartInTransaction, false);
+    }
+
+    private void onStartInTransaction() {
         log.info("Health-Processor: STARTING... Registered plugins: {}",
                 plugins.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList()));
 
-        attributeHelper.setAttribute(ProcessorState.ACTIVE, AttributeHelper.KEY_STATE);
+        stateCache.setState(ProcessorState.ACTIVE);
 
         indexingStrategy.onStart();
         forEachEnabledReporter(HealthReporter::onStart);
@@ -59,16 +61,19 @@ public class ProcessorService {
     }
 
     private void onError(Exception e) {
-        attributeHelper.setAttribute(ProcessorState.FAILED, AttributeHelper.KEY_STATE);
+        stateCache.setState(ProcessorState.FAILED);
     }
 
     private void onStop() {
+        transactionHelper.inTransaction(this::onStopInTransaction, false);
+    }
+
+    private void onStopInTransaction() {
         indexingStrategy.onStop();
         forEachEnabledReporter(HealthReporter::onStop);
-        attributeHelper.clearAttributes();
+        stateCache.setState(ProcessorState.IDLE);
 
         log.info("Health-Processor: DONE");
-
     }
 
     private void executeInternal() {
@@ -145,6 +150,6 @@ public class ProcessorService {
     }
 
     public ProcessorState getState() {
-        return attributeHelper.getAttributeOrDefault(AttributeHelper.KEY_STATE, ProcessorState.IDLE);
+        return stateCache.getStateOrDefault();
     }
 }

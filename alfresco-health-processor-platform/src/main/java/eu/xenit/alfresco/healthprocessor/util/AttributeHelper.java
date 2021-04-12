@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 public interface AttributeHelper {
 
-    String KEY_STATE = "state";
-
     default <T> T getAttribute(Serializable key1) {
         return getAttribute(key1, null);
     }

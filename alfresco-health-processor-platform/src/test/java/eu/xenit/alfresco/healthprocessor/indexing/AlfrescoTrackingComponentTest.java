@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
+import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
 import java.util.Collections;
 import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
 import org.alfresco.repo.domain.node.Node;
@@ -60,8 +61,8 @@ class AlfrescoTrackingComponentTest {
 
         assertThat(trackingComponent.getNodesForTxnIds(Collections.singletonList(1L)),
                 containsInAnyOrder(
-                        new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "abc-123"),
-                        new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "xyz-987")));
+                        new NodeInfo(1L, 101L, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "abc-123")),
+                        new NodeInfo(1L, 102L, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "xyz-987"))));
     }
 
     private Node nodeEntity(long txnId, long nodeId, String uuid) {

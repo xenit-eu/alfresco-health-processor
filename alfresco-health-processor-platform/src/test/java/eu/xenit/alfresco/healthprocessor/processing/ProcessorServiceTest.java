@@ -12,8 +12,6 @@ import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.util.AssertTransactionHelper;
-import eu.xenit.alfresco.healthprocessor.util.AttributeHelper;
-import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeHelper;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import java.util.ArrayList;
@@ -22,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.alfresco.repo.cache.MemoryCache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -144,8 +143,8 @@ class ProcessorServiceTest {
         }
 
         ProcessorService build() {
-            return new ProcessorService(config, indexingStrategy, transactionHelper, new InMemoryAttributeHelper(),
-                    plugins, reporters);
+            return new ProcessorService(config, indexingStrategy, transactionHelper, plugins, reporters,
+                    new StateCache(new MemoryCache<>()));
         }
     }
 
