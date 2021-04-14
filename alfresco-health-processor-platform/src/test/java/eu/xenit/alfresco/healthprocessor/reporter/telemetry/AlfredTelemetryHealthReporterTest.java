@@ -39,7 +39,7 @@ class AlfredTelemetryHealthReporterTest {
         assertActiveGaugeEquals(0d);
         reporter.onStart();
         assertActiveGaugeEquals(1d);
-        reporter.onStop();
+        reporter.onCycleDone(null);
         assertActiveGaugeEquals(0d);
     }
 

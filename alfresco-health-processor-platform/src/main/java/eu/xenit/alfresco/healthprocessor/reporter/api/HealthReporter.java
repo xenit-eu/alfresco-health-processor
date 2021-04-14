@@ -1,6 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.reporter.api;
 
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
+import java.util.List;
 import java.util.Set;
 
 public interface HealthReporter {
@@ -11,14 +12,17 @@ public interface HealthReporter {
 
     }
 
-    void processReports(Set<NodeHealthReport> reports, Class<? extends HealthProcessorPlugin> pluginClass);
-
-    default void onStop() {
+    default void processReports(Class<? extends HealthProcessorPlugin> pluginClass, Set<NodeHealthReport> reports) {
 
     }
 
-    static HealthReporter disabled() {
-        return new DisabledHealthReporter();
+    default void onCycleDone(List<ProcessorPluginOverview> overviews) {
+
     }
 
+    default void onException(Exception e) {
+
+    }
+
+    HealthReporter disabled = new DisabledHealthReporter();
 }

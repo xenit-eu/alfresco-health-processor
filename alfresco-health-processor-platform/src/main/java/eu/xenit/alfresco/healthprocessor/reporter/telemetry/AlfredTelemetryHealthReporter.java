@@ -3,6 +3,7 @@ package eu.xenit.alfresco.healthprocessor.reporter.telemetry;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
+import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
 import eu.xenit.alfresco.healthprocessor.reporter.api.SingleReportHealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Description;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Key;
@@ -13,6 +14,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,7 +51,12 @@ public class AlfredTelemetryHealthReporter extends SingleReportHealthReporter {
     }
 
     @Override
-    public void onStop() {
+    public void onCycleDone(List<ProcessorPluginOverview> overviews) {
+        isActive.set(false);
+    }
+
+    @Override
+    public void onException(Exception e) {
         isActive.set(false);
     }
 

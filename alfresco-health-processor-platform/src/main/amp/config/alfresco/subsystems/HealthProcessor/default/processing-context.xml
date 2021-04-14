@@ -35,10 +35,5 @@
 
     <bean id="eu.xenit.alfresco.healthprocessor.processing.ProcessorService"
             class="eu.xenit.alfresco.healthprocessor.processing.ProcessorService" autowire="constructor">
-        <constructor-arg name="configuration" ref="eu.xenit.alfresco.healthprocessor.processing.configuration"/>
-        <constructor-arg name="indexingStrategy" ref="eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy"/>
-        <constructor-arg name="transactionHelper"
-                ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoTransactionHelper"/>
-        <constructor-arg name="attributeHelper" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeHelper"/>
     </bean>
 </beans>

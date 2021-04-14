@@ -42,6 +42,6 @@ public class AlfredTelemetryHealthReporterFactoryBean extends AbstractFactoryBea
             log.warn("{} enabled but Micrometer not found on the classpath. Is Alfred Telemetry installed?",
                     AlfredTelemetryHealthReporter.class.getSimpleName());
         }
-        return HealthReporter.disabled();
+        return HealthReporter.disabled;
     }
 }

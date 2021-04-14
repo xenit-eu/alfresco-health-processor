@@ -5,12 +5,13 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import eu.xenit.alfresco.healthprocessor.indexing.AssertIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
+import eu.xenit.alfresco.healthprocessor.reporter.ReportsService;
 import eu.xenit.alfresco.healthprocessor.util.AssertTransactionHelper;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
@@ -36,9 +37,11 @@ class ProcessorServiceTest {
         AssertTransactionHelper transactionHelper = new AssertTransactionHelper();
         processorPlugin = new AssertHealthProcessorPlugin();
         indexingStrategy = new AssertIndexingStrategy();
+        ReportsService reportsService = mock(ReportsService.class);
         builder = ProcessorServiceBuilder.create()
                 .config(ProcConfigUtil.defaultConfig())
                 .indexingStrategy(indexingStrategy)
+                .reportsService(reportsService)
                 .transactionHelper(transactionHelper)
                 .plugin(processorPlugin);
     }
@@ -124,7 +127,7 @@ class ProcessorServiceTest {
         private IndexingStrategy indexingStrategy;
         private TransactionHelper transactionHelper;
         private List<HealthProcessorPlugin> plugins;
-        private List<HealthReporter> reporters;
+        private ReportsService reportsService;
 
         ProcessorServiceBuilder plugin(HealthProcessorPlugin plugin) {
             if (plugins == null) {
@@ -134,16 +137,8 @@ class ProcessorServiceTest {
             return this;
         }
 
-        ProcessorServiceBuilder reporter(HealthReporter reporter) {
-            if (reporters == null) {
-                reporters = new ArrayList<>();
-            }
-            reporters.add(reporter);
-            return this;
-        }
-
         ProcessorService build() {
-            return new ProcessorService(config, indexingStrategy, transactionHelper, plugins, reporters,
+            return new ProcessorService(config, indexingStrategy, transactionHelper, plugins, reportsService,
                     new StateCache(new MemoryCache<>()));
         }
     }

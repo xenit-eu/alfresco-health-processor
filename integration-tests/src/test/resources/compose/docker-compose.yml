@@ -6,7 +6,7 @@ services:
       - alf_data:/opt/alfresco/alf_data
     ports:
       - ${COMPOSE_INFLOW_TCP_8080:-8080}
-#      - 8000:8000
+    #      - 8000:8000
     environment:
       - JAVA_XMX=1G
       - DEBUG=true
@@ -32,3 +32,4 @@ services:
 
 volumes:
   alf_data:
+
