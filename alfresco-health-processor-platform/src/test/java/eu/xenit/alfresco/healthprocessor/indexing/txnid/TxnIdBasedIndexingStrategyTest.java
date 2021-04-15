@@ -20,7 +20,7 @@ import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class TxnIdBasedIndexingStrategyTest {
+class TxnIdBasedIndexingStrategyTest {
 
     private FakeTrackingComponent trackingComponent;
     private AttributeStore attributeStore;

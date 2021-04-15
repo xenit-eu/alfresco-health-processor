@@ -15,9 +15,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.alfresco.util.Pair;
 
-/*
- * health-processor.reports.${random-uuid}=${Pair<PluginClass, NodeHealthReport>}
- * health-processor.report-stats.${PluginClass}=${EnumMap<Status, Count>}
+/**
+ * {@link HealthReportsStore} implementation that persists stats and failing reports via the {@link
+ * org.alfresco.service.cmr.attributes.AttributeService}.
+ * </p>
+ * Reports and stats are stored using the following key value combination:
+ * <ul>
+ *     <li>health-processor.reports.${random-uuid}=${Pair<PluginClass, NodeHealthReport>}</li>
+ *     <li>health-processor.report-stats.${PluginClass}=${HashMap<NodeHealthStatus, Count>}</li>
+ * </ul>
  */
 @RequiredArgsConstructor
 public class AttributeHealthReportsStore implements HealthReportsStore {
@@ -80,13 +86,5 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
     public void clear() {
         attributeStore.removeAttributes(ATTR_KEY_REPORTS);
         attributeStore.removeAttributes(ATTR_KEY_REPORT_STATS);
-    }
-
-    @Value
-    private static class NodeHealthReportPerPlugin {
-
-        Class<? extends NodeHealthReport> pluginClass;
-        NodeHealthReport report;
-
     }
 }

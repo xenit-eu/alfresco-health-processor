@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -28,6 +27,6 @@ public class NodeHealthReport implements Serializable {
 
     NodeHealthStatus status;
     NodeRef nodeRef;
-    Set<String> messages;
+    HashSet<String> messages;
 
 }

@@ -6,7 +6,6 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.SOLRTrackingComponent;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 @AllArgsConstructor
 public class AlfrescoTrackingComponent implements TrackingComponent {
