@@ -2,7 +2,7 @@ package eu.xenit.alfresco.healthprocessor.indexing;
 
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration.IndexingStrategyKey;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrategy;
-import eu.xenit.alfresco.healthprocessor.util.AttributeHelper;
+import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 
@@ -11,7 +11,7 @@ public final class IndexingStrategyFactoryBean extends AbstractFactoryBean<Index
 
     private final IndexingConfiguration configuration;
     private final TrackingComponent trackingComponent;
-    private final AttributeHelper attributeHelper;
+    private final AttributeStore attributeStore;
 
     @Override
     public Class<?> getObjectType() {
@@ -24,6 +24,6 @@ public final class IndexingStrategyFactoryBean extends AbstractFactoryBean<Index
     }
 
     private IndexingStrategy createIndexingStrategy(IndexingStrategyKey ignoreForNow) {
-        return new TxnIdBasedIndexingStrategy(configuration, trackingComponent, attributeHelper);
+        return new TxnIdBasedIndexingStrategy(configuration, trackingComponent, attributeStore);
     }
 }

@@ -6,10 +6,13 @@
 
     <bean id="eu.xenit.alfresco.healthprocessor.reporter.ReportsService"
             class="eu.xenit.alfresco.healthprocessor.reporter.ReportsService" autowire="constructor">
+        <constructor-arg name="reportsStore"
+                ref="eu.xenit.alfresco.healthprocessor.reporter.AttributeHealthReportsStore"/>
     </bean>
 
-    <bean id="eu.xenit.alfresco.healthprocessor.reporter.InMemoryHealthReportsStore"
-            class="eu.xenit.alfresco.healthprocessor.reporter.InMemoryHealthReportsStore">
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.AttributeHealthReportsStore"
+            class="eu.xenit.alfresco.healthprocessor.reporter.AttributeHealthReportsStore">
+        <constructor-arg name="attributeStore" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore"/>
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter"

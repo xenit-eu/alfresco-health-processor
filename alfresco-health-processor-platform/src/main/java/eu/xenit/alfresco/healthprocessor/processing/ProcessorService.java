@@ -70,11 +70,16 @@ public class ProcessorService {
     }
 
     private void executeInternal() {
-        Set<NodeRef> nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
+        Set<NodeRef> nodesToProcess = getNextNodesInTransaction();
         while (!nodesToProcess.isEmpty()) {
             this.processNodeBatch(nodesToProcess);
-            nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
+            nodesToProcess = getNextNodesInTransaction();
         }
+    }
+
+    private Set<NodeRef> getNextNodesInTransaction() {
+        return transactionHelper.inNewTransaction(
+                () -> indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize()), true);
     }
 
     private void processNodeBatch(Set<NodeRef> nodesToProcess) {

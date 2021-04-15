@@ -28,8 +28,8 @@
         <constructor-arg name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
     </bean>
 
-    <bean id="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeHelper"
-            class="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeHelper">
+    <bean id="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore"
+            class="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore">
         <constructor-arg name="attributeService" ref="attributeService"/>
     </bean>
 

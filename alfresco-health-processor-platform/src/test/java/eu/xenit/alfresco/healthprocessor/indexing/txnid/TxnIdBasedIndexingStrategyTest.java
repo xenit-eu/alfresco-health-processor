@@ -13,8 +13,8 @@ import eu.xenit.alfresco.healthprocessor.indexing.FakeTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfigUtil;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration.IndexingStrategyKey;
-import eu.xenit.alfresco.healthprocessor.util.AttributeHelper;
-import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeHelper;
+import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
+import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeStore;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,12 +23,12 @@ import org.junit.jupiter.api.Test;
 public class TxnIdBasedIndexingStrategyTest {
 
     private FakeTrackingComponent trackingComponent;
-    private AttributeHelper attributeHelper;
+    private AttributeStore attributeStore;
 
     @BeforeEach
     void setup() {
         trackingComponent = new FakeTrackingComponent();
-        attributeHelper = new InMemoryAttributeHelper();
+        attributeStore = new InMemoryAttributeStore();
     }
 
     @Test
@@ -78,7 +78,7 @@ public class TxnIdBasedIndexingStrategyTest {
     void getNextNodeIds_persistentState_pickupFromPreviousCycle() {
         bulkInitTrackingComponent(10, 1);
         TxnIdBasedIndexingStrategy strategy = strategy();
-        attributeHelper.setAttribute(5L, ATTR_KEY_LAST_PROCESSED_TXN_ID);
+        attributeStore.setAttribute(5L, ATTR_KEY_LAST_PROCESSED_TXN_ID);
         strategy.onStart();
 
         assertThat(strategy.getNextNodeIds(4), containsInAnyOrder(Arrays.copyOfRange(TestNodeRefs.REFS, 4, 8)));
@@ -124,7 +124,7 @@ public class TxnIdBasedIndexingStrategyTest {
         // last processed batch.
 
         TxnIdBasedIndexingStrategy secondStrategy = new TxnIdBasedIndexingStrategy(IndexingConfigUtil.defaultConfig(),
-                trackingComponent, attributeHelper);
+                trackingComponent, attributeStore);
         secondStrategy.onStart();
 
         assertThat(secondStrategy.getNextNodeIds(4), containsInAnyOrder(Arrays.copyOfRange(TestNodeRefs.REFS, 4, 8)));
@@ -135,7 +135,7 @@ public class TxnIdBasedIndexingStrategyTest {
     }
 
     private void assertLastProcessedAttributeValueEquals(Long expected) {
-        Long actual = attributeHelper.getAttribute(ATTR_KEY_LAST_PROCESSED_TXN_ID);
+        Long actual = attributeStore.getAttribute(ATTR_KEY_LAST_PROCESSED_TXN_ID);
         assertThat(actual, is(equalTo(expected)));
     }
 
@@ -180,7 +180,7 @@ public class TxnIdBasedIndexingStrategyTest {
     }
 
     private TxnIdBasedIndexingStrategy strategy(IndexingConfiguration configuration) {
-        return new TxnIdBasedIndexingStrategy(configuration, trackingComponent, attributeHelper);
+        return new TxnIdBasedIndexingStrategy(configuration, trackingComponent, attributeStore);
     }
 
     private void bulkInitTrackingComponent(int numberOfTransactions, int numberOfNodesPerTransaction) {

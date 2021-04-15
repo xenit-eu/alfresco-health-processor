@@ -4,7 +4,7 @@ import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
-import eu.xenit.alfresco.healthprocessor.util.AttributeHelper;
+import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,7 +32,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     private final IndexingConfiguration configuration;
     private final TrackingComponent trackingComponent;
-    private final AttributeHelper attributeHelper;
+    private final AttributeStore attributeStore;
 
     @Override
     public Map<String, String> getState() {
@@ -56,7 +56,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     @Override
     public void onStop() {
-        attributeHelper.removeAttributes(ATTR_KEY_LAST_PROCESSED_TXN_ID);
+        attributeStore.removeAttributes(ATTR_KEY_LAST_PROCESSED_TXN_ID);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
                 break;
             }
             if (i == 0) {
-                attributeHelper.setAttribute(nodeInfo.getTxnId(), ATTR_KEY_LAST_PROCESSED_TXN_ID);
+                attributeStore.setAttribute(nodeInfo.getTxnId(), ATTR_KEY_LAST_PROCESSED_TXN_ID);
             }
             ret.add(nodeInfo.getNodeRef());
         }
@@ -81,7 +81,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
     }
 
     private void initializeStartTxnId() {
-        Long lastProcessedTxnId = attributeHelper.getAttributeOrDefault(ATTR_KEY_LAST_PROCESSED_TXN_ID, 1L);
+        Long lastProcessedTxnId = attributeStore.getAttributeOrDefault(ATTR_KEY_LAST_PROCESSED_TXN_ID, 1L);
         nextStartTxnIdToFetch = Math.max(configuration.getStartTxnId(), lastProcessedTxnId);
     }
 

@@ -6,7 +6,6 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,7 @@ public class ReportsService {
 
     public void processReports(Class<? extends HealthProcessorPlugin> pluginClass, Set<NodeHealthReport> reports) {
         forEachEnabledReporter(reporter -> reporter.processReports(pluginClass, reports));
-        reportsStore.storeReports(pluginClass, reports);
+        reportsStore.processReports(pluginClass, reports);
     }
 
     public void onException(Exception e) {
@@ -34,9 +33,10 @@ public class ReportsService {
     }
 
     public void onCycleDone() {
-        Map<Class<? extends HealthProcessorPlugin>, List<NodeHealthReport>> allReports = reportsStore.retrieveReports();
-        Map<Class<? extends HealthProcessorPlugin>, EnumMap<NodeHealthStatus, Long>> allStats =
-                reportsStore.retrieveReportStats();
+        Map<Class<? extends HealthProcessorPlugin>, List<NodeHealthReport>> allReports =
+                reportsStore.retrieveStoredReports();
+        Map<Class<? extends HealthProcessorPlugin>, Map<NodeHealthStatus, Long>> allStats =
+                reportsStore.retrieveRecordedStats();
 
         Set<Class<? extends HealthProcessorPlugin>> pluginClasses = new HashSet<>();
         pluginClasses.addAll(allReports.keySet());
@@ -45,7 +45,7 @@ public class ReportsService {
         List<ProcessorPluginOverview> overviews = new ArrayList<>();
         pluginClasses.forEach(clazz -> {
             List<NodeHealthReport> reports = allReports.get(clazz);
-            EnumMap<NodeHealthStatus, Long> stats = allStats.get(clazz);
+            Map<NodeHealthStatus, Long> stats = allStats.get(clazz);
             overviews.add(new ProcessorPluginOverview(clazz, stats, reports));
         });
         forEachEnabledReporter(reporter -> reporter.onCycleDone(overviews));

@@ -3,18 +3,30 @@ package eu.xenit.alfresco.healthprocessor.reporter;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public interface HealthReportsStore {
 
-    void storeReports(Class<? extends HealthProcessorPlugin> pluginClass, Set<NodeHealthReport> reports);
+    default void processReports(Class<? extends HealthProcessorPlugin> pluginClass, Set<NodeHealthReport> reports) {
+        recordReportStats(pluginClass, reports);
+        reports.forEach(report -> this.storeReport(pluginClass, report));
+    }
 
-    Map<Class<? extends HealthProcessorPlugin>, List<NodeHealthReport>> retrieveReports();
+    default void storeReport(Class<? extends HealthProcessorPlugin> pluginClass, NodeHealthReport report) {
+        if (NodeHealthStatus.UNHEALTHY.equals(report.getStatus())) {
+            this.storeUnhealthyReport(pluginClass, report);
+        }
+    }
 
-    Map<Class<? extends HealthProcessorPlugin>, EnumMap<NodeHealthStatus, Long>> retrieveReportStats();
+    void storeUnhealthyReport(Class<? extends HealthProcessorPlugin> pluginClass, NodeHealthReport report);
+
+    void recordReportStats(Class<? extends HealthProcessorPlugin> pluginClass, Set<NodeHealthReport> reports);
+
+    Map<Class<? extends HealthProcessorPlugin>, List<NodeHealthReport>> retrieveStoredReports();
+
+    Map<Class<? extends HealthProcessorPlugin>, Map<NodeHealthStatus, Long>> retrieveRecordedStats();
 
     void clear();
 

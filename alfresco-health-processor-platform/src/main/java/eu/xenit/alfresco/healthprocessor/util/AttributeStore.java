@@ -1,8 +1,10 @@
 package eu.xenit.alfresco.healthprocessor.util;
 
 import java.io.Serializable;
+import java.util.Map;
+import org.alfresco.util.Pair;
 
-public interface AttributeHelper {
+public interface AttributeStore {
 
     default <T> T getAttribute(Serializable key1) {
         return getAttribute(key1, null);
@@ -18,6 +20,10 @@ public interface AttributeHelper {
     default void setAttribute(Serializable value, Serializable key1) {
         setAttribute(value, key1, null);
     }
+
+    Map<Pair<Serializable, Serializable>, Serializable> getAllAttributes();
+
+    Map<Serializable, Serializable> getAttributes(Serializable key);
 
     void setAttribute(Serializable value, Serializable key1, Serializable key2);
 

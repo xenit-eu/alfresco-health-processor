@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.reporter.api;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,7 +12,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 @Value
 @AllArgsConstructor
-public class NodeHealthReport {
+public class NodeHealthReport implements Serializable {
 
     public NodeHealthReport(NodeHealthStatus status, NodeRef nodeRef) {
         this(status, nodeRef, Collections.emptySet());
