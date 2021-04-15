@@ -40,7 +40,10 @@ public class InMemoryAttributeStore implements AttributeStore {
 
     @Override
     public void removeAttributes(Serializable key1, Serializable key2) {
-        attributes.remove(new Pair<>(key1, key2));
+        attributes.keySet().removeIf(
+                key -> key1 == null && key2 == null
+                        || key1 != null && key1.equals(key.getFirst()) && key2 == null
+                        || key1 != null && key2 != null && key1.equals(key.getFirst()) && key2.equals(key.getSecond()));
     }
 
     @Override

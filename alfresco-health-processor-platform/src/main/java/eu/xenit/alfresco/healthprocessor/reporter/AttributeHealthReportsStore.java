@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.alfresco.util.Pair;
 
 /**
@@ -21,8 +20,8 @@ import org.alfresco.util.Pair;
  * </p>
  * Reports and stats are stored using the following key value combination:
  * <ul>
- *     <li>health-processor.reports.${random-uuid}=${Pair<PluginClass, NodeHealthReport>}</li>
- *     <li>health-processor.report-stats.${PluginClass}=${HashMap<NodeHealthStatus, Count>}</li>
+ *     <li>health-processor.reports.${random-uuid}=${Pair(PluginClass, NodeHealthReport)}</li>
+ *     <li>health-processor.report-stats.${PluginClass}=${HashMap(NodeHealthStatus, Count)}</li>
  * </ul>
  */
 @RequiredArgsConstructor

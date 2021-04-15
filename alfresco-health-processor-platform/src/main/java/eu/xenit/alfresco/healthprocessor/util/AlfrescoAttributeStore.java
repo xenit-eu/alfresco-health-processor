@@ -10,7 +10,7 @@ import org.alfresco.util.Pair;
 @RequiredArgsConstructor
 public class AlfrescoAttributeStore implements AttributeStore {
 
-    public static final String ATTR_KEY_HEALTH_PROCESSOR = "health-processor";
+    static final String ATTR_KEY_HEALTH_PROCESSOR = "health-processor";
 
     private final AttributeService attributeService;
 
