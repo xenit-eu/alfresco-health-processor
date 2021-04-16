@@ -6,22 +6,17 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
 import java.util.Collections;
-import org.alfresco.repo.domain.node.AuditablePropertiesEntity;
 import org.alfresco.repo.domain.node.Node;
-import org.alfresco.repo.domain.node.NodeVersionKey;
-import org.alfresco.repo.domain.node.StoreEntity;
 import org.alfresco.repo.domain.node.TransactionEntity;
-import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.alfresco.repo.solr.SOLRTrackingComponent.NodeQueryCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.util.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,90 +60,15 @@ class AlfrescoTrackingComponentTest {
                         new NodeInfo(1L, 102L, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "xyz-987"))));
     }
 
+
     private Node nodeEntity(long txnId, long nodeId, String uuid) {
-        return new Node() {
-            @Override
-            public NodeVersionKey getNodeVersionKey() {
-                return null;
-            }
-
-            @Override
-            public void lock() {
-
-            }
-
-            @Override
-            public NodeRef getNodeRef() {
-                return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, uuid);
-            }
-
-            @Override
-            public Status getNodeStatus(QNameDAO qnameDAO) {
-                return null;
-            }
-
-            @Override
-            public Pair<Long, NodeRef> getNodePair() {
-                return null;
-            }
-
-            @Override
-            public boolean getDeleted(QNameDAO qnameDAO) {
-                return false;
-            }
-
-            @Override
-            public Long getVersion() {
-                return null;
-            }
-
-            @Override
-            public StoreEntity getStore() {
-                return null;
-            }
-
-            @Override
-            public String getUuid() {
-                return null;
-            }
-
-            @Override
-            public Long getTypeQNameId() {
-                return null;
-            }
-
-            @Override
-            public Long getLocaleId() {
-                return null;
-            }
-
-            @Override
-            public TransactionEntity getTransaction() {
-                TransactionEntity ret = new TransactionEntity();
-                ret.setId(txnId);
-                return ret;
-            }
-
-            @Override
-            public AuditablePropertiesEntity getAuditableProperties() {
-                return null;
-            }
-
-            @Override
-            public String getShardKey() {
-                return null;
-            }
-
-            @Override
-            public Long getId() {
-                return nodeId;
-            }
-
-            @Override
-            public Long getAclId() {
-                return null;
-            }
-        };
+        Node ret = mock(Node.class);
+        TransactionEntity transactionEntity = mock(TransactionEntity.class);
+        when(transactionEntity.getId()).thenReturn(txnId);
+        when(ret.getTransaction()).thenReturn(transactionEntity);
+        when(ret.getId()).thenReturn(nodeId);
+        when(ret.getNodeRef()).thenReturn(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, uuid));
+        return ret;
     }
 
 
