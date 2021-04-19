@@ -17,9 +17,8 @@ import org.alfresco.util.Pair;
 
 /**
  * {@link HealthReportsStore} implementation that persists stats and failing reports via the {@link
- * org.alfresco.service.cmr.attributes.AttributeService}.
- * </p>
- * Reports and stats are stored using the following key value combination:
+ * org.alfresco.service.cmr.attributes.AttributeService}. Reports and stats are stored using the following key value
+ * combination:
  * <ul>
  *     <li>health-processor.reports.${random-uuid}=${Pair(PluginClass, NodeHealthReport)}</li>
  *     <li>health-processor.report-stats.${PluginClass}=${HashMap(NodeHealthStatus, Count)}</li>
