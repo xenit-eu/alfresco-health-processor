@@ -7,7 +7,9 @@ import static org.hamcrest.Matchers.is;
 import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
-import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
+import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
+import java.util.Collections;
+import java.util.EnumMap;
 import org.junit.jupiter.api.Test;
 
 class SummaryLoggingHealthReporterTest {
@@ -20,9 +22,19 @@ class SummaryLoggingHealthReporterTest {
         SummaryLoggingHealthReporter reporter = new SummaryLoggingHealthReporter();
 
         assertThat("ToggleableReporter is disabled by default", reporter.isEnabled(), is(false));
+
+        EnumMap<NodeHealthStatus, Long> counts = new EnumMap<>(NodeHealthStatus.class);
+        counts.put(NodeHealthStatus.HEALTHY, 1L);
+        counts.put(NodeHealthStatus.UNHEALTHY, 1L);
+
+        ProcessorPluginOverview overview = new ProcessorPluginOverview(
+                AssertHealthProcessorPlugin.class,
+                counts,
+                Collections.singletonList(REPORT_2));
+
         reporter.onStart();
-        reporter.processReports(set(REPORT_1, REPORT_2), AssertHealthProcessorPlugin.class);
-        reporter.onStop();
+        reporter.processReports(AssertHealthProcessorPlugin.class, set(REPORT_1, REPORT_2));
+        reporter.onCycleDone(Collections.singletonList(overview));
     }
 
 }

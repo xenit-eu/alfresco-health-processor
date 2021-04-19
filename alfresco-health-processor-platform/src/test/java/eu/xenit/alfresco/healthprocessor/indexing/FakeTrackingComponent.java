@@ -6,20 +6,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public class FakeTrackingComponent implements TrackingComponent {
 
-    private final Map<Long, Set<NodeRef>> transactions = new TreeMap<>();
+    private final Map<Long, Set<NodeInfo>> transactions = new TreeMap<>();
     private int getNodeForTxnIdsInvocations = 0;
+    private int nodeIdCounter = 1;
 
-    void addTransaction(Long txnId, NodeRef... nodes) {
+    public void addTransaction(Long txnId, NodeRef... nodes) {
         this.addTransaction(txnId, Arrays.asList(nodes));
     }
 
-    void addTransaction(Long txnId, List<NodeRef> nodes) {
+    public void addTransaction(Long txnId, List<NodeRef> nodes) {
         transactions.putIfAbsent(txnId, new HashSet<>());
-        transactions.get(txnId).addAll(nodes);
+        transactions.get(txnId).addAll(
+                nodes.stream().map(n -> new NodeInfo(txnId, nodeIdCounter++, n)).collect(Collectors.toList())
+        );
     }
 
     @Override
@@ -28,10 +32,10 @@ public class FakeTrackingComponent implements TrackingComponent {
     }
 
     @Override
-    public Set<NodeRef> getNodesForTxnIds(List<Long> txnIds) {
+    public Set<NodeInfo> getNodesForTxnIds(List<Long> txnIds) {
         getNodeForTxnIdsInvocations++;
 
-        Set<NodeRef> ret = new HashSet<>();
+        Set<NodeInfo> ret = new HashSet<>();
         transactions.forEach((key, value) -> {
             if (txnIds.contains(key)) {
                 ret.addAll(value);

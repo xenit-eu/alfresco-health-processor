@@ -1,24 +1,17 @@
 package eu.xenit.alfresco.healthprocessor.reporter;
 
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
-import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
-import eu.xenit.alfresco.healthprocessor.reporter.api.SingleReportHealthReporter;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashMap;
+import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
+import eu.xenit.alfresco.healthprocessor.reporter.api.ToggleableHealthReporter;
 import java.util.List;
-import java.util.Map;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 @Slf4j
 @EqualsAndHashCode(callSuper = true)
-public class SummaryLoggingHealthReporter extends SingleReportHealthReporter {
-
-    Map<Class<? extends HealthProcessorPlugin>, EnumMap<NodeHealthStatus, Long>> data = new HashMap<>();
-    Map<Class<? extends HealthProcessorPlugin>, List<NodeHealthReport>> failures = new HashMap<>();
+public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
 
     long startMs;
 
@@ -28,54 +21,53 @@ public class SummaryLoggingHealthReporter extends SingleReportHealthReporter {
     }
 
     @Override
-    public void onStop() {
-        if (log.isInfoEnabled()) {
-            long elapsedMs = System.currentTimeMillis() - startMs;
-            log.info("Health-Processor done in {}", DurationFormatUtils.formatDurationHMS(elapsedMs));
-        }
-        logSummary();
-        logUnhealthyNodes();
-        reset();
+    public void onCycleDone(List<ProcessorPluginOverview> overviews) {
+        ParameterCheck.mandatory("overviews", overviews);
+        
+        log.info("Health-Processor done in {}", printDuration());
+        logSummary(overviews);
+        logUnhealthyNodes(overviews);
     }
 
     @Override
-    protected void processReport(NodeHealthReport report, Class<? extends HealthProcessorPlugin> pluginClass) {
-        data.putIfAbsent(pluginClass, new EnumMap<>(NodeHealthStatus.class));
-        data.get(pluginClass).merge(report.getStatus(), 1L, Long::sum);
-
-        if (NodeHealthStatus.UNHEALTHY.equals(report.getStatus())) {
-            failures.putIfAbsent(pluginClass, new ArrayList<>());
-            failures.get(pluginClass).add(report);
-        }
+    public void onException(Exception e) {
+        log.warn("Health-Processor failed. Duration: {}, exception: {}", printDuration(), e.getMessage());
     }
 
-    private void logSummary() {
+    private String printDuration() {
+        return DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - startMs);
+    }
+
+    private void logSummary(List<ProcessorPluginOverview> overviews) {
         if (!log.isInfoEnabled()) {
             return;
         }
+
         log.info("SUMMARY ---");
-        data.forEach((key, value) -> log.info("Plugin[{}] generated reports: {}", key.getSimpleName(), value));
+        overviews.forEach(overview ->
+                log.info("Plugin[{}] generated reports: {}",
+                        overview.getPluginClass().getSimpleName(),
+                        overview.getCountsByStatus()));
         log.info(" --- ");
     }
 
-    private void logUnhealthyNodes() {
-        if (failures.isEmpty() || !log.isWarnEnabled()) {
+    private void logUnhealthyNodes(List<ProcessorPluginOverview> overviews) {
+        if (!log.isWarnEnabled()) {
             return;
         }
 
         log.warn("UNHEALTHY NODES ---");
 
-        failures.forEach((clazz, reports) -> {
-            log.warn("Plugin[{}] (#{}): ", clazz.getSimpleName(), reports.size());
+        for (ProcessorPluginOverview overview : overviews) {
+            List<NodeHealthReport> reports = overview.getReports();
+            if (reports == null || reports.isEmpty()) {
+                continue;
+            }
+            log.warn("Plugin[{}] (#{}): ", overview.getPluginClass().getSimpleName(), reports.size());
             reports.forEach(r -> log.warn("\t{}: {}", r.getNodeRef(), r.getMessages()));
-        });
+        }
 
         log.warn(" --- ");
 
-    }
-
-    private void reset() {
-        data.clear();
-        failures.clear();
     }
 }

@@ -3,15 +3,13 @@ package eu.xenit.alfresco.healthprocessor.processing;
 import com.google.common.util.concurrent.RateLimiter;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
+import eu.xenit.alfresco.healthprocessor.reporter.ReportsService;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -25,10 +23,10 @@ public class ProcessorService {
     private final IndexingStrategy indexingStrategy;
     private final TransactionHelper transactionHelper;
     private final List<HealthProcessorPlugin> plugins;
-    private final List<HealthReporter> reporters;
+    private final ReportsService reportsService;
+    private final StateCache stateCache;
 
-    @Getter
-    private ProcessorState state = ProcessorState.IDLE;
+    @SuppressWarnings("UnstableApiUsage")
     private RateLimiter rateLimiter;
 
     public void execute() {
@@ -38,43 +36,50 @@ public class ProcessorService {
         }
 
         try {
-            state = ProcessorState.ACTIVE;
+            transactionHelper.inNewTransaction(this::onStart, false);
             executeInternal();
-            state = ProcessorState.IDLE;
+            transactionHelper.inNewTransaction(this::onStop, false);
         } catch (Exception e) {
-            state = ProcessorState.FAILED;
+            transactionHelper.inNewTransaction(() -> onError(e), false);
             throw e;
         }
-    }
-
-    private void executeInternal() {
-
-        onStart();
-
-        Set<NodeRef> nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
-        while (!nodesToProcess.isEmpty()) {
-            this.processNodeBatch(nodesToProcess);
-            nodesToProcess = indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize());
-        }
-
-        onStop();
-
     }
 
     private void onStart() {
         log.info("Health-Processor: STARTING... Registered plugins: {}",
                 plugins.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList()));
 
+        stateCache.setState(ProcessorState.ACTIVE);
+
         indexingStrategy.onStart();
-        forEachEnabledReporter(HealthReporter::onStart);
+        reportsService.onStart();
         initializeRateLimiter();
+    }
+
+    private void onError(Exception e) {
+        reportsService.onException(e);
+        stateCache.setState(ProcessorState.FAILED);
     }
 
     private void onStop() {
         indexingStrategy.onStop();
-        forEachEnabledReporter(HealthReporter::onStop);
+        reportsService.onCycleDone();
+        stateCache.setState(ProcessorState.IDLE);
 
         log.info("Health-Processor: DONE");
+    }
+
+    private void executeInternal() {
+        Set<NodeRef> nodesToProcess = getNextNodesInTransaction();
+        while (!nodesToProcess.isEmpty()) {
+            this.processNodeBatch(nodesToProcess);
+            nodesToProcess = getNextNodesInTransaction();
+        }
+    }
+
+    private Set<NodeRef> getNextNodesInTransaction() {
+        return transactionHelper.inNewTransaction(
+                () -> indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize()), true);
     }
 
     private void processNodeBatch(Set<NodeRef> nodesToProcess) {
@@ -89,6 +94,7 @@ public class ProcessorService {
     private void processNodeBatchRateLimited(Set<NodeRef> nodesToProcessCopy, HealthProcessorPlugin plugin) {
         if (rateLimiter != null) {
             log.debug("Trying to acquire rateLimiter...");
+            // noinspection UnstableApiUsage
             rateLimiter.acquire();
         }
         transactionHelper.inNewTransaction(
@@ -107,27 +113,7 @@ public class ProcessorService {
                 nodesToProcess.size());
 
         Set<NodeHealthReport> reports = plugin.process(nodesToProcess);
-        processReports(reports, plugin.getClass());
-    }
-
-    private void processReports(Set<NodeHealthReport> reports, Class<? extends HealthProcessorPlugin> pluginClass) {
-        if (reports == null || reports.isEmpty()) {
-            return;
-        }
-
-        forEachEnabledReporter(r -> {
-            Set<NodeHealthReport> copy = new HashSet<>(reports);
-            r.processReports(copy, pluginClass);
-        });
-    }
-
-    private void forEachEnabledReporter(Consumer<HealthReporter> consumer) {
-        if (reporters == null || reporters.isEmpty()) {
-            return;
-        }
-        reporters.stream()
-                .filter(HealthReporter::isEnabled)
-                .forEach(consumer);
+        reportsService.processReports(plugin.getClass(), reports);
     }
 
     private boolean hasNoEnabledPlugins() {
@@ -138,7 +124,12 @@ public class ProcessorService {
     }
 
     private void initializeRateLimiter() {
+        // noinspection UnstableApiUsage
         this.rateLimiter = configuration.getMaxBatchesPerSecond() > 0 ?
                 RateLimiter.create(configuration.getMaxBatchesPerSecond()) : null;
+    }
+
+    public ProcessorState getState() {
+        return stateCache.getStateOrDefault();
     }
 }

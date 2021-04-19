@@ -13,13 +13,14 @@ import static org.mockito.Mockito.when;
 import eu.xenit.alfresco.healthprocessor.indexing.FakeTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
-import eu.xenit.alfresco.healthprocessor.indexing.TxnIdBasedIndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.processing.ProcessorService;
 import eu.xenit.alfresco.healthprocessor.processing.ProcessorState;
 import eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
+import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeStore;
 import eu.xenit.alfresco.healthprocessor.webscripts.console.model.AdminConsoleResponseView;
 import java.util.Collections;
 import org.alfresco.repo.module.ModuleVersionNumber;
@@ -46,7 +47,7 @@ class ResponseViewRendererTest {
         renderer.setIndexingConfiguration(indexingConfiguration);
 
         IndexingStrategy indexingStrategy = new TxnIdBasedIndexingStrategy(indexingConfiguration,
-                new FakeTrackingComponent());
+                new FakeTrackingComponent(), new InMemoryAttributeStore());
         renderer.setIndexingStrategy(indexingStrategy);
 
         HealthProcessorPlugin plugin = new AssertHealthProcessorPlugin();

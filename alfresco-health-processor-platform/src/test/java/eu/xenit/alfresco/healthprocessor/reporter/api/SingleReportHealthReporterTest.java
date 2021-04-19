@@ -33,7 +33,7 @@ class SingleReportHealthReporterTest {
     void divideAndConquer() {
         TestReporter reporter = new TestReporter();
 
-        reporter.processReports(set(REPORT_1, REPORT_2), AssertHealthProcessorPlugin.class);
+        reporter.processReports(AssertHealthProcessorPlugin.class, set(REPORT_1, REPORT_2));
 
         assertThat(reporter.invocations, containsInAnyOrder(REPORT_1, REPORT_2));
     }
@@ -44,7 +44,7 @@ class SingleReportHealthReporterTest {
 
         reporter.statusesToHandle = set(NodeHealthStatus.UNHEALTHY);
 
-        reporter.processReports(set(REPORT_1, REPORT_2), AssertHealthProcessorPlugin.class);
+        reporter.processReports(AssertHealthProcessorPlugin.class, set(REPORT_1, REPORT_2));
 
         assertThat(reporter.invocations, containsInAnyOrder(REPORT_2));
     }
@@ -64,7 +64,8 @@ class SingleReportHealthReporterTest {
         }
 
         @Override
-        public void onStop() {
+        public void onCycleDone(List<ProcessorPluginOverview> overviews) {
+
         }
 
         @Override

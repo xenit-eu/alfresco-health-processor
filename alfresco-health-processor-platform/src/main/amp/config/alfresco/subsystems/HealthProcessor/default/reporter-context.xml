@@ -4,10 +4,22 @@
         xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.ReportsService"
+            class="eu.xenit.alfresco.healthprocessor.reporter.ReportsService" autowire="constructor">
+        <constructor-arg name="reportsStore"
+                ref="eu.xenit.alfresco.healthprocessor.reporter.AttributeHealthReportsStore"/>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.AttributeHealthReportsStore"
+            class="eu.xenit.alfresco.healthprocessor.reporter.AttributeHealthReportsStore">
+        <constructor-arg name="attributeStore" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore"/>
+    </bean>
+
     <bean id="eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter"
             class="eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter">
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled}"/>
     </bean>
+
     <bean id="eu.xenit.alfresco.healthprocessor.reporter.telemetry.AlfredTelemetryHealthReporter"
             class="eu.xenit.alfresco.healthprocessor.reporter.telemetry.AlfredTelemetryHealthReporterFactoryBean">
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.alfred-telemetry.enabled}"/>

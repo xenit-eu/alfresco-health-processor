@@ -36,7 +36,7 @@ public class ProcessorTask {
 
     void startIfNotRunningAsUser() {
         log.debug("Health-Processor initializing as user: {}", AuthenticationUtil.getRunAsUser());
-        transactionHelper.inTransaction(this::startIfNotRunningAsUserInTransaction, configuration.isReadOnly());
+        transactionHelper.inTransaction(this::startIfNotRunningAsUserInTransaction, false);
     }
 
     void startIfNotRunningAsUserInTransaction() {

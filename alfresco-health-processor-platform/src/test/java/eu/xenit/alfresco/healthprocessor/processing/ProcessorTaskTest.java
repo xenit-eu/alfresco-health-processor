@@ -69,7 +69,7 @@ class ProcessorTaskTest {
 
         task.startIfNotRunningAsUser();
 
-        transactionHelper.expectInvocation(true, false);
+        transactionHelper.expectInvocation(false, false);
     }
 
     private ProcessorTask task() {

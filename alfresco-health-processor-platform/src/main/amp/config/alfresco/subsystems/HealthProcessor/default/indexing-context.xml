@@ -22,5 +22,6 @@
             class="eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategyFactoryBean">
         <constructor-arg name="configuration" ref="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration"/>
         <constructor-arg name="trackingComponent" ref="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent"/>
+        <constructor-arg name="attributeStore" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore"/>
     </bean>
 </beans>

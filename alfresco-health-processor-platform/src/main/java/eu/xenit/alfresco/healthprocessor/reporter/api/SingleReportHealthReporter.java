@@ -15,7 +15,7 @@ public abstract class SingleReportHealthReporter extends ToggleableHealthReporte
     }
 
     @Override
-    public void processReports(Set<NodeHealthReport> reports, Class<? extends HealthProcessorPlugin> pluginClass) {
+    public void processReports(Class<? extends HealthProcessorPlugin> pluginClass, Set<NodeHealthReport> reports) {
         Set<NodeHealthStatus> statusesToHandle = statusesToHandle();
 
         for (NodeHealthReport report : reports) {
