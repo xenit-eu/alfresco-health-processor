@@ -12,16 +12,11 @@ public interface TrackingComponent {
     Set<NodeInfo> getNodesForTxnIds(List<Long> txnIds);
 
     @Value
-    class NodeInfo implements Comparable<NodeInfo> {
+    class NodeInfo {
 
         long txnId;
         long nodeId;
         NodeRef nodeRef;
-
-        @Override
-        public int compareTo(NodeInfo other) {
-            return Long.compare(txnId, other.txnId);
-        }
     }
 
 }

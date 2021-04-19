@@ -25,7 +25,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     static final String ATTR_KEY_LAST_PROCESSED_TXN_ID = "last-processed-txn-id";
 
-    private final Queue<NodeInfo> nodeQueue = new PriorityQueue<>();
+    private final Queue<NodeInfo> nodeQueue = new PriorityQueue<>(TxnIdBasedIndexingStrategy::compareNodeInfoByTxnId);
     private long maxTxnIdInclusive;
     private boolean done = false;
     private long nextStartTxnIdToFetch;
@@ -109,6 +109,10 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     private long getNextStopTxnIdExclusive() {
         return Math.min(nextStartTxnIdToFetch + configuration.getTxnBatchSize(), maxTxnIdInclusive + 1);
+    }
+
+    private static int compareNodeInfoByTxnId(NodeInfo first, NodeInfo other) {
+        return Long.compare(first.getTxnId(), other.getTxnId());
     }
 
 }
