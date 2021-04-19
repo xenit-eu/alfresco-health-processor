@@ -6,6 +6,7 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +28,8 @@ import org.alfresco.util.Pair;
 @RequiredArgsConstructor
 public class AttributeHealthReportsStore implements HealthReportsStore {
 
-    private static final String ATTR_KEY_REPORTS = "reports";
-    private static final String ATTR_KEY_REPORT_STATS = "report-stats";
+    public static final String ATTR_KEY_REPORTS = "reports";
+    public static final String ATTR_KEY_REPORT_STATS = "report-stats";
 
     private final AttributeStore attributeStore;
 
@@ -41,15 +42,15 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
 
     @Override
     public void recordReportStats(Class<? extends HealthProcessorPlugin> pluginClass, Set<NodeHealthReport> reports) {
-        HashMap<NodeHealthStatus, Long> oldStats = attributeStore.getAttribute(ATTR_KEY_REPORT_STATS, pluginClass);
+        Map<NodeHealthStatus, Long> oldStats = attributeStore.getAttribute(ATTR_KEY_REPORT_STATS, pluginClass);
         if (oldStats == null) {
-            oldStats = new HashMap<>();
+            oldStats = new EnumMap<>(NodeHealthStatus.class);
         }
         for (NodeHealthReport report : reports) {
             oldStats.compute(report.getStatus(), (key, oldValue) -> oldValue == null ? 1L : oldValue + 1L);
         }
 
-        attributeStore.setAttribute(oldStats, ATTR_KEY_REPORT_STATS, pluginClass);
+        attributeStore.setAttribute((Serializable) oldStats, ATTR_KEY_REPORT_STATS, pluginClass);
     }
 
     @Override
