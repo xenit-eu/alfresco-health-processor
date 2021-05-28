@@ -10,7 +10,7 @@ import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin
 import eu.xenit.alfresco.healthprocessor.reporter.TestReports;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Key;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Tag;
-import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.search.RequiredSearch;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,26 +54,26 @@ class AlfredTelemetryHealthReporterTest {
         reporter.processReport(TestReports.healthy(), AssertHealthProcessorPlugin.class);
         reporter.processReport(TestReports.healthy(), NoOpHealthProcessorPlugin.class);
 
-        assertThat(getReportCountersValue(null, null), is(equalTo(2d)));
-        assertThat(getReportCountersValue("HEALTHY", null), is(equalTo(2d)));
-        assertThat(getReportCountersValue("HEALTHY", "AssertHealthProcessorPlugin"), is(equalTo(1d)));
-        assertThat(getReportCountersValue(null, "NoOpHealthProcessorPlugin"), is(equalTo(1d)));
+        assertThat(getReportGaugesValue(null, null), is(equalTo(2d)));
+        assertThat(getReportGaugesValue("HEALTHY", null), is(equalTo(2d)));
+        assertThat(getReportGaugesValue("HEALTHY", "AssertHealthProcessorPlugin"), is(equalTo(1d)));
+        assertThat(getReportGaugesValue(null, "NoOpHealthProcessorPlugin"), is(equalTo(1d)));
 
         reporter.processReport(TestReports.unhealthy(), AssertHealthProcessorPlugin.class);
         reporter.processReport(TestReports.unhealthy(), AssertHealthProcessorPlugin.class);
 
-        assertThat(getReportCountersValue(null, null), is(equalTo(4d)));
-        assertThat(getReportCountersValue("HEALTHY", null), is(equalTo(2d)));
-        assertThat(getReportCountersValue("UNHEALTHY", null), is(equalTo(2d)));
-        assertThat(getReportCountersValue("UNHEALTHY", "AssertHealthProcessorPlugin"), is(equalTo(2d)));
-        assertThat(getReportCountersValue(null, "NoOpHealthProcessorPlugin"), is(equalTo(1d)));
+        assertThat(getReportGaugesValue(null, null), is(equalTo(4d)));
+        assertThat(getReportGaugesValue("HEALTHY", null), is(equalTo(2d)));
+        assertThat(getReportGaugesValue("UNHEALTHY", null), is(equalTo(2d)));
+        assertThat(getReportGaugesValue("UNHEALTHY", "AssertHealthProcessorPlugin"), is(equalTo(2d)));
+        assertThat(getReportGaugesValue(null, "NoOpHealthProcessorPlugin"), is(equalTo(1d)));
     }
 
     private void assertActiveGaugeEquals(double expected) {
         assertThat(meterRegistry.get(Key.ACTIVE).gauge().value(), is(equalTo(expected)));
     }
 
-    private double getReportCountersValue(String status, String pluginClazz) {
+    private double getReportGaugesValue(String status, String pluginClazz) {
         RequiredSearch search = meterRegistry.get(Key.REPORTS);
         if (StringUtils.hasText(status)) {
             search = search.tag(Tag.STATUS, status);
@@ -82,7 +82,7 @@ class AlfredTelemetryHealthReporterTest {
             search = search.tag(Tag.PLUGIN, pluginClazz);
         }
 
-        return search.counters().stream().mapToDouble(Counter::count).sum();
+        return search.gauges().stream().mapToDouble(Gauge::value).sum();
     }
 
 }
