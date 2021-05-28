@@ -8,7 +8,6 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.SingleReportHealthReporter
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Description;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Key;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Tag;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
@@ -18,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
@@ -27,7 +27,7 @@ public class AlfredTelemetryHealthReporter extends SingleReportHealthReporter {
     private final AtomicBoolean isActive = new AtomicBoolean(false);
     private final Set<Class<? extends HealthProcessorPlugin>> plugins = new HashSet<>();
 
-    private final Map<ReportCounterKey, Counter> reportCounters = new HashMap<>();
+    private final Map<ReportCounterKey, AtomicLong> reportCounters = new HashMap<>();
 
     private final MeterRegistry registry;
 
@@ -48,6 +48,7 @@ public class AlfredTelemetryHealthReporter extends SingleReportHealthReporter {
     @Override
     public void onStart() {
         isActive.set(true);
+        resetCounters();
     }
 
     @Override
@@ -64,14 +65,20 @@ public class AlfredTelemetryHealthReporter extends SingleReportHealthReporter {
     protected void processReport(NodeHealthReport report, Class<? extends HealthProcessorPlugin> pluginClass) {
         plugins.add(pluginClass);
         reportCounters.computeIfAbsent(new ReportCounterKey(pluginClass, report.getStatus()), this::createCounter)
-                .increment();
+                .incrementAndGet();
     }
 
-    private Counter createCounter(ReportCounterKey key) {
-        return Counter.builder(Key.REPORTS)
+    private void resetCounters() {
+        reportCounters.forEach((key, value) -> value.set(0));
+    }
+
+    private AtomicLong createCounter(ReportCounterKey key) {
+        AtomicLong counter = new AtomicLong();
+        Gauge.builder(Key.REPORTS, counter, AtomicLong::get)
                 .tag(Tag.PLUGIN, key.getPluginClass().getSimpleName())
                 .tag(Tag.STATUS, key.getStatus().name())
                 .register(registry);
+        return counter;
     }
 
     @Value
