@@ -22,7 +22,11 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.3.0] - UNRELEASED
+## [0.3.0] - 2021-05-28
+### Changed
+* [[#20](https://github.com/xenit-eu/alfresco-health-processor/issues/20)] 
+  Make (subset of) state more persistent using the Alfresco AttributeService
+* AlfredTelemetryHealthReporter: reset report counts when cycle starts
 
 ## [0.2.1] - 2021-03-31
 ### Fixed
