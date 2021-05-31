@@ -1,6 +1,6 @@
 ---
 title: Changelog - Alfred Health Processor
-date: 4 March 2021
+date: 31 May 2021
 report: true
 colorlinks: true
 ---
@@ -21,6 +21,8 @@ Version template:
  -->
 
 # Alfresco Health Processor Changelog
+
+## [0.3.1] - UNRELEASED
 
 ## [0.3.0] - 2021-05-28
 ### Changed
