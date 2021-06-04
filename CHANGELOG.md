@@ -23,6 +23,8 @@ Version template:
 # Alfresco Health Processor Changelog
 
 ## [0.3.1] - UNRELEASED
+### Fixed
+* Unable to start in a clustered environment due to invalid cache settings
 
 ## [0.3.0] - 2021-05-28
 ### Changed

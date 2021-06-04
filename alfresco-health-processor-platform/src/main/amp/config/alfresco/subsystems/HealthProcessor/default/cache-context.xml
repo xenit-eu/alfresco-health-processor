@@ -10,17 +10,17 @@
     </bean>
 
     <bean name="healthProcessorSharedCache" factory-bean="cacheFactory" factory-method="createCache">
-        <constructor-arg value="cache.healthProcessorGeneralCache"/>
+        <constructor-arg value="cache.healthProcessorSharedCache"/>
     </bean>
 
     <bean name="healthProcessorCache" class="org.alfresco.repo.cache.TransactionalCache">
         <property name="sharedCache" ref="healthProcessorSharedCache"/>
-        <property name="name" value="xenit.health-processor.cache"/>
-        <property name="maxCacheSize" value="${cache.healthProcessorCache.tx.maxItems}"/>
+        <property name="name" value="eu.xenit.healthProcessorCache"/>
+        <property name="maxCacheSize" value="${cache.healthProcessorSharedCache.tx.maxItems}"/>
         <property name="mutable" value="true"/>
         <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}"/>
         <property name="tenantAware" value="false"/>
         <property name="cacheStats" ref="cacheStatistics"/>
-        <property name="cacheStatsEnabled" value="${cache.healthProcessorCache.tx.statsEnabled}"/>
+        <property name="cacheStatsEnabled" value="${cache.healthProcessorSharedCache.tx.statsEnabled}"/>
     </bean>
 </beans>
