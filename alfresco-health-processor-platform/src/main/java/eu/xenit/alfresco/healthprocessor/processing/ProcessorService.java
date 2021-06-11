@@ -40,6 +40,7 @@ public class ProcessorService {
             executeInternal();
             transactionHelper.inNewTransaction(this::onStop, false);
         } catch (Exception e) {
+            log.error("Health-Processor: FAILED", e);
             transactionHelper.inNewTransaction(() -> onError(e), false);
             throw e;
         }
