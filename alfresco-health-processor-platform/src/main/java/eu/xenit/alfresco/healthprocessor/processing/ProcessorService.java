@@ -80,7 +80,7 @@ public class ProcessorService {
 
     private Set<NodeRef> getNextNodesInTransaction() {
         return transactionHelper.inNewTransaction(
-                () -> indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize()), true);
+                () -> indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize()), false);
     }
 
     private void processNodeBatch(Set<NodeRef> nodesToProcess) {
