@@ -98,10 +98,7 @@ public class ProcessorService {
             // noinspection UnstableApiUsage
             rateLimiter.acquire();
         }
-        transactionHelper.inNewTransaction(
-                () -> this.processNodeBatchInTransaction(nodesToProcessCopy, plugin),
-                configuration.isReadOnly()
-        );
+        this.processNodeBatchInTransaction(nodesToProcessCopy, plugin);
     }
 
     private void processNodeBatchInTransaction(Set<NodeRef> nodesToProcess, HealthProcessorPlugin plugin) {
@@ -113,8 +110,9 @@ public class ProcessorService {
         log.debug("Plugin '{}' will process #{} nodes", plugin.getClass().getCanonicalName(),
                 nodesToProcess.size());
 
-        Set<NodeHealthReport> reports = plugin.process(nodesToProcess);
-        reportsService.processReports(plugin.getClass(), reports);
+        Set<NodeHealthReport> reports = transactionHelper
+                .inNewTransaction(() -> plugin.process(nodesToProcess), configuration.isReadOnly());
+        transactionHelper.inNewTransaction(() -> reportsService.processReports(plugin.getClass(), reports), false);
     }
 
     private boolean hasNoEnabledPlugins() {
