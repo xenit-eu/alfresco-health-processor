@@ -17,4 +17,10 @@
                 value="${eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties}"/>
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.ThumbnailGenerationHealthProcessorPlugin"
+            class="eu.xenit.alfresco.healthprocessor.plugins.ThumbnailGenerationHealthProcessorPlugin">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.thumbnail-generation.enabled}"/>
+        <constructor-arg name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
+
 </beans>
