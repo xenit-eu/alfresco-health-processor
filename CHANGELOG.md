@@ -22,6 +22,8 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
+## [0.3.2] - UNRELEASED
+
 ## [0.3.1] - 2021-06-24
 ### Fixed
 * Make sure persisting of attributes is done in a write transaction
