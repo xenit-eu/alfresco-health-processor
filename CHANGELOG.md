@@ -22,8 +22,9 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.3.1] - UNRELEASED
+## [0.3.1] - 2021-06-24
 ### Fixed
+* Make sure persisting of attributes is done in a write transaction
 * Unable to start in a clustered environment due to invalid cache settings
 
 ## [0.3.0] - 2021-05-28
