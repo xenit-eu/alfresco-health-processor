@@ -5,13 +5,6 @@ include 'integration-tests'
 
 def integrationTestVersions = ["52", "61", "62", "70"];
 
-if (!hasProperty("community")) {
-    integrationTestVersions.each { version ->
-        include ":integration-tests:alfresco-enterprise-${version}"
-    }
-}
-if (!hasProperty("enterprise")) {
-    integrationTestVersions.each {version ->
-        include ":integration-tests:alfresco-community-${version}"
-    }
+integrationTestVersions.each {version ->
+    include ":integration-tests:alfresco-community-${version}"
 }
