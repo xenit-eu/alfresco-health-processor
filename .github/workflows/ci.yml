@@ -37,6 +37,10 @@ jobs:
           java-version: 11
       - name: Test
         run: ./gradlew :integration-tests:alfresco-${{ matrix.flavour }}-${{ matrix.version }}:integrationTest -Prandom_ports=true
+        env:
+          ORG_GRADLE_PROJECT_xenit_docker_registry_url: ${{ secrets.XENIT_DOCKER_REGISTRY_URL }}
+          ORG_GRADLE_PROJECT_xenit_docker_registry_username: ${{ secrets.XENIT_DOCKER_REGISTRY_USERNAME }}
+          ORG_GRADLE_PROJECT_xenit_docker_registry_password: ${{ secrets.XENIT_DOCKER_REGISTRY_PASSWORD }}
   publish:
     needs: [test, integration-test]
     runs-on: ubuntu-latest
