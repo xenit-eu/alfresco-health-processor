@@ -5,8 +5,7 @@
 		http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent"
-            class="eu.xenit.alfresco.healthprocessor.indexing.AlfrescoTrackingComponent">
-        <constructor-arg name="solrTrackingComponent" ref="solrTrackingComponent"/>
+            class="eu.xenit.alfresco.healthprocessor.indexing.AlfrescoTrackingComponentFactoryBean">
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration"

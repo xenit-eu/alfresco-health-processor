@@ -13,8 +13,8 @@ import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
 import java.util.Collections;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.TransactionEntity;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.alfresco.repo.solr.SOLRTrackingComponent.NodeQueryCallback;
+import org.alfresco.repo.solr.SOLRTrackingComponentImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AlfrescoTrackingComponentTest {
 
     @Mock
-    private SOLRTrackingComponent solrTrackingComponent;
+    private SOLRTrackingComponentImpl solrTrackingComponent;
 
     private TrackingComponent trackingComponent;
 

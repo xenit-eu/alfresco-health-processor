@@ -5,13 +5,12 @@ import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.alfresco.repo.solr.NodeParameters;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
+import org.alfresco.repo.solr.SOLRTrackingComponentImpl;
 
 @AllArgsConstructor
 public class AlfrescoTrackingComponent implements TrackingComponent {
 
-
-    private final SOLRTrackingComponent solrTrackingComponent;
+    private final SOLRTrackingComponentImpl solrTrackingComponent;
 
     @Override
     public long getMaxTxnId() {
@@ -36,5 +35,9 @@ public class AlfrescoTrackingComponent implements TrackingComponent {
         ret.setTransactionIds(txnIds);
         // TODO support additional configuration: storeProtocol, storeIdentifier, includeNodeTypes, excludeNodeTypes, ...
         return ret;
+    }
+
+    SOLRTrackingComponentImpl getSolrTrackingComponent() {
+        return solrTrackingComponent;
     }
 }
