@@ -2,7 +2,16 @@ rootProject.name = 'alfresco-health-processor'
 
 include 'alfresco-health-processor-platform'
 include 'integration-tests'
-["52", "60", "61", "62"].each { version ->
-    include ":integration-tests:alfresco-community-${version}"
-//    include ":integration-tests:alfresco-enterprise-${version}"
+
+def integrationTestVersions = ["52", "60", "61", "62"];
+
+if (!hasProperty("community")) {
+    integrationTestVersions.each { version ->
+        include ":integration-tests:alfresco-enterprise-${version}"
+    }
+}
+if (!hasProperty("enterprise")) {
+    integrationTestVersions.each {version ->
+        include ":integration-tests:alfresco-community-${version}"
+    }
 }

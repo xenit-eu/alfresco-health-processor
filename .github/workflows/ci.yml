@@ -26,7 +26,8 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/heads/master') || startsWith(github.base_ref, 'master') || startswith(github.ref, 'refs/heads/release') }}
     strategy:
       matrix:
-        flavour: [ "community" ]
+        flavour: [ "community", "enterprise" ]
+        version: [ "52", "60", "61", "62" ]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -35,7 +36,7 @@ jobs:
         with:
           java-version: 11
       - name: Test
-        run: ./gradlew integrationTest -P${{ matrix.flavour }} -Prandom_ports=true
+        run: ./gradlew :integration-tests:alfresco-${{ matrix.flavour }}-${{ matrix.version }}:integrationTest -Prandom_ports=true
   publish:
     needs: [test, integration-test]
     runs-on: ubuntu-latest
