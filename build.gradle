@@ -46,7 +46,7 @@ def copyPropertyValueIfExists(sourcePropertyName, targetPropertyName) {
 
 allprojects { Project p ->
     group = 'eu.xenit.alfresco'
-    version = '0.4.0'
+    version = '0.4.1'
 
     boolean isRelease = ci.branch?.startsWith("release")
     if (!isRelease) {
