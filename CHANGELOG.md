@@ -22,7 +22,7 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.4.0] - 2021-07-07
+## [0.4.0] - 2021-07-08
 ### Added
 * Alfresco 7 support
 
