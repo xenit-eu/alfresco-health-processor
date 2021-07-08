@@ -4,9 +4,7 @@
         xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent"
-            class="eu.xenit.alfresco.healthprocessor.indexing.AlfrescoTrackingComponentFactoryBean">
-    </bean>
+    <bean class="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponentBeanPostProcessor"/>
 
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration"
             class="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration">
