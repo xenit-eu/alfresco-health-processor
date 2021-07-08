@@ -3,7 +3,6 @@ package eu.xenit.alfresco.healthprocessor.indexing;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.alfresco.repo.solr.SOLRTrackingComponent;
 
