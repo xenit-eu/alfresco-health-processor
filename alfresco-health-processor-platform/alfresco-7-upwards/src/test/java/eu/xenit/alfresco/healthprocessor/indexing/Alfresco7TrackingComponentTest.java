@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.indexing;
 
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -13,8 +14,8 @@ import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
 import java.util.Collections;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.TransactionEntity;
-import org.alfresco.repo.solr.SOLRTrackingComponent.NodeQueryCallback;
-import org.alfresco.repo.solr.SOLRTrackingComponentImpl;
+import org.alfresco.repo.search.SearchTrackingComponent;
+import org.alfresco.repo.search.SearchTrackingComponent.NodeQueryCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,21 +25,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class AlfrescoTrackingComponentTest {
+class Alfresco7TrackingComponentTest {
 
     @Mock
-    private SOLRTrackingComponentImpl solrTrackingComponent;
+    private SearchTrackingComponent searchTrackingComponent;
 
     private TrackingComponent trackingComponent;
 
     @BeforeEach
     void setup() {
-        trackingComponent = new AlfrescoTrackingComponent(solrTrackingComponent);
+        trackingComponent = new Alfresco7TrackingComponent(searchTrackingComponent);
     }
 
     @Test
     void getMaxTxnId() {
-        when(solrTrackingComponent.getMaxTxnId()).thenReturn(101L);
+        when(searchTrackingComponent.getMaxTxnId()).thenReturn(101L);
 
         assertThat(trackingComponent.getMaxTxnId(), is(equalTo(101L)));
     }
@@ -52,7 +53,7 @@ class AlfrescoTrackingComponentTest {
             cb.handleNode(nodeEntity(1L, 102L, "xyz-987"));
 
             return null;
-        }).when(solrTrackingComponent).getNodes(any(), any());
+        }).when(searchTrackingComponent).getNodes(any(), any());
 
         assertThat(trackingComponent.getNodesForTxnIds(Collections.singletonList(1L)),
                 containsInAnyOrder(

@@ -19,10 +19,9 @@ sonarqube {
 
 ext {
     alfrescoVersion = '5.2.f'
-    alfredTelemetryVersion = '0.4.0'
+    alfredTelemetryVersion = '0.6.0'
     micrometerVersion = '1.0.6'
     lombokVersion = '1.18.10'
-    enterpriseEnabled = rootProject.hasProperty("enterprise")
 }
 
 subprojects {
@@ -39,14 +38,28 @@ subprojects {
     }
 }
 
+def copyPropertyValueIfExists(sourcePropertyName, targetPropertyName) {
+    if (project.hasProperty(sourcePropertyName)) {
+        project.ext[targetPropertyName] = project.property(sourcePropertyName)
+    }
+}
+
 allprojects { Project p ->
     group = 'eu.xenit.alfresco'
-    version = '0.3.2'
+    version = '0.4.0'
 
     boolean isRelease = ci.branch?.startsWith("release")
     if (!isRelease) {
         version += "-SNAPSHOT"
     }
+
+    // It is not possible to set properties with a dot via GitHub Actions env variables, therefore we introduce support
+    // for a non-dotted-equivalent
+    copyPropertyValueIfExists('alfresco_nexus_username', 'org.alfresco.maven.nexus.username')
+    copyPropertyValueIfExists('alfresco_nexus_password', 'org.alfresco.maven.nexus.password')
+    copyPropertyValueIfExists('xenit_docker_registry_url', 'eu.xenit.docker.registry.url')
+    copyPropertyValueIfExists('xenit_docker_registry_username', 'eu.xenit.docker.registry.username')
+    copyPropertyValueIfExists('xenit_docker_registry_password', 'eu.xenit.docker.registry.password')
 
     repositories {
         mavenCentral()
@@ -56,12 +69,12 @@ allprojects { Project p ->
         maven {
             url 'https://artifacts.alfresco.com/nexus/content/groups/public'
         }
-        if(p.name.contains("enterprise") && enterpriseEnabled) {
+        if(p.name.contains("enterprise")) {
             maven {
-                url 'https://artifactory.xenit.eu/artifactory/alfresco-enterprise-cache'
+                url 'https://artifacts.alfresco.com/nexus/content/groups/private'
                 credentials {
-                    username property("eu.xenit.artifactory.username")
-                    password property("eu.xenit.artifactory.password")
+                    username project.property('org.alfresco.maven.nexus.username')
+                    password project.property('org.alfresco.maven.nexus.password')
                 }
             }
         }

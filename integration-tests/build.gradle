@@ -41,10 +41,6 @@ test {
 }
 
 subprojects { Project p ->
-    if (p.name.contains("enterprise") && !rootProject.enterpriseEnabled) {
-        return;
-    }
-
     apply plugin: 'java'
 
     def alfrescoVersion = project.name[-2..-1]
@@ -68,6 +64,9 @@ subprojects { Project p ->
     apply plugin: 'eu.xenit.docker-compose.auto'
 
     dependencies {
+        if (project.hasProperty("alfrescoBaseWarBom")) {
+            baseAlfrescoWar platform("${alfrescoBaseWarBom}")
+        }
         baseAlfrescoWar "${alfrescoBaseWar}"
         alfrescoAmp project(path: ":integration-tests", configuration: "amp")
         alfrescoAmp project(path: ":alfresco-health-processor-platform", configuration: "amp")

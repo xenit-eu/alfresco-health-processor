@@ -44,7 +44,7 @@ Please consult the official Alfresco documentation on how to install Module Pack
 
 ### Supported Alfresco versions
 
-The module is systematically integration tested against Alfresco 5.2, 6.0, 6.1 and 6.2.
+The module is systematically integration tested against Alfresco 5.2, 6.1, 6.2 and 70.
 
 ## Overview
 

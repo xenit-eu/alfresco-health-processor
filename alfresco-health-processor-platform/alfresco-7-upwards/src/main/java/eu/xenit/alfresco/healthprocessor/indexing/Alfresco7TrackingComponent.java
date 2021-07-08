@@ -3,13 +3,13 @@ package eu.xenit.alfresco.healthprocessor.indexing;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import lombok.RequiredArgsConstructor;
-import org.alfresco.repo.solr.SOLRTrackingComponent;
+import lombok.AllArgsConstructor;
+import org.alfresco.repo.search.SearchTrackingComponent;
 
-@RequiredArgsConstructor
-public class AlfrescoTrackingComponent implements TrackingComponent {
+@AllArgsConstructor
+public class Alfresco7TrackingComponent implements TrackingComponent {
 
-    private final SOLRTrackingComponent trackingComponent;
+    private final SearchTrackingComponent trackingComponent;
 
     @Override
     public long getMaxTxnId() {

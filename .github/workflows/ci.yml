@@ -27,6 +27,7 @@ jobs:
     strategy:
       matrix:
         flavour: [ "community" ]
+        version: [ "52", "61", "62", "70" ]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -35,7 +36,7 @@ jobs:
         with:
           java-version: 11
       - name: Test
-        run: ./gradlew integrationTest -P${{ matrix.flavour }} -Prandom_ports=true
+        run: ./gradlew :integration-tests:alfresco-${{ matrix.flavour }}-${{ matrix.version }}:integrationTest -Prandom_ports=true
   publish:
     needs: [test, integration-test]
     runs-on: ubuntu-latest
