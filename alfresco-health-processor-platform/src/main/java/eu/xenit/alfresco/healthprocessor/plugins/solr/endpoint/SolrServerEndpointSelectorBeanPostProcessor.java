@@ -28,7 +28,7 @@ public class SolrServerEndpointSelectorBeanPostProcessor implements BeanDefiniti
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        String[] endpointNames = globalProperties.getProperty(ENDPOINTS_PROPERTY, "default").split(",");
+        String[] endpointNames = globalProperties.getProperty(ENDPOINTS_PROPERTY, "default,archive").split(",");
         if(endpointNames.length == 1 && endpointNames[0].isEmpty()) {
             log.warn("Solr index validation plugin has no endpoints are configured. No endpoints will be checked.");
             return;
@@ -51,6 +51,7 @@ public class SolrServerEndpointSelectorBeanPostProcessor implements BeanDefiniti
         constructorArgumentValues.addIndexedArgumentValue(1, "${"+PROPERTY_PREFIX+name+".port}");
         constructorArgumentValues.addIndexedArgumentValue(2, "${"+PROPERTY_PREFIX+name+".prefix:solr}");
         constructorArgumentValues.addIndexedArgumentValue(3, "${"+PROPERTY_PREFIX+name+".core}");
+        constructorArgumentValues.addIndexedArgumentValue(4, "${"+PROPERTY_PREFIX+name+".indexed-store}");
 
         return beanDefinition;
     }

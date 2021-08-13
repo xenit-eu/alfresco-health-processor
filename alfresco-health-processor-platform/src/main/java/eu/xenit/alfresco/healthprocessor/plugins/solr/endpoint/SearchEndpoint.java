@@ -13,6 +13,8 @@ public class SearchEndpoint {
     private final String prefix;
     private final String core;
 
+    private final String indexedStore;
+
     public URI getBaseUri() {
         return URI.create("http://" + host + ":" + port + "/" + prefix + "/" + core + "/");
     }

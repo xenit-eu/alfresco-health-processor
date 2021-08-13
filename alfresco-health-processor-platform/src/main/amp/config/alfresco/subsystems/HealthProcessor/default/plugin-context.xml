@@ -39,7 +39,41 @@
             class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
 
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector"
+            class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.SolrServerEndpointSelectorFilter"
+            autowire-candidate="false">
+        <constructor-arg ref="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector@store-filter" />
+        <constructor-arg ref="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.SolrNodeFilter@aggregate" />
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector@store-filter"
+            class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.IndexedStoreSolrServerEndpointSelectorFilter"
+            autowire-candidate="false">
+        <constructor-arg ref="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector@aggregate" />
+    </bean>
+
+
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector@aggregate"
             class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.AggregateEndpointSelector"
             autowire="constructor"
-            autowire-candidate="false" />
+            autowire-candidate="false"
+            />
+
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.SolrNodeFilter@aggregate"
+        class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.AggregateFilter"
+        autowire="constructor"
+        autowire-candidate="false"
+        />
+
+    <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.PropertySolrNodeFilter">
+        <constructor-arg ref="ServiceRegistry" />
+        <constructor-arg name="filteredProperties">
+            <map>
+                <entry key="cm:isIndexed">
+                    <value type="boolean">false</value>
+                </entry>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.DeletedSolrNodeFilter" />
 </beans>

@@ -3,6 +3,7 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr;
 import eu.xenit.alfresco.healthprocessor.plugins.api.ToggleableHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.filter.SolrNodeFilter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import java.io.IOException;
