@@ -8,7 +8,7 @@ public class AlwaysSolrServerEndpointSelector implements SolrServerEndpointSelec
 
     private final SearchEndpoint searchEndpoint;
 
-    public AlwaysSolrServerEndpointSelector(SearchEndpoint searchEndpoint) {
+    public AlwaysSolrServerEndpointSelector(String filter, SearchEndpoint searchEndpoint) {
         this.searchEndpoint = searchEndpoint;
     }
 

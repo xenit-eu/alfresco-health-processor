@@ -21,6 +21,10 @@
 
     <!-- Solr validation -->
 
+    <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelectorBeanPostProcessor" autowire="constructor">
+        <constructor-arg name="globalProperties" ref="global-properties" />
+    </bean>
+
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrIndexValidationHealthProcessorPlugin"
             class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrIndexValidationHealthProcessorPlugin">
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled}" />
@@ -31,10 +35,11 @@
                 ref="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
     </bean>
 
-    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor"
+            class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
 
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector"
-            class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelectorFactoryBean">
-        <constructor-arg name="globalProperties" ref="globalProperties" />
-    </bean>
+            class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.AggregateEndpointSelector"
+            autowire="constructor"
+            autowire-candidate="false" />
 </beans>

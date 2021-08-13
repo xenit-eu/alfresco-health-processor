@@ -14,6 +14,6 @@ public class SearchEndpoint {
     private final String core;
 
     public URI getBaseUri() {
-        return URI.create("http://" + host + ":" + port + "/" + prefix + "/" + core);
+        return URI.create("http://" + host + ":" + port + "/" + prefix + "/" + core + "/");
     }
 }
