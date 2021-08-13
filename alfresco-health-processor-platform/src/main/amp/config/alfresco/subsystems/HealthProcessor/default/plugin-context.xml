@@ -4,17 +4,37 @@
         xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <!-- NOOP -->
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin"
             class="eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin">
-        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.noop.enabled}"/>
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.noop.enabled}" />
     </bean>
 
+    <!-- Content validation -->
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.ContentValidationHealthProcessorPlugin"
             class="eu.xenit.alfresco.healthprocessor.plugins.ContentValidationHealthProcessorPlugin">
-        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled}"/>
-        <constructor-arg name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled}" />
+        <constructor-arg name="serviceRegistry" ref="ServiceRegistry" />
         <constructor-arg name="propertyQNamesToValidate"
-                value="${eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties}"/>
+                value="${eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties}" />
     </bean>
 
+    <!-- Solr validation -->
+
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrIndexValidationHealthProcessorPlugin"
+            class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrIndexValidationHealthProcessorPlugin">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled}" />
+        <constructor-arg name="nodeService" ref="NodeService" />
+        <constructor-arg name="solrServerSelector"
+                ref="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector" />
+        <constructor-arg name="solrSearchExecutor"
+                ref="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
+
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector"
+            class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelectorFactoryBean">
+        <constructor-arg name="globalProperties" ref="globalProperties" />
+    </bean>
 </beans>
