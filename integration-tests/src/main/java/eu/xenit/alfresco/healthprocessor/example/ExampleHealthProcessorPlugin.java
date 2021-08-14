@@ -35,7 +35,7 @@ public class ExampleHealthProcessorPlugin extends SingleNodeHealthProcessorPlugi
     protected NodeHealthReport process(NodeRef nodeRef) {
         if (!StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.equals(nodeRef.getStoreRef())) {
             logger.debug("Ignoring '{}', since we are only interested in workspace://SpacesStore nodes", nodeRef);
-            return null;
+            return new NodeHealthReport(NodeHealthStatus.NONE, nodeRef, "Node is not in workspace://SpacesStore");
         }
         numberOfNodesProcessed++;
 

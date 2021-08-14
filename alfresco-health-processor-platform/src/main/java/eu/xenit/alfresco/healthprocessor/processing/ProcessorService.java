@@ -5,11 +5,16 @@ import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.ReportsService;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -27,6 +32,7 @@ public class ProcessorService {
     private final StateCache stateCache;
 
     @SuppressWarnings("UnstableApiUsage")
+    @Nullable
     private RateLimiter rateLimiter;
 
     public void execute() {
@@ -112,7 +118,52 @@ public class ProcessorService {
 
         Set<NodeHealthReport> reports = transactionHelper
                 .inNewTransaction(() -> plugin.process(nodesToProcess), configuration.isReadOnly());
+
+        validateNodeReports(nodesToProcess, reports, plugin);
+
         transactionHelper.inNewTransaction(() -> reportsService.processReports(plugin.getClass(), reports), false);
+    }
+
+    private void validateNodeReports(Set<NodeRef> nodesToProcess, Set<NodeHealthReport> reports, HealthProcessorPlugin plugin) {
+        if(reports.size() != nodesToProcess.size()) {
+            log.warn("Plugin '{}' returned #{} reports for #{} nodes", plugin.getClass().getCanonicalName(), reports.size(), nodesToProcess.size());
+            Set<NodeRef> reportedNodes = reports.stream().map(NodeHealthReport::getNodeRef).collect(Collectors.toSet());
+
+            // Locate unreported nodes
+            Set<NodeRef> unreportedNodes = new HashSet<>(nodesToProcess);
+            unreportedNodes.removeAll(reportedNodes);
+            log.warn("Plugin '{}' did not report for #{} nodes", plugin.getClass().getCanonicalName(), unreportedNodes.size());
+            log.trace("Plugin '{}' did not report nodes: {}", plugin.getClass().getCanonicalName(), unreportedNodes);
+            reports.addAll(
+                    unreportedNodes.stream()
+                            .map(nodeRef -> new NodeHealthReport(NodeHealthStatus.UNREPORTED, nodeRef))
+                            .collect(Collectors.toSet())
+            );
+
+            // Locate double reported nodes
+            if(reportedNodes.size() != reports.size()) {
+                Map<NodeRef, Set<NodeHealthReport>> reportedNodeCount = reports.stream()
+                        .collect(Collectors.groupingBy(NodeHealthReport::getNodeRef, Collectors.toSet()));
+
+                Map<NodeRef, Set<NodeHealthReport>> duplicateHealthReports = reportedNodeCount.entrySet().stream()
+                        .filter(reportEntry -> reportEntry.getValue().size() > 1)
+                        .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
+                if(!duplicateHealthReports.isEmpty()) {
+                    log.warn("Plugin '{}' generated duplicate reports for #{} nodes", plugin.getClass().getCanonicalName(), duplicateHealthReports.size());
+                    log.trace("Plugin '{}' generated duplicate reports for nodes: {}", plugin.getClass().getCanonicalName(), duplicateHealthReports.keySet());
+                }
+
+            }
+
+            // Locate illegally reported nodes
+            Set<NodeRef> reportedNodesWithoutRequested = new HashSet<>(reportedNodes);
+            reportedNodesWithoutRequested.removeAll(nodesToProcess);
+            if(!reportedNodesWithoutRequested.isEmpty()) {
+                log.warn("Plugin '{}' reported for #{} unrequested nodes", plugin.getClass().getCanonicalName(), reportedNodesWithoutRequested.size());
+                log.trace("Plugin '{}' reported for unrequested nodes: {}", plugin.getClass().getCanonicalName(), reportedNodesWithoutRequested);
+            }
+        }
     }
 
     private boolean hasNoEnabledPlugins() {
