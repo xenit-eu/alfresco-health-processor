@@ -47,11 +47,8 @@ public class SolrServerEndpointSelectorBeanPostProcessor implements BeanDefiniti
         beanDefinition.setBeanClass(SearchEndpoint.class);
         beanDefinition.setAutowireCandidate(false);
         ConstructorArgumentValues constructorArgumentValues = beanDefinition.getConstructorArgumentValues();
-        constructorArgumentValues.addIndexedArgumentValue(0, "${"+PROPERTY_PREFIX+name+".host}");
-        constructorArgumentValues.addIndexedArgumentValue(1, "${"+PROPERTY_PREFIX+name+".port}");
-        constructorArgumentValues.addIndexedArgumentValue(2, "${"+PROPERTY_PREFIX+name+".prefix:solr}");
-        constructorArgumentValues.addIndexedArgumentValue(3, "${"+PROPERTY_PREFIX+name+".core}");
-        constructorArgumentValues.addIndexedArgumentValue(4, "${"+PROPERTY_PREFIX+name+".indexed-store}");
+        constructorArgumentValues.addIndexedArgumentValue(0, "${"+PROPERTY_PREFIX+name+".base-uri}");
+        constructorArgumentValues.addIndexedArgumentValue(1, "${"+PROPERTY_PREFIX+name+".indexed-store}");
 
         return beanDefinition;
     }

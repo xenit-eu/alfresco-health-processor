@@ -3,19 +3,23 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint;
 import java.net.URI;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 @EqualsAndHashCode
-@Data
 public class SearchEndpoint {
 
-    private final String host;
-    private final int port;
-    private final String prefix;
-    private final String core;
+    @Getter
+    private final URI baseUri;
 
+    @Getter
     private final String indexedStore;
 
-    public URI getBaseUri() {
-        return URI.create("http://" + host + ":" + port + "/" + prefix + "/" + core + "/");
+    public SearchEndpoint(URI baseUri, String indexedStore) {
+        if(!baseUri.getPath().endsWith("/")) {
+            this.baseUri = URI.create(baseUri.toString()+"/");
+        } else {
+            this.baseUri = baseUri;
+        }
+        this.indexedStore = indexedStore;
     }
 }
