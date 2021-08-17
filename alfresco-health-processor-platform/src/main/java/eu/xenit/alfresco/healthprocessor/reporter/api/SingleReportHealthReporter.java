@@ -4,6 +4,7 @@ import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 public abstract class SingleReportHealthReporter extends ToggleableHealthReporter {
 
@@ -15,7 +16,7 @@ public abstract class SingleReportHealthReporter extends ToggleableHealthReporte
     }
 
     @Override
-    public void processReports(Class<? extends HealthProcessorPlugin> pluginClass, Set<NodeHealthReport> reports) {
+    public void processReports(@Nonnull Class<? extends HealthProcessorPlugin> pluginClass, @Nonnull Set<NodeHealthReport> reports) {
         Set<NodeHealthStatus> statusesToHandle = statusesToHandle();
 
         for (NodeHealthReport report : reports) {
@@ -26,5 +27,5 @@ public abstract class SingleReportHealthReporter extends ToggleableHealthReporte
 
     }
 
-    protected abstract void processReport(NodeHealthReport report, Class<? extends HealthProcessorPlugin> pluginClass);
+    protected abstract void processReport(@Nonnull NodeHealthReport report, Class<? extends HealthProcessorPlugin> pluginClass);
 }

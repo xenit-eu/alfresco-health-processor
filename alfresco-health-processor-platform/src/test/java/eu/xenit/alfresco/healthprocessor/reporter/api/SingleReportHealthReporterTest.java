@@ -11,6 +11,7 @@ import eu.xenit.alfresco.healthprocessor.reporter.TestReports;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
 
 class SingleReportHealthReporterTest {
@@ -64,7 +65,7 @@ class SingleReportHealthReporterTest {
         }
 
         @Override
-        public void onCycleDone(List<ProcessorPluginOverview> overviews) {
+        public void onCycleDone(@Nonnull List<ProcessorPluginOverview> overviews) {
 
         }
 
