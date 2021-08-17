@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import java.util.Collections;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -33,7 +34,7 @@ public class AssertHealthProcessorPlugin extends ToggleableHealthProcessorPlugin
     @Override
     protected Set<NodeHealthReport> doProcess(Set<NodeRef> nodeRefs) {
         invocations.offer(nodeRefs);
-        return null;
+        return Collections.emptySet();
     }
 
     public int getNumberOfInvocations() {
