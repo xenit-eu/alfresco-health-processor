@@ -126,16 +126,23 @@ public class ProcessorService {
 
     private Set<NodeHealthReport> validateNodeReports(Set<NodeRef> nodesToProcess, Set<NodeHealthReport> reports, HealthProcessorPlugin plugin) {
         Set<NodeHealthReport> nodeHealthReports = reports;
-        if(nodeHealthReports.size() != nodesToProcess.size()) {
-            log.warn("Plugin '{}' returned #{} reports for #{} nodes", plugin.getClass().getCanonicalName(), nodeHealthReports.size(), nodesToProcess.size());
-            Set<NodeRef> reportedNodes = nodeHealthReports.stream().map(NodeHealthReport::getNodeRef).collect(Collectors.toSet());
 
-            // Locate unreported nodes
-            Set<NodeRef> unreportedNodes = new HashSet<>(nodesToProcess);
-            unreportedNodes.removeAll(reportedNodes);
-            log.warn("Plugin '{}' did not report for #{} nodes", plugin.getClass().getCanonicalName(), unreportedNodes.size());
-            log.trace("Plugin '{}' did not report nodes: {}", plugin.getClass().getCanonicalName(), unreportedNodes);
+        // Locate unreported nodes
+        Set<NodeRef> reportedNodes = nodeHealthReports.stream().map(NodeHealthReport::getNodeRef).collect(Collectors.toSet());
+        Set<NodeRef> unreportedNodes = new HashSet<>(nodesToProcess);
+        unreportedNodes.removeAll(reportedNodes);
+
+        // When we have unreported nodes, we have a problem: namely unreported nodes
+        // When the number of reports does not match the number of requested nodes, we also have a problem:
+        // * nodes are reported multiple times
+        // * unrequested nodes are being reported as well
+        if(!unreportedNodes.isEmpty() || nodeHealthReports.size() != nodesToProcess.size()) {
+            log.warn("Plugin '{}' returned #{} reports for #{} nodes", plugin.getClass().getCanonicalName(), nodeHealthReports.size(), nodesToProcess.size());
+
+            // Log about unreported nodes and insert health reports for them
             if(!unreportedNodes.isEmpty()) {
+                log.warn("Plugin '{}' did not report for #{} nodes", plugin.getClass().getCanonicalName(), unreportedNodes.size());
+                log.trace("Plugin '{}' did not report nodes: {}", plugin.getClass().getCanonicalName(), unreportedNodes);
                 nodeHealthReports = new HashSet<>(nodeHealthReports); // We have to create a copy here, because reports is an unmodifiable Set
                 nodeHealthReports.addAll(
                         unreportedNodes.stream()
@@ -158,7 +165,6 @@ public class ProcessorService {
                     log.warn("Plugin '{}' generated duplicate reports for #{} nodes", plugin.getClass().getCanonicalName(), duplicateHealthReports.size());
                     log.trace("Plugin '{}' generated duplicate reports for nodes: {}", plugin.getClass().getCanonicalName(), duplicateHealthReports.keySet());
                 }
-
             }
 
             // Locate illegally reported nodes
