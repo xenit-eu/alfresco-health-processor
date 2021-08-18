@@ -11,10 +11,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpResponseException;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 
 /**
  * Performs a search operation on a {@link SearchEndpoint}
@@ -79,9 +84,24 @@ public class SolrSearchExecutor {
         return solrSearchResult;
     }
 
-    private static class JSONResponseHandler extends AbstractResponseHandler<JsonNode> {
+    private static class JSONResponseHandler implements ResponseHandler<JsonNode> {
 
         @Override
+        public JsonNode handleResponse(final HttpResponse response)
+                throws IOException {
+            // This is copy-paste from AbstractResponseHandler,
+            // The versions on the classpath of httpclient & httpcore are not compatible with each other
+            // so lombok is unable to properly compile if we extend from AbstractResponseHandler
+            final StatusLine statusLine = response.getStatusLine();
+            final HttpEntity entity = response.getEntity();
+            if (statusLine.getStatusCode() >= 300) {
+                EntityUtils.consume(entity);
+                throw new HttpResponseException(statusLine.getStatusCode(),
+                        statusLine.getReasonPhrase());
+            }
+            return entity == null ? null : handleEntity(entity);
+        }
+
         public JsonNode handleEntity(HttpEntity entity) throws IOException {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readTree(entity.getContent());
