@@ -15,6 +15,11 @@ import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
+/**
+ * Filter that ignores nodes that have a certain properties with a certain value.
+ * <p>
+ * Any property value that is present will result in the node being ignored
+ */
 @Slf4j
 @AllArgsConstructor
 public class PropertySolrNodeFilter implements SolrNodeFilter {

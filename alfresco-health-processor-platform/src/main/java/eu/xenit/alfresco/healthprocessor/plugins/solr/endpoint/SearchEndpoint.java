@@ -1,10 +1,12 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint;
 
 import java.net.URI;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+/**
+ * A search endpoint is configuration data for access to a solr search index
+ */
 @EqualsAndHashCode
 public class SearchEndpoint {
 

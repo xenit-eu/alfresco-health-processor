@@ -20,8 +20,7 @@
     </bean>
 
     <!-- Solr validation -->
-
-    <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelectorBeanPostProcessor" autowire="constructor">
+    <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelectorBeanPostProcessor" autowire="constructor">
         <constructor-arg name="globalProperties" ref="global-properties" />
     </bean>
 
@@ -30,7 +29,7 @@
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled}" />
         <constructor-arg name="nodeService" ref="NodeService" />
         <constructor-arg name="solrServerSelector"
-                ref="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector" />
+                ref="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector" />
         <constructor-arg name="solrSearchExecutor"
                 ref="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
     </bean>
@@ -38,31 +37,21 @@
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor"
             class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
 
-    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector"
-            class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.SolrServerEndpointSelectorFilter"
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector"
+            class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.FilteringSearchEndpointSelector"
             autowire-candidate="false">
-        <constructor-arg ref="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector@store-filter" />
-        <constructor-arg ref="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.SolrNodeFilter@aggregate" />
+        <constructor-arg>
+            <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.IndexedStoreFilterSearchEndpointSelector">
+                <constructor-arg>
+                    <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.AggregateSearchEndpointSelector" autowire="constructor" />
+                </constructor-arg>
+            </bean>
+        </constructor-arg>
+        <constructor-arg>
+            <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.AggregateFilter" autowire="constructor" />
+        </constructor-arg>
+
     </bean>
-
-    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector@store-filter"
-            class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.IndexedStoreSolrServerEndpointSelectorFilter"
-            autowire-candidate="false">
-        <constructor-arg ref="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector@aggregate" />
-    </bean>
-
-
-    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector@aggregate"
-            class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.AggregateEndpointSelector"
-            autowire="constructor"
-            autowire-candidate="false"
-            />
-
-    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.SolrNodeFilter@aggregate"
-        class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.AggregateFilter"
-        autowire="constructor"
-        autowire-candidate="false"
-        />
 
     <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.PropertySolrNodeFilter">
         <constructor-arg ref="ServiceRegistry" />

@@ -4,11 +4,14 @@ import java.util.Collections;
 import java.util.Set;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 
-public class AlwaysSolrServerEndpointSelector implements SolrServerEndpointSelector {
+/**
+ * Simple endpoint selector that selects a single endpoint for all nodes
+ */
+public class AlwaysSearchEndpointSelector implements SearchEndpointSelector {
 
     private final SearchEndpoint searchEndpoint;
 
-    public AlwaysSolrServerEndpointSelector(String filter, SearchEndpoint searchEndpoint) {
+    public AlwaysSearchEndpointSelector(String filter, SearchEndpoint searchEndpoint) {
         this.searchEndpoint = searchEndpoint;
     }
 

@@ -15,6 +15,9 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.json.JSONObject;
 
+/**
+ * Performs a search operation on a {@link SearchEndpoint}
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class SolrSearchExecutor {
@@ -25,6 +28,14 @@ public class SolrSearchExecutor {
         httpClient = HttpClientBuilder.create().build();
     }
 
+    /**
+     * Performs a search operation on an endpoint to determine if the nodes are indexed or not
+     *
+     * @param endpoint     The endpoint to perform a search on
+     * @param nodeStatuses Nodes to search for
+     * @return The result of the search operation
+     * @throws IOException When the HTTP request goes wrong
+     */
     public SolrSearchResult checkNodeIndexed(SearchEndpoint endpoint, Set<NodeRef.Status> nodeStatuses)
             throws IOException {
 

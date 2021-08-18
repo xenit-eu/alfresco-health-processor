@@ -2,8 +2,7 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
 import eu.xenit.alfresco.healthprocessor.plugins.api.ToggleableHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SolrServerEndpointSelector;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.filter.SolrNodeFilter;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import java.io.IOException;
@@ -12,6 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthProcessorPlugin {
 
     private final NodeService nodeService;
-    private final SolrServerEndpointSelector solrServerSelector;
+    private final SearchEndpointSelector solrServerSelector;
     private final SolrSearchExecutor solrSearchExecutor;
 
     private static final String NO_SEARCH_ENDPOINTS = "Node is not expected in any search index.";
@@ -40,6 +40,7 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
         return log;
     }
 
+    @Nonnull
     @Override
     protected Set<NodeHealthReport> doProcess(Set<NodeRef> nodeRefs) {
         Map<NodeRef.Status, MutableHealthReport> healthReports = new HashMap<>(nodeRefs.size());

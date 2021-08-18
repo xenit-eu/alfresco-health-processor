@@ -3,6 +3,9 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr.filter;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 
+/**
+ * Filter that ignores deleted solr nodes
+ */
 @Slf4j
 public class DeletedSolrNodeFilter implements SolrNodeFilter {
 

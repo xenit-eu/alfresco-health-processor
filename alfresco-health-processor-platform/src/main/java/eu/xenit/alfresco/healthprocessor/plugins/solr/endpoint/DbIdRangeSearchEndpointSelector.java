@@ -6,18 +6,21 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 
+/**
+ * Endpoint selector that only selects an endpoint when the database id of a node is within a range
+ */
 @AllArgsConstructor
-public class DbIdRangeSolrServerEndpointSelector implements SolrServerEndpointSelector {
+public class DbIdRangeSearchEndpointSelector implements SearchEndpointSelector {
 
     private final Long dbIdStart;
     private final Long dbIdEnd;
     private final SearchEndpoint endpoint;
 
-    public DbIdRangeSolrServerEndpointSelector(String filter, SearchEndpoint endpoint) {
+    public DbIdRangeSearchEndpointSelector(String filter, SearchEndpoint endpoint) {
         this(filter.split("-", 2), endpoint);
     }
 
-    private DbIdRangeSolrServerEndpointSelector(String[] filterParts, SearchEndpoint endpoint) {
+    private DbIdRangeSearchEndpointSelector(String[] filterParts, SearchEndpoint endpoint) {
         this(Long.parseUnsignedLong(
                         Objects.requireNonNull(filterParts[0], "Filter must be 2 numbers separated with a dash"), 10),
                 Long.parseUnsignedLong(

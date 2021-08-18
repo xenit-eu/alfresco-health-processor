@@ -6,11 +6,16 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 
+/**
+ * Wrapper for an {@link SearchEndpointSelector} that filters endpoints down to only those that match the store that is indexed by the {@link SearchEndpoint}
+ *
+ * Applying this filter to the end of a chain ensures that only endpoints that index the store that the node lives in are returned.
+ */
 @Slf4j
 @AllArgsConstructor
-public class IndexedStoreSolrServerEndpointSelectorFilter implements SolrServerEndpointSelector {
+public class IndexedStoreFilterSearchEndpointSelector implements SearchEndpointSelector {
 
-    private SolrServerEndpointSelector endpointSelector;
+    private SearchEndpointSelector endpointSelector;
 
     @Override
     public Set<SearchEndpoint> getSearchEndpointsForNode(Status nodeRef) {

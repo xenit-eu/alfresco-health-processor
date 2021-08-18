@@ -2,31 +2,40 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import lombok.NonNull;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-@AllArgsConstructor
+/**
+ * Health report that is initially unset and can be marked as healthy, unhealthy or unknown for a reason
+ */
 public class MutableHealthReport {
 
-    @Getter
-    private NodeHealthReport healthReport;
+    private final NodeRef nodeRef;
 
-    public MutableHealthReport(NodeRef nodeRef) {
-        this(new NodeHealthReport(null, nodeRef));
+    @Nullable
+    private NodeHealthStatus healthStatus = null;
+
+    private Set<String> messages = new HashSet<>();
+
+    public MutableHealthReport(@NonNull NodeRef nodeRef) {
+        this.nodeRef = nodeRef;
     }
 
-    public MutableHealthReport(NodeHealthStatus healthStatus, NodeRef nodeRef, String... messages) {
-        this(new NodeHealthReport(healthStatus, nodeRef, messages));
+    public MutableHealthReport(@NonNull NodeHealthStatus healthStatus, @Nonnull NodeRef nodeRef, String... messages) {
+        this.healthStatus = healthStatus;
+        this.nodeRef = nodeRef;
+        this.messages = new HashSet<>(Arrays.asList(messages));
     }
 
     private void mark(NodeHealthStatus healthStatus, String reason) {
-        Set<String> messages = new HashSet<>(healthReport.getMessages());
+        this.healthStatus = healthStatus;
         messages.add(reason);
-        NodeHealthReport copy = new NodeHealthReport(healthStatus, healthReport.getNodeRef(), messages);
-        healthReport = copy;
     }
 
     public void markUnhealthy(String reason) {
@@ -34,19 +43,23 @@ public class MutableHealthReport {
     }
 
     public void markUnknown(String reason) {
-        if (healthReport.getStatus() == null) {
+        if (healthStatus == null) {
             mark(NodeHealthStatus.NONE, reason);
         } else {
-            mark(healthReport.getStatus(), reason);
+            mark(healthStatus, reason);
         }
     }
 
     public void markHealthy(String reason) {
-        if (healthReport.getStatus() == null || healthReport.getStatus() == NodeHealthStatus.NONE) {
+        if (healthStatus == null || healthStatus == NodeHealthStatus.NONE) {
             mark(NodeHealthStatus.HEALTHY, reason);
         } else {
-            mark(healthReport.getStatus(), reason);
+            mark(healthStatus, reason);
         }
     }
 
+    public NodeHealthReport getHealthReport() {
+        Objects.requireNonNull(healthStatus, "healthStatus");
+        return new NodeHealthReport(healthStatus, nodeRef, messages);
+    }
 }
