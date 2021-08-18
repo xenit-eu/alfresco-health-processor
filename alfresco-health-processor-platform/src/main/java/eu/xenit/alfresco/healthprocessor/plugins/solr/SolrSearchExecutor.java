@@ -1,5 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import java.io.IOException;
 import java.util.Set;
@@ -12,10 +14,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.AbstractResponseHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * Performs a search operation on a {@link SearchEndpoint}
@@ -59,7 +58,7 @@ public class SolrSearchExecutor {
 
         Set<Long> foundDbIds = StreamSupport.stream(response.path("response").path("docs").spliterator(), false)
                 .filter(JsonNode::isObject)
-                .map(o -> o.path("DBID").getLongValue())
+                .map(o -> o.path("DBID").asLong())
                 .collect(Collectors.toSet());
 
         SolrSearchResult solrSearchResult = new SolrSearchResult();
@@ -80,7 +79,7 @@ public class SolrSearchExecutor {
         return solrSearchResult;
     }
 
-    private static class JSONResponseHandler extends AbstractResponseHandler<org.codehaus.jackson.JsonNode> {
+    private static class JSONResponseHandler extends AbstractResponseHandler<JsonNode> {
 
         @Override
         public JsonNode handleEntity(HttpEntity entity) throws IOException {
