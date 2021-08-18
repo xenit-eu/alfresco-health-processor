@@ -8,12 +8,14 @@ import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.AbstractResponseHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.json.JSONObject;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * Performs a search operation on a {@link SearchEndpoint}
@@ -51,17 +53,13 @@ public class SolrSearchExecutor {
                         .resolve("select?q=" + dbIdsQuery + "&fl=DBID&wt=json&rows=" + nodeStatuses.size()));
 
         log.trace("Executing HTTP request {}", searchRequest);
-        String response = httpClient.execute(searchRequest, new BasicResponseHandler());
+        JsonNode response = httpClient.execute(searchRequest, new JSONResponseHandler());
 
-        JSONObject responseJson = new JSONObject(response);
+        Long lastIndexedTransaction = response.path("lastIndexedTx").asLong();
 
-        Long lastIndexedTransaction = responseJson.getLong("lastIndexedTx");
-
-        Set<Long> foundDbIds = StreamSupport.stream(
-                        responseJson.getJSONObject("response").getJSONArray("docs").spliterator(), false)
-                .filter(o -> o instanceof JSONObject)
-                .map(o -> (JSONObject) o)
-                .map(o -> o.getLong("DBID"))
+        Set<Long> foundDbIds = StreamSupport.stream(response.path("response").path("docs").spliterator(), false)
+                .filter(JsonNode::isObject)
+                .map(o -> o.path("DBID").getLongValue())
                 .collect(Collectors.toSet());
 
         SolrSearchResult solrSearchResult = new SolrSearchResult();
@@ -82,5 +80,13 @@ public class SolrSearchExecutor {
         return solrSearchResult;
     }
 
+    private static class JSONResponseHandler extends AbstractResponseHandler<org.codehaus.jackson.JsonNode> {
+
+        @Override
+        public JsonNode handleEntity(HttpEntity entity) throws IOException {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readTree(entity.getContent());
+        }
+    }
 
 }
