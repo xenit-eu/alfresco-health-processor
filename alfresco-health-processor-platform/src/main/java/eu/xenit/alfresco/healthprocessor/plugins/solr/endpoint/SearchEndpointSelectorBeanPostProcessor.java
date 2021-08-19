@@ -1,5 +1,8 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint;
 
+import eu.xenit.alfresco.healthprocessor.plugins.solr.filter.FilteringSearchEndpointSelector;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.filter.NodeStoreFilter;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.filter.SolrNodeFilter;
 import java.util.Properties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,11 +36,15 @@ public class SearchEndpointSelectorBeanPostProcessor implements BeanDefinitionRe
         for (String name : endpointNames) {
             log.info("Registering beans for solr endpoint {}", name);
             BeanDefinition searchEndpoint = createSearchEndpointName(name);
-            registry.registerBeanDefinition(SearchEndpoint.class.getName()+"#"+name, searchEndpoint);
+            BeanDefinition nodeStoreFilter = createNodeStoreFilter(name);
             BeanDefinition searchSelector = createSelector(name, searchEndpoint);
-            registry.registerBeanDefinition(SearchEndpointSelector.class.getName()+"#"+name, searchSelector);
+            BeanDefinition searchSelectorFilter = createSelectorFilter(searchSelector, nodeStoreFilter);
+
+            registry.registerBeanDefinition(SearchEndpointSelector.class.getName() + "#" + name, searchSelectorFilter);
+
         }
     }
+
 
     private BeanDefinition createSearchEndpointName(String name) {
         GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
@@ -45,18 +52,38 @@ public class SearchEndpointSelectorBeanPostProcessor implements BeanDefinitionRe
         beanDefinition.setAutowireCandidate(false);
         ConstructorArgumentValues constructorArgumentValues = beanDefinition.getConstructorArgumentValues();
         constructorArgumentValues.addIndexedArgumentValue(0, "${" + PROPERTY_PREFIX + name + ".base-uri}");
-        constructorArgumentValues.addIndexedArgumentValue(1, "${"+PROPERTY_PREFIX+name+".indexed-store}");
 
         return beanDefinition;
     }
 
     private BeanDefinition createSelector(String name, BeanDefinition searchEndpoint) {
         GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
-        beanDefinition.setBeanClassName("eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.${"+PROPERTY_PREFIX+name+".type}SearchEndpointSelector");
-        beanDefinition.setAutowireCandidate(true);
+        beanDefinition.setBeanClassName(
+                "eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.${" + PROPERTY_PREFIX + name
+                        + ".type}SearchEndpointSelector");
+        beanDefinition.setAutowireCandidate(false);
         ConstructorArgumentValues constructorArgumentValues = beanDefinition.getConstructorArgumentValues();
         constructorArgumentValues.addGenericArgumentValue(searchEndpoint, SearchEndpoint.class.getName());
         constructorArgumentValues.addIndexedArgumentValue(0, "${" + PROPERTY_PREFIX + name + ".filter}");
+        return beanDefinition;
+    }
+
+    private BeanDefinition createNodeStoreFilter(String name) {
+        GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+        beanDefinition.setBeanClass(NodeStoreFilter.class);
+        beanDefinition.setAutowireCandidate(false);
+        ConstructorArgumentValues constructorArgumentValues = beanDefinition.getConstructorArgumentValues();
+        constructorArgumentValues.addIndexedArgumentValue(0, "${" + PROPERTY_PREFIX + name + ".indexed-store}");
+        return beanDefinition;
+    }
+
+    private BeanDefinition createSelectorFilter(BeanDefinition searchSelector, BeanDefinition nodeStoreFilter) {
+        GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+        beanDefinition.setBeanClass(FilteringSearchEndpointSelector.class);
+        beanDefinition.setAutowireCandidate(true);
+        ConstructorArgumentValues constructorArgumentValues = beanDefinition.getConstructorArgumentValues();
+        constructorArgumentValues.addGenericArgumentValue(searchSelector, SearchEndpointSelector.class.getName());
+        constructorArgumentValues.addGenericArgumentValue(nodeStoreFilter, SolrNodeFilter.class.getName());
         return beanDefinition;
     }
 

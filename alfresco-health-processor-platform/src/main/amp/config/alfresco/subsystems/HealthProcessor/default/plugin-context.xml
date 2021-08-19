@@ -41,11 +41,7 @@
             class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.FilteringSearchEndpointSelector"
             autowire-candidate="false">
         <constructor-arg>
-            <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.IndexedStoreFilterSearchEndpointSelector">
-                <constructor-arg>
-                    <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.AggregateSearchEndpointSelector" autowire="constructor" />
-                </constructor-arg>
-            </bean>
+            <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.AggregateSearchEndpointSelector" autowire="constructor" />
         </constructor-arg>
         <constructor-arg>
             <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.AggregateFilter" autowire="constructor" />
