@@ -20,6 +20,7 @@ public class MutableHealthReport {
 
     @Nullable
     private NodeHealthStatus healthStatus = null;
+    private NodeHealthStatus forcedHealthStatus = null;
 
     private Set<String> messages = new HashSet<>();
 
@@ -33,33 +34,43 @@ public class MutableHealthReport {
         this.messages = new HashSet<>(Arrays.asList(messages));
     }
 
-    private void mark(NodeHealthStatus healthStatus, String reason) {
+    private void mark(NodeHealthStatus healthStatus, String reason, boolean forced) {
         this.healthStatus = healthStatus;
+        if (forced) {
+            forcedHealthStatus = healthStatus;
+        }
         messages.add(reason);
     }
 
     public void markUnhealthy(String reason) {
-        mark(NodeHealthStatus.UNHEALTHY, reason);
+        mark(NodeHealthStatus.UNHEALTHY, reason, true);
+    }
+
+    public void markUnknownForced(String reason) {
+        mark(NodeHealthStatus.NONE, reason, true);
     }
 
     public void markUnknown(String reason) {
         if (healthStatus == null) {
-            mark(NodeHealthStatus.NONE, reason);
+            mark(NodeHealthStatus.NONE, reason, false);
         } else {
-            mark(healthStatus, reason);
+            mark(healthStatus, reason, false);
         }
     }
 
     public void markHealthy(String reason) {
         if (healthStatus == null || healthStatus == NodeHealthStatus.NONE) {
-            mark(NodeHealthStatus.HEALTHY, reason);
+            mark(NodeHealthStatus.HEALTHY, reason, false);
         } else {
-            mark(healthStatus, reason);
+            mark(healthStatus, reason, false);
         }
     }
 
     public NodeHealthReport getHealthReport() {
         Objects.requireNonNull(healthStatus, "healthStatus");
+        if (forcedHealthStatus != null) {
+            return new NodeHealthReport(forcedHealthStatus, nodeRef, messages);
+        }
         return new NodeHealthReport(healthStatus, nodeRef, messages);
     }
 }

@@ -99,7 +99,7 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
             } catch (IOException exception) {
                 getLogger().error("Exception during healthcheck on search endpoint {}", searchEndpoint, exception);
                 for (Status nodeRefStatus : expectedNodeRefStatuses) {
-                    healthReports.get(nodeRefStatus).markUnknown(String.format(EXCEPTION_FMT, searchEndpoint));
+                    healthReports.get(nodeRefStatus).markUnknownForced(String.format(EXCEPTION_FMT, searchEndpoint));
                 }
             }
         }
