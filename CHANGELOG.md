@@ -22,11 +22,12 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.4.1] - UNRELEASED
+## [0.5.0] - UNRELEASED
 
 ### Added
 
 * [[#33](https://github.com/xenit-eu/alfresco-health-processor/pull/33)] Validate that plugins send reports for all nodes.
+* [[#34](https://github.com/xenit-eu/alfresco-health-processor/pull/34)] Solr index validation plugin
 
 
 ## [0.4.0] - 2021-07-08
