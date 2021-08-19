@@ -29,11 +29,11 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
     private final SearchEndpointSelector solrServerSelector;
     private final SolrSearchExecutor solrSearchExecutor;
 
-    private static final String NO_SEARCH_ENDPOINTS = "Node is not expected in any search index.";
-    private static final String FOUND_FMT = "Node is present in search index %s.";
-    private static final String NOT_FOUND_FMT = "Node is missing in search index %s.";
-    private static final String NOT_INDEXED_TX_FMT = "Node is not yet indexed in search index %s (TX not yet processed).";
-    private static final String EXCEPTION_FMT = "Exception occurred while checking node in search index %s.";
+    static final String MSG_NO_SEARCH_ENDPOINTS = "Node is not expected in any search index.";
+    static final String FMT_FOUND_INDEX = "Node is present in search index %s.";
+    static final String FMT_NOT_FOUND_INDEX = "Node is missing in search index %s.";
+    static final String FMT_NOT_INDEXED_TX = "Node is not yet indexed in search index %s (TX not yet processed).";
+    static final String FMT_EXCEPTION = "Exception occurred while checking node in search index %s.";
 
     @Override
     protected Logger getLogger() {
@@ -62,7 +62,8 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
                 getLogger().debug("Node {} has no search endpoints", nodeRefStatus.getNodeRef());
                 healthReports.put(
                         nodeRefStatus,
-                        new MutableHealthReport(NodeHealthStatus.NONE, nodeRefStatus.getNodeRef(), NO_SEARCH_ENDPOINTS)
+                        new MutableHealthReport(NodeHealthStatus.NONE, nodeRefStatus.getNodeRef(),
+                                MSG_NO_SEARCH_ENDPOINTS)
                 );
             } else {
                 // Pre-allocate reports for other nodes (will be overwritten as appropriate)
@@ -86,20 +87,20 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
                         searchResult);
 
                 for (Status status : searchResult.getFound()) {
-                    healthReports.get(status).markHealthy(String.format(FOUND_FMT, searchEndpoint));
+                    healthReports.get(status).markHealthy(String.format(FMT_FOUND_INDEX, searchEndpoint));
                 }
 
                 for (Status status : searchResult.getMissing()) {
-                    healthReports.get(status).markUnhealthy(String.format(NOT_FOUND_FMT, searchEndpoint));
+                    healthReports.get(status).markUnhealthy(String.format(FMT_NOT_FOUND_INDEX, searchEndpoint));
                 }
 
                 for (Status status : searchResult.getNotIndexed()) {
-                    healthReports.get(status).markUnknown(String.format(NOT_INDEXED_TX_FMT, searchEndpoint));
+                    healthReports.get(status).markUnknown(String.format(FMT_NOT_INDEXED_TX, searchEndpoint));
                 }
             } catch (IOException exception) {
                 getLogger().error("Exception during healthcheck on search endpoint {}", searchEndpoint, exception);
                 for (Status nodeRefStatus : expectedNodeRefStatuses) {
-                    healthReports.get(nodeRefStatus).markUnknownForced(String.format(EXCEPTION_FMT, searchEndpoint));
+                    healthReports.get(nodeRefStatus).markUnknownForced(String.format(FMT_EXCEPTION, searchEndpoint));
                 }
             }
         }

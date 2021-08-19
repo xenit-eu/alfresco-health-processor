@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -31,7 +32,7 @@ public class SolrSearchExecutor {
     private final HttpClient httpClient;
 
     public SolrSearchExecutor() {
-        httpClient = HttpClientBuilder.create().build();
+        this(HttpClientBuilder.create().build());
     }
 
     /**
@@ -42,7 +43,7 @@ public class SolrSearchExecutor {
      * @return The result of the search operation
      * @throws IOException When the HTTP request goes wrong
      */
-    public SolrSearchResult checkNodeIndexed(SearchEndpoint endpoint, Set<NodeRef.Status> nodeStatuses)
+    public SolrSearchResult checkNodeIndexed(SearchEndpoint endpoint, Collection<Status> nodeStatuses)
             throws IOException {
 
         String dbIdsQuery = nodeStatuses.stream()
