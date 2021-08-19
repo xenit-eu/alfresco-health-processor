@@ -24,6 +24,10 @@ Version template:
 
 ## [0.4.1] - UNRELEASED
 
+### Added
+
+* [[#33](https://github.com/xenit-eu/alfresco-health-processor/pull/33)] Validate that plugins send reports for all nodes.
+
 
 ## [0.4.0] - 2021-07-08
 ### Added
