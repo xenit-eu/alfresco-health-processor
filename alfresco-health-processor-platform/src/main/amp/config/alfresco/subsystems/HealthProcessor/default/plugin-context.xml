@@ -60,5 +60,5 @@
         </constructor-arg>
     </bean>
 
-    <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.DeletedSolrNodeFilter" />
+    <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.DeletedNodeFilter" />
 </beans>

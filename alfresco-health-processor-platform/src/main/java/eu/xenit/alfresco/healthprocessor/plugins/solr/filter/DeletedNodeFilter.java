@@ -4,14 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 
 /**
- * Filter that ignores deleted solr nodes
+ * Filter that ignores deleted nodes
  */
 @Slf4j
-public class DeletedSolrNodeFilter implements SolrNodeFilter {
+public class DeletedNodeFilter implements SolrNodeFilter {
 
     @Override
     public boolean isIgnored(Status nodeRefStatus) {
-        if(nodeRefStatus.isDeleted()) {
+        if (nodeRefStatus.isDeleted()) {
             log.debug("Node {} ignored because it is deleted", nodeRefStatus.getNodeRef());
             return true;
         }
