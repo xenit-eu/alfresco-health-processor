@@ -28,7 +28,7 @@ public class PropertySolrNodeFilter implements SolrNodeFilter {
     private final Map<QName, Serializable> filteredProperties;
 
     public PropertySolrNodeFilter(ServiceRegistry serviceRegistry,
-            Map<String, String> filteredProperties) {
+            Map<String, Serializable> filteredProperties) {
         this(
                 serviceRegistry.getNodeService(),
                 filteredProperties.entrySet().stream()
@@ -53,14 +53,14 @@ public class PropertySolrNodeFilter implements SolrNodeFilter {
                     if (value instanceof List) {
                         List list = (List) value;
                         for (Object val : list) {
-                            if (compareValue((Serializable) val, filteredProperty.getValue())) {
+                            if (Objects.equals(val, filteredProperty.getValue())) {
                                 log.debug("Node {} ignored because property {} is {}", nodeRefStatus.getNodeRef(),
                                         filteredProperty.getKey(), val);
                                 return true;
                             }
                         }
                     } else {
-                        if (compareValue(value, filteredProperty.getValue())) {
+                        if (Objects.equals(value, filteredProperty.getValue())) {
                             log.debug("Node {} ignored because property {} is {}", nodeRefStatus.getNodeRef(),
                                     filteredProperty.getKey(), value);
                             return true;
@@ -73,15 +73,6 @@ public class PropertySolrNodeFilter implements SolrNodeFilter {
                     invalidNodeRefException);
         }
 
-        return false;
-    }
-
-    private static boolean compareValue(Serializable a, Serializable b) {
-        if(Objects.equals(a, b)) {
-            return true;
-        } else if(b instanceof String && !(a instanceof String)) {
-            return Objects.toString(a).equals(b);
-        }
         return false;
     }
 }
