@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 public final class Constants {
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Key {
+    public static final class Key {
 
         public static final String BASE = "health-processor";
 
@@ -18,7 +18,7 @@ public final class Constants {
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Tag {
+    public static final class Tag {
 
         public static final String PLUGIN = "plugin";
         public static final String STATUS = "status";
@@ -26,7 +26,7 @@ public final class Constants {
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Description {
+    public static final class Description {
 
         public static final String PLUGINS = "Number of registered, active HealthProcessorPlugin implementations";
     }

@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.annotation.Nonnull;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
@@ -52,12 +53,12 @@ public class AlfredTelemetryHealthReporter extends SingleReportHealthReporter {
     }
 
     @Override
-    public void onCycleDone(List<ProcessorPluginOverview> overviews) {
+    public void onCycleDone(@Nonnull List<ProcessorPluginOverview> overviews) {
         isActive.set(false);
     }
 
     @Override
-    public void onException(Exception e) {
+    public void onException(@Nonnull Exception e) {
         isActive.set(false);
     }
 

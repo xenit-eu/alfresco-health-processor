@@ -71,7 +71,7 @@ public class ContentValidationHealthProcessorPlugin extends SingleNodeHealthProc
     @Override
     protected NodeHealthReport process(NodeRef nodeRef) {
         if (!nodeService.exists(nodeRef) || nodeService.getNodeStatus(nodeRef).isDeleted()) {
-            return null;
+            return new NodeHealthReport(NodeHealthStatus.NONE, nodeRef, "Node does not exist or is deleted");
         }
 
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);

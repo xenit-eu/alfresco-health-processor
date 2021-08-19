@@ -2,6 +2,7 @@ package eu.xenit.alfresco.healthprocessor.plugins.api;
 
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -24,6 +25,7 @@ public interface HealthProcessorPlugin {
      * @return is is not mandatory to return anything. All returned {@link NodeHealthReport reports} will be offered to
      * {@link eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter} instances.
      */
+    @Nonnull
     Set<NodeHealthReport> process(Set<NodeRef> nodeRefs);
 
 }

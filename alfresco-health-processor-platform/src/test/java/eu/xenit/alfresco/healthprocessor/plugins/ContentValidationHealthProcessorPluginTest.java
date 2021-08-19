@@ -97,11 +97,18 @@ class ContentValidationHealthProcessorPluginTest {
         ContentValidationHealthProcessorPlugin plugin = initialize(Collections.singletonList(Q_NAME));
 
         when(nodeService.exists(NODE_REF)).thenReturn(false);
-        assertThat(plugin.process(NODE_REF), is(nullValue()));
+        NodeHealthReport report = plugin.process(NODE_REF);
+        assertThat(report, is(notNullValue()));
+        assertThat(report.getStatus(), is(equalTo(NodeHealthStatus.NONE)));
+        assertThat(report.getNodeRef(), is(equalTo(NODE_REF)));
 
         when(nodeService.exists(NODE_REF)).thenReturn(true);
         when(nodeService.getNodeStatus(NODE_REF)).thenReturn(new Status(100L, NODE_REF, null, 10L, true));
-        assertThat(plugin.process(NODE_REF), is(nullValue()));
+
+        report = plugin.process(NODE_REF);
+        assertThat(report, is(notNullValue()));
+        assertThat(report.getStatus(), is(equalTo(NodeHealthStatus.NONE)));
+        assertThat(report.getNodeRef(), is(equalTo(NODE_REF)));
     }
 
     @Test

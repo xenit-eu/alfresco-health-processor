@@ -5,11 +5,16 @@ import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.ReportsService;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -27,6 +32,7 @@ public class ProcessorService {
     private final StateCache stateCache;
 
     @SuppressWarnings("UnstableApiUsage")
+    @Nullable
     private RateLimiter rateLimiter;
 
     public void execute() {
@@ -86,8 +92,8 @@ public class ProcessorService {
     private void processNodeBatch(Set<NodeRef> nodesToProcess) {
         ParameterCheck.mandatory("nodesToProcess", nodesToProcess);
 
+        Set<NodeRef> copy = Collections.unmodifiableSet(nodesToProcess);
         for (HealthProcessorPlugin plugin : plugins) {
-            Set<NodeRef> copy = new HashSet<>(nodesToProcess);
             this.processNodeBatchRateLimited(copy, plugin);
         }
     }
@@ -110,9 +116,66 @@ public class ProcessorService {
         log.debug("Plugin '{}' will process #{} nodes", plugin.getClass().getCanonicalName(),
                 nodesToProcess.size());
 
-        Set<NodeHealthReport> reports = transactionHelper
-                .inNewTransaction(() -> plugin.process(nodesToProcess), configuration.isReadOnly());
+        Set<NodeHealthReport> pluginReports = transactionHelper
+                .inNewTransaction(() -> Collections.unmodifiableSet(plugin.process(nodesToProcess)), configuration.isReadOnly());
+
+        Set<NodeHealthReport> reports = validateNodeReports(nodesToProcess, pluginReports, plugin);
+
         transactionHelper.inNewTransaction(() -> reportsService.processReports(plugin.getClass(), reports), false);
+    }
+
+    private Set<NodeHealthReport> validateNodeReports(Set<NodeRef> nodesToProcess, Set<NodeHealthReport> reports, HealthProcessorPlugin plugin) {
+        Set<NodeHealthReport> nodeHealthReports = reports;
+
+        // Locate unreported nodes
+        Set<NodeRef> reportedNodes = nodeHealthReports.stream().map(NodeHealthReport::getNodeRef).collect(Collectors.toSet());
+        Set<NodeRef> unreportedNodes = new HashSet<>(nodesToProcess);
+        unreportedNodes.removeAll(reportedNodes);
+
+        // When we have unreported nodes, we have a problem: namely unreported nodes
+        // When the number of reports does not match the number of requested nodes, we also have a problem:
+        // * nodes are reported multiple times
+        // * unrequested nodes are being reported as well
+        if(!unreportedNodes.isEmpty() || nodeHealthReports.size() != nodesToProcess.size()) {
+            log.warn("Plugin '{}' returned #{} reports for #{} nodes", plugin.getClass().getCanonicalName(), nodeHealthReports.size(), nodesToProcess.size());
+
+            // Log about unreported nodes and insert health reports for them
+            if(!unreportedNodes.isEmpty()) {
+                log.warn("Plugin '{}' did not report for #{} nodes", plugin.getClass().getCanonicalName(), unreportedNodes.size());
+                log.trace("Plugin '{}' did not report nodes: {}", plugin.getClass().getCanonicalName(), unreportedNodes);
+                nodeHealthReports = new HashSet<>(nodeHealthReports); // We have to create a copy here, because reports is an unmodifiable Set
+                nodeHealthReports.addAll(
+                        unreportedNodes.stream()
+                                .map(nodeRef -> new NodeHealthReport(NodeHealthStatus.UNREPORTED, nodeRef))
+                                .collect(Collectors.toSet())
+                );
+                nodeHealthReports = Collections.unmodifiableSet(nodeHealthReports);
+            }
+
+            // Locate double reported nodes
+            if(reportedNodes.size() != nodeHealthReports.size()) {
+                Map<NodeRef, Set<NodeHealthReport>> reportedNodeCount = nodeHealthReports.stream()
+                        .collect(Collectors.groupingBy(NodeHealthReport::getNodeRef, Collectors.toSet()));
+
+                Map<NodeRef, Set<NodeHealthReport>> duplicateHealthReports = reportedNodeCount.entrySet().stream()
+                        .filter(reportEntry -> reportEntry.getValue().size() > 1)
+                        .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
+                if(!duplicateHealthReports.isEmpty()) {
+                    log.warn("Plugin '{}' generated duplicate reports for #{} nodes", plugin.getClass().getCanonicalName(), duplicateHealthReports.size());
+                    log.trace("Plugin '{}' generated duplicate reports for nodes: {}", plugin.getClass().getCanonicalName(), duplicateHealthReports.keySet());
+                }
+            }
+
+            // Locate illegally reported nodes
+            Set<NodeRef> reportedNodesWithoutRequested = new HashSet<>(reportedNodes);
+            reportedNodesWithoutRequested.removeAll(nodesToProcess);
+            if(!reportedNodesWithoutRequested.isEmpty()) {
+                log.warn("Plugin '{}' reported for #{} unrequested nodes", plugin.getClass().getCanonicalName(), reportedNodesWithoutRequested.size());
+                log.trace("Plugin '{}' reported for unrequested nodes: {}", plugin.getClass().getCanonicalName(), reportedNodesWithoutRequested);
+            }
+        }
+        return nodeHealthReports;
     }
 
     private boolean hasNoEnabledPlugins() {

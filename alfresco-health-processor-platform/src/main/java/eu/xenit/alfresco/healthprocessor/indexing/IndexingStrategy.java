@@ -3,6 +3,7 @@ package eu.xenit.alfresco.healthprocessor.indexing;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -19,12 +20,14 @@ public interface IndexingStrategy {
 
     }
 
+    @Nonnull
     Set<NodeRef> getNextNodeIds(final int amount);
 
     default void onStop() {
 
     }
 
+    @Nonnull
     default Map<String, String> getState() {
         return new HashMap<>();
     }

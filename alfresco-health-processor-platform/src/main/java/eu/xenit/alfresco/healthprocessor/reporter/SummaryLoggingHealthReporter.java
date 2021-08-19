@@ -4,6 +4,7 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ToggleableHealthReporter;
 import java.util.List;
+import javax.annotation.Nonnull;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.util.ParameterCheck;
@@ -21,7 +22,7 @@ public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
     }
 
     @Override
-    public void onCycleDone(List<ProcessorPluginOverview> overviews) {
+    public void onCycleDone(@Nonnull List<ProcessorPluginOverview> overviews) {
         ParameterCheck.mandatory("overviews", overviews);
         
         log.info("Health-Processor done in {}", printDuration());
@@ -30,7 +31,7 @@ public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
     }
 
     @Override
-    public void onException(Exception e) {
+    public void onException(@Nonnull Exception e) {
         log.warn("Health-Processor failed. Duration: {}, exception: {}", printDuration(), e.getMessage());
     }
 

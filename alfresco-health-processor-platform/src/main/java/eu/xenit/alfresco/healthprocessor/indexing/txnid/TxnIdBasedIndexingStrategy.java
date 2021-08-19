@@ -13,6 +13,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import javax.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
     private final TrackingComponent trackingComponent;
     private final AttributeStore attributeStore;
 
+    @Nonnull
     @Override
     public Map<String, String> getState() {
         Map<String, String> ret = new HashMap<>();
@@ -60,6 +62,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
     }
 
     @Override
+    @Nonnull
     public Set<NodeRef> getNextNodeIds(int amount) {
         Set<NodeRef> ret = new HashSet<>();
         while (!done && nodeQueue.size() < amount) {
