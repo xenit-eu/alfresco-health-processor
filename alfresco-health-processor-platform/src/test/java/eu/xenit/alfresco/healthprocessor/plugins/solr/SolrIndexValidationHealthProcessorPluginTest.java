@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.apache.http.client.HttpResponseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -284,6 +285,35 @@ class SolrIndexValidationHealthProcessorPluginTest {
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
                 String.format(SolrIndexValidationHealthProcessorPlugin.FMT_EXCEPTION, searchEndpoint1),
                 String.format(SolrIndexValidationHealthProcessorPlugin.FMT_FOUND_INDEX, searchEndpoint2)
+        ))), "Expect all nodes to have a message");
+    }
+
+    @Test
+    void process_single_endpoint_http_error() throws IOException {
+        SearchEndpoint searchEndpoint = new SearchEndpoint(URI.create("http://empty/solr/index/"));
+        when(searchEndpointSelector.getSearchEndpointsForNode(Mockito.any())).thenReturn(set(searchEndpoint));
+
+        when(nodeService.getNodeStatus(Mockito.any())).then(invocation -> {
+            NodeRef nodeRef = invocation.getArgument(0);
+            return new Status(1L, nodeRef, "1", 1L, false);
+        });
+
+        // Endpoint throws an HTTP error
+        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint), Mockito.any())).thenThrow(
+                new HttpResponseException(404, "Not Found"));
+
+        Set<NodeRef> nodeRefs = set(TestNodeRefs.REFS);
+        Set<NodeHealthReport> healthReports = healthProcessorPlugin.process(nodeRefs);
+
+        // Verify that the search endpoint was only called *once*
+        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint), Mockito.any());
+
+        assertEquals(nodeRefs.size(), healthReports.size(),
+                "Expected an equal number of health reports as the number of passed noderefs");
+        assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
+                .allMatch(Predicate.isEqual(NodeHealthStatus.NONE)), "Expect all nodes to be none");
+        assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
+                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_EXCEPTION, searchEndpoint)
         ))), "Expect all nodes to have a message");
     }
 }
