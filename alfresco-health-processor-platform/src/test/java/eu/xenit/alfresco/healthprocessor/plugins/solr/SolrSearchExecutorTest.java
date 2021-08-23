@@ -79,6 +79,37 @@ class SolrSearchExecutorTest {
     }
 
     @Test
+    void checkIndexedNodesAllIndexed() throws IOException {
+        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+
+        List<Status> nodeRefs = new ArrayList<>();
+
+        nodeRefs.add(randomNodeRefStatus(10L, LAST_INDEXED_TX - 10));
+        nodeRefs.add(randomNodeRefStatus(11L, LAST_INDEXED_TX - 9));
+        nodeRefs.add(randomNodeRefStatus(100L, 5L));
+        nodeRefs.add(randomNodeRefStatus(999L, LAST_INDEXED_TX));
+        nodeRefs.add(randomNodeRefStatus(1000L, LAST_INDEXED_TX));
+
+        httpClientMock.onGet("http://nowhere/solr/index/select")
+                .doReturnJSON("{"
+                        + "\"lastIndexedTx\":" + LAST_INDEXED_TX + ","
+                        + "\"response\": { \"docs\": ["
+                        + "{\"DBID\": 10 },"
+                        + "{\"DBID\": 11 },"
+                        + "{\"DBID\": 999 },"
+                        + "{\"DBID\": 1000 },"
+                        + "{\"DBID\": 100 }"
+                        + "]}"
+                        + "}");
+
+        SolrSearchResult solrSearchResult = solrSearchExecutor.checkNodeIndexed(endpoint, nodeRefs);
+
+        assertEquals(SetUtil.set(10L, 11L, 999L, 1000L, 100L), toDbIds(solrSearchResult.getFound()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getMissing()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getNotIndexed()));
+    }
+
+    @Test
     void checkSolrHttpError() {
         SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
 

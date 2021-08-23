@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -62,7 +64,13 @@ public class SolrSearchExecutor {
 
         Long lastIndexedTransaction = response.path("lastIndexedTx").asLong();
 
-        Set<Long> foundDbIds = StreamSupport.stream(response.path("response").path("docs").spliterator(), false)
+        JsonNode docs = response.path("response").path("docs");
+        if(docs.size() == nodeStatuses.size()) {
+            // Fast path: all searched for nodes were found.
+            return new SolrSearchResult(new HashSet<>(nodeStatuses), Collections.emptySet(), Collections.emptySet());
+        }
+
+        Set<Long> foundDbIds = StreamSupport.stream(docs.spliterator(), false)
                 .filter(JsonNode::isObject)
                 .map(o -> o.path("DBID").asLong())
                 .collect(Collectors.toSet());
