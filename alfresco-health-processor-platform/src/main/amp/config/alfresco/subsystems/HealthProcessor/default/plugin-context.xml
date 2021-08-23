@@ -4,17 +4,61 @@
         xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <!-- NOOP -->
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin"
             class="eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin">
-        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.noop.enabled}"/>
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.noop.enabled}" />
     </bean>
 
+    <!-- Content validation -->
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.ContentValidationHealthProcessorPlugin"
             class="eu.xenit.alfresco.healthprocessor.plugins.ContentValidationHealthProcessorPlugin">
-        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled}"/>
-        <constructor-arg name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled}" />
+        <constructor-arg name="serviceRegistry" ref="ServiceRegistry" />
         <constructor-arg name="propertyQNamesToValidate"
-                value="${eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties}"/>
+                value="${eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties}" />
     </bean>
 
+    <!-- Solr validation -->
+    <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelectorBeanPostProcessor" autowire="constructor">
+        <constructor-arg name="globalProperties" ref="global-properties" />
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrIndexValidationHealthProcessorPlugin"
+            class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrIndexValidationHealthProcessorPlugin">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled}" />
+        <constructor-arg name="nodeService" ref="NodeService" />
+        <constructor-arg name="solrServerSelector"
+                ref="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector" />
+        <constructor-arg name="solrSearchExecutor"
+                ref="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor"
+            class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
+
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector"
+            class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.FilteringSearchEndpointSelector"
+            autowire-candidate="false">
+        <constructor-arg>
+            <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.AggregateSearchEndpointSelector" autowire="constructor" />
+        </constructor-arg>
+        <constructor-arg>
+            <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.AggregateFilter" autowire="constructor" />
+        </constructor-arg>
+
+    </bean>
+
+    <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.PropertySolrNodeFilter">
+        <constructor-arg ref="ServiceRegistry" />
+        <constructor-arg name="filteredProperties">
+            <map>
+                <entry key="cm:isIndexed">
+                    <value type="boolean">false</value>
+                </entry>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.DeletedNodeFilter" />
 </beans>

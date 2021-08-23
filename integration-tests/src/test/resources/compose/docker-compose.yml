@@ -10,7 +10,7 @@ services:
     environment:
       - JAVA_XMX=1G
       - DEBUG=true
-      - INDEX=noindex
+      - SOLR_SSL=none
       - ENABLE_CLUSTERING=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.task.cron=0/20 * * * * ? *
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.node-batch-size=1000
@@ -20,8 +20,14 @@ services:
       - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.alfred-telemetry.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:content
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=true
     depends_on:
       - postgresql
+  solr:
+    image: docker.io/xenit/alfresco-solr6:2.0
+    environment:
+      - ALFRESCO_HOST=alfresco
+      - ALFRESCO_SSL=none
 
   postgresql:
     image: docker.io/xenit/postgres

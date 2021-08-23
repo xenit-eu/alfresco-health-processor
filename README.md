@@ -148,6 +148,56 @@ eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:conten
 If this property is not set (which is the default), the plugin will request all properties of type `d:content`
 from Alfresco's `DictionaryService`.
 
+#### Solr index Validation
+
+Activation property: `eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=true`
+
+Validates that nodes are present in a Solr/Alfresco Search Services index.
+
+By default, the plugin will check the solr server configured with `solr.host` & `solr.port` with the default `alfresco` and `archive` indexes.
+
+It is possible to configure the solr servers to check and, for sharded setups, which nodes should be present in which solr server.
+
+Multiple solr servers (endpoints) can be configured.
+A comma-separated list of named endpoints is configured in `eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints`.
+
+Properties for a specific endpoint are configured under the `eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.<endpoint>` property:
+
+* `type`: Configures the kind of endpoint selector to use `Always` (for non-sharded Solr setup) or `DbIdRange` (for `DB_ID_RANGE` sharded Solr setup)
+* `filter`: Configures a filter for which nodes an endpoint will be used.
+  * `Always`: Ignores this parameter
+  * `DbIdRange`: Range of node database IDs to be indexed. Same configuration format as `shard.range` for Solr: `<start-id>-<end-id>`.
+* `base-uri`: Base URI to the Solr core.
+  * solr4: `http://solr-host:8080/solr4/alfresco/`
+  * solr6: `http://solr-host:8080/solr/alfresco/`
+* `indexed-store`: The store ID from which this Solr core indexes. Usually `workspace://SpacesStore` or `archive://SpacesStore`.
+
+
+<details>
+
+<summary>Example configuration</summary>
+
+```properties
+# This property lists all endpoints that should be checked
+eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints=solr-old,solr-shard1,solr-shard2
+
+eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-old.type=Always
+eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-old.base-uri=http://solr1.example.com:1234/solr4/alfresco/
+eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-old.indexed-store=workspace://SpacesStore
+
+eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard1.type=DbIdRange
+eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard1.filter=0-250
+eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard1.base-uri=http://solr2.example.com:1234/solr/shard1/
+eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard1.indexed-store=workspace://SpacesStore
+
+eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard2.type=DbIdRange
+eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard2.filter=250-500
+eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard2.base-uri=http://solr2.example.com:1234/solr/shard2/
+eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard2.indexed-store=workspace://SpacesStore
+```
+
+</details>
+
 ### HealthReporter implementations
 
 #### Alfred Telemetry

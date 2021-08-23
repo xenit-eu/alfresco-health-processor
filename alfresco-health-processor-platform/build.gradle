@@ -41,13 +41,14 @@ dependencies {
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
     testImplementation "org.hamcrest:hamcrest-all:${hamcrestVersion}"
     testImplementation 'org.slf4j:slf4j-simple:1.7.25'
+    testImplementation 'com.github.paweladamski:HttpClientMock:1.10.0'
 }
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
     target = tasks.shadowJar
-    prefix = "shadow.eu.xenit.alfresco.healthprocessor"
+    prefix = "eu.xenit.alfresco.healthprocessor.internal.shadow"
 }
 
 tasks.shadowJar.dependsOn tasks.relocateShadowJar
