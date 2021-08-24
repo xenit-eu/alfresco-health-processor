@@ -7,7 +7,7 @@ import org.springframework.beans.factory.config.AbstractFactoryBean;
 
 @AllArgsConstructor
 @Slf4j
-public class IndexingConfigurationFactoryBean extends AbstractFactoryBean<IndexingConfiguration> {
+public final class IndexingConfigurationFactoryBean extends AbstractFactoryBean<IndexingConfiguration> {
 
     private IndexingStrategy.IndexingStrategyKey indexingStrategyKey;
 

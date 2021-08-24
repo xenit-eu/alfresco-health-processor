@@ -21,12 +21,21 @@
                 value="${eu.xenit.alfresco.healthprocessor.indexing.txn-id.txn-batch-size}" />
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsIndexingConfiguration"
+            class="eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsIndexingConfiguration"
+            autowire-candidate="false">
+        <constructor-arg name="lookbackTransactions" value="${eu.xenit.alfresco.healthprocessor.indexing.last-txns.lookback-transactions}" />
+        <constructor-arg name="batchSize"
+                value="${eu.xenit.alfresco.healthprocessor.indexing.last-txns.txn-batch-size}" />
+    </bean>
+
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration"
             class="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfigurationFactoryBean">
         <constructor-arg name="indexingStrategyKey" ref="eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy.IndexingStrategyKey" />
         <constructor-arg name="configurations">
             <list value-type="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration">
                 <ref bean="eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdIndexingConfiguration" />
+                <ref bean="eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsIndexingConfiguration" />
             </list>
         </constructor-arg>
     </bean>

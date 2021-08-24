@@ -35,7 +35,8 @@ public interface IndexingStrategy {
     }
 
     enum IndexingStrategyKey {
-        TXNID("txn-id");
+        TXNID("txn-id"),
+        LAST_TXNS("last-txns");
 
         @Getter
         private final String key;

@@ -1,5 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.indexing;
 
+import eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsBasedIndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsIndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdIndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
@@ -27,6 +29,8 @@ public final class IndexingStrategyFactoryBean extends AbstractFactoryBean<Index
         switch(indexingStrategy) {
             case TXNID:
                 return new TxnIdBasedIndexingStrategy((TxnIdIndexingConfiguration) configuration, trackingComponent, attributeStore);
+            case LAST_TXNS:
+                return new LastTxnsBasedIndexingStrategy((LastTxnsIndexingConfiguration) configuration, trackingComponent);
             default:
                 throw new IllegalArgumentException("Unknown indexing strategy: "+ indexingStrategy);
         }
