@@ -1,38 +1,35 @@
-package eu.xenit.alfresco.healthprocessor.plugins.api;
+package eu.xenit.alfresco.healthprocessor.plugins;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import java.util.Collections;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
-import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.slf4j.Logger;
 
-@Slf4j
-public class AssertHealthProcessorPlugin extends ToggleableHealthProcessorPlugin {
+public class AssertHealthProcessorPlugin implements HealthProcessorPlugin {
+    private boolean enabled;
+
+    public AssertHealthProcessorPlugin() {
+        this(true);
+    }
+
+    public AssertHealthProcessorPlugin(boolean enabled) {
+        this.enabled = enabled;
+    }
 
     private final Queue<Set<NodeRef>> invocations = new LinkedBlockingQueue<>();
 
-    public AssertHealthProcessorPlugin() {
-        setEnabled(true);
-    }
-
     @Override
-    protected Logger getLogger() {
-        return log;
-    }
-
-    @Override
-    protected Set<NodeHealthReport> doProcess(Set<NodeRef> nodeRefs) {
+    public Set<NodeHealthReport> process(Set<NodeRef> nodeRefs) {
         invocations.offer(nodeRefs);
         return Collections.emptySet();
     }
@@ -52,5 +49,10 @@ public class AssertHealthProcessorPlugin extends ToggleableHealthProcessorPlugin
     public void expectInvokedAndConsume(Consumer<Set<NodeRef>> consumer) {
         assertThat(invocations.peek(), is(notNullValue()));
         consumer.accept(invocations.poll());
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
     }
 }

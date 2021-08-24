@@ -4,7 +4,7 @@ import static eu.xenit.alfresco.healthprocessor.util.SetUtil.set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;

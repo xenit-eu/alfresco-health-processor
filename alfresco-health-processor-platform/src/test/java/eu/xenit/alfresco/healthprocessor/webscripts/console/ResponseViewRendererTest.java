@@ -14,7 +14,7 @@ import eu.xenit.alfresco.healthprocessor.indexing.FakeTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdIndexingConfiguration;
-import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.processing.ProcessorService;
 import eu.xenit.alfresco.healthprocessor.processing.ProcessorState;

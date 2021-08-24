@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.TestReports;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Key;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Tag;
