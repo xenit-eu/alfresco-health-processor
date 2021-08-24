@@ -11,9 +11,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import eu.xenit.alfresco.healthprocessor.indexing.FakeTrackingComponent;
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdIndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.processing.ProcessorService;
@@ -43,7 +43,7 @@ class ResponseViewRendererTest {
         when(processorService.getState()).thenReturn(ProcessorState.ACTIVE);
         renderer.setProcessorService(processorService);
 
-        IndexingConfiguration indexingConfiguration = new IndexingConfiguration("txn-id", 10, 20, 2);
+        TxnIdIndexingConfiguration indexingConfiguration = new TxnIdIndexingConfiguration(10, 20, 2);
         renderer.setIndexingConfiguration(indexingConfiguration);
 
         IndexingStrategy indexingStrategy = new TxnIdBasedIndexingStrategy(indexingConfiguration,

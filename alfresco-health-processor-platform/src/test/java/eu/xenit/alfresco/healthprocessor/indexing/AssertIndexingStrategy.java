@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import javax.annotation.Nonnull;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public class AssertIndexingStrategy implements IndexingStrategy {
@@ -24,6 +25,7 @@ public class AssertIndexingStrategy implements IndexingStrategy {
         numberOfOnStartInvocations++;
     }
 
+    @Nonnull
     @Override
     public Set<NodeRef> getNextNodeIds(int amount) {
         numberOfGetNextNodeIdsInvocations++;

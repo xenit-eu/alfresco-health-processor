@@ -1,7 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.webscripts.console.model;
 
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration.IndexingStrategyKey;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy.IndexingStrategyKey;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,20 +21,7 @@ public class IndexingStrategyView {
         this(
                 configuration.getIndexingStrategy().getKey(),
                 strategy.getState(),
-                extractRelevantConfiguration(configuration)
+                configuration.getConfiguration()
         );
     }
-
-    private static Map<String, String> extractRelevantConfiguration(IndexingConfiguration configuration) {
-        Map<String, String> ret = new HashMap<>();
-
-        if (IndexingStrategyKey.TXNID.equals(configuration.getIndexingStrategy())) {
-            ret.put("start-txn-id", Long.toString(configuration.getStartTxnId()));
-            ret.put("stop-txn-id", Long.toString(configuration.getStopTxnId()));
-            ret.put("txn-batch-size", Integer.toString(configuration.getTxnBatchSize()));
-        }
-
-        return ret;
-    }
-
 }

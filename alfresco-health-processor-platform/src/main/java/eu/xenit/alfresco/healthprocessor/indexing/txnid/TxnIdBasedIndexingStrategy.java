@@ -31,7 +31,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
     private boolean done = false;
     private long nextStartTxnIdToFetch;
 
-    private final IndexingConfiguration configuration;
+    private final TxnIdIndexingConfiguration configuration;
     private final TrackingComponent trackingComponent;
     private final AttributeStore attributeStore;
 
