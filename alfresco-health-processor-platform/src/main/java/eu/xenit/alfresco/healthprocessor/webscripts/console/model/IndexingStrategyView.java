@@ -2,6 +2,7 @@ package eu.xenit.alfresco.healthprocessor.webscripts.console.model;
 
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy.IndexingStrategyKey;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,11 +18,14 @@ public class IndexingStrategyView {
     Map<String, String> state;
     Map<String, String> configuration;
 
+    IndexingProgressView progress;
+
     public IndexingStrategyView(IndexingConfiguration configuration, IndexingStrategy strategy) {
         this(
                 configuration.getIndexingStrategy().getKey(),
                 strategy.getState(),
-                configuration.getConfiguration()
+                configuration.getConfiguration(),
+                new IndexingProgressView(strategy.getIndexingProgress())
         );
     }
 }

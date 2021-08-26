@@ -34,6 +34,11 @@ public interface IndexingStrategy {
         return new HashMap<>();
     }
 
+    @Nonnull
+    default IndexingProgress getIndexingProgress() {
+        return IndexingProgress.NONE;
+    }
+
     enum IndexingStrategyKey {
         TXNID("txn-id"),
         LAST_TXNS("last-txns");

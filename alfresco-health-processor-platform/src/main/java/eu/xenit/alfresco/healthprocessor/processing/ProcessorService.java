@@ -79,9 +79,11 @@ public class ProcessorService {
     private void executeInternal() {
         Set<NodeRef> nodesToProcess = getNextNodesInTransaction();
         while (!nodesToProcess.isEmpty()) {
+            updateIndexingProgress();
             this.processNodeBatch(nodesToProcess);
             nodesToProcess = getNextNodesInTransaction();
         }
+        updateIndexingProgress();
     }
 
     private Set<NodeRef> getNextNodesInTransaction() {
@@ -122,6 +124,10 @@ public class ProcessorService {
         Set<NodeHealthReport> reports = validateNodeReports(nodesToProcess, pluginReports, plugin);
 
         transactionHelper.inNewTransaction(() -> reportsService.processReports(plugin.getClass(), reports), false);
+    }
+
+    private void updateIndexingProgress() {
+        transactionHelper.inNewTransaction(() -> reportsService.onProgress(indexingStrategy.getClass(), indexingStrategy.getIndexingProgress()), false);
     }
 
     private Set<NodeHealthReport> validateNodeReports(Set<NodeRef> nodesToProcess, Set<NodeHealthReport> reports, HealthProcessorPlugin plugin) {

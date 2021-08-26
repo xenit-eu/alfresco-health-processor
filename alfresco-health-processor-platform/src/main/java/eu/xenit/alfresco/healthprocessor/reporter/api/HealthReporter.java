@@ -1,5 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.reporter.api;
 
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +20,11 @@ public interface HealthReporter {
     }
 
     default void onCycleDone(@Nonnull List<ProcessorPluginOverview> overviews) {
+
+    }
+
+    default void onProgress(@Nonnull Class<? extends IndexingStrategy> indexingStrategyClass, @Nonnull
+            IndexingProgress progress) {
 
     }
 

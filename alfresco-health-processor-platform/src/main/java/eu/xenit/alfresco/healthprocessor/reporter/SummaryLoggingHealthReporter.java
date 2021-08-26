@@ -1,8 +1,11 @@
 package eu.xenit.alfresco.healthprocessor.reporter;
 
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ToggleableHealthReporter;
+import java.time.Duration;
 import java.util.List;
 import javax.annotation.Nonnull;
 import lombok.EqualsAndHashCode;
@@ -15,10 +18,12 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
 
     long startMs;
+    float lastProgressPercentage;
 
     @Override
     public void onStart() {
         startMs = System.currentTimeMillis();
+        lastProgressPercentage = 0;
     }
 
     @Override
@@ -28,6 +33,23 @@ public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
         log.info("Health-Processor done in {}", printDuration());
         logSummary(overviews);
         logUnhealthyNodes(overviews);
+    }
+
+    @Override
+    public void onProgress(@Nonnull Class<? extends IndexingStrategy> indexingStrategyClass,
+            @Nonnull IndexingProgress progress) {
+        if(log.isInfoEnabled()) {
+
+            float progressPercentage = progress.getProgress();
+            // If more progress than 1%
+            if(progressPercentage - lastProgressPercentage > 0.01) {
+                log.info("Health-Processor iteration {}% completed. ETA: {}",
+                        Math.round(progressPercentage*100),
+                        progress.getEstimatedCompletion().map(duration -> duration.withNanos(0)).map(Duration::toMillis).map(DurationFormatUtils::formatDurationHMS).orElse("Unknown")
+                );
+                lastProgressPercentage = progressPercentage;
+            }
+        }
     }
 
     @Override

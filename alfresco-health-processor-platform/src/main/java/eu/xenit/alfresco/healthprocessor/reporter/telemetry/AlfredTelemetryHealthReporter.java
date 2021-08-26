@@ -1,5 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.reporter.telemetry;
 
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
@@ -18,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -29,6 +32,8 @@ public class AlfredTelemetryHealthReporter extends SingleReportHealthReporter {
     private final Set<Class<? extends HealthProcessorPlugin>> plugins = new HashSet<>();
 
     private final Map<ReportCounterKey, AtomicLong> reportCounters = new HashMap<>();
+
+    private final AtomicReference<Float> progress = new AtomicReference<>(0f);
 
     private final MeterRegistry registry;
 
@@ -44,17 +49,27 @@ public class AlfredTelemetryHealthReporter extends SingleReportHealthReporter {
         Gauge.builder(Key.PLUGINS, plugins, Set::size)
                 .description(Description.PLUGINS)
                 .register(registry);
+        Gauge.builder(Key.PROGRESS, progress, AtomicReference::get)
+                .description(Description.PROGRESS)
+                .register(registry);
     }
 
     @Override
     public void onStart() {
         isActive.set(true);
+        progress.set(0f);
         resetCounters();
     }
 
     @Override
     public void onCycleDone(@Nonnull List<ProcessorPluginOverview> overviews) {
         isActive.set(false);
+    }
+
+    @Override
+    public void onProgress(@Nonnull Class<? extends IndexingStrategy> indexingStrategyClass,
+            @Nonnull IndexingProgress progress) {
+        this.progress.set(progress.getProgress());
     }
 
     @Override

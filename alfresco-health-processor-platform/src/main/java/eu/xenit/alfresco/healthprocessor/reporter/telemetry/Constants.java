@@ -12,6 +12,7 @@ public final class Constants {
         public static final String BASE = "health-processor";
 
         public static final String ACTIVE = BASE + ".active";
+        public static final String PROGRESS = BASE + ".progress";
         public static final String PLUGINS = BASE + ".plugins";
         public static final String REPORTS = BASE + ".reports";
 
@@ -29,6 +30,7 @@ public final class Constants {
     public static final class Description {
 
         public static final String PLUGINS = "Number of registered, active HealthProcessorPlugin implementations";
+        public static final String PROGRESS = "Completion percentage of the current cycle (0.0-1.0)";
     }
 
 }
