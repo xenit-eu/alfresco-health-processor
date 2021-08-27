@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.webscripts.console;
 
+import eu.xenit.alfresco.healthprocessor.fixer.api.HealthFixerPlugin;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
@@ -24,6 +25,7 @@ public class ResponseViewRenderer {
     private IndexingStrategy indexingStrategy;
     private List<HealthProcessorPlugin> plugins;
     private List<HealthReporter> reporters;
+    private List<HealthFixerPlugin> fixers;
 
     @SuppressWarnings("unused")
     public void setServiceRegistry(ServiceRegistry serviceRegistry) {
@@ -36,7 +38,8 @@ public class ResponseViewRenderer {
                 processorService.getState().toString(),
                 new IndexingStrategyView(indexingConfiguration, indexingStrategy),
                 new ExtensionsView(plugins),
-                new ExtensionsView(reporters)
+                new ExtensionsView(reporters),
+                new ExtensionsView(fixers)
         );
     }
 

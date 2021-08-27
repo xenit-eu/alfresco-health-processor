@@ -14,10 +14,11 @@ public class AdminConsoleResponseView {
     IndexingStrategyView indexing;
     ExtensionsView plugins;
     ExtensionsView reporters;
+    ExtensionsView fixers;
 
     public AdminConsoleResponseView(ModuleDetails moduleDetails, String status, IndexingStrategyView indexing,
-            ExtensionsView plugins, ExtensionsView reporters) {
-        this(extractVersionNumber(moduleDetails), status, indexing, plugins, reporters);
+            ExtensionsView plugins, ExtensionsView reporters, ExtensionsView fixers) {
+        this(extractVersionNumber(moduleDetails), status, indexing, plugins, reporters, fixers);
     }
 
     private static String extractVersionNumber(ModuleDetails moduleDetails) {

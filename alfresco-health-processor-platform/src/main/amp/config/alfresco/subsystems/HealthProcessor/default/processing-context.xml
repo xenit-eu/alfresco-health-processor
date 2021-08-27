@@ -36,4 +36,9 @@
     <bean id="eu.xenit.alfresco.healthprocessor.processing.ProcessorService"
             class="eu.xenit.alfresco.healthprocessor.processing.ProcessorService" autowire="constructor">
     </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.fixer.NodeFixService"
+            class="eu.xenit.alfresco.healthprocessor.fixer.NodeFixService"
+            autowire="constructor">
+    </bean>
 </beans>

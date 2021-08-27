@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
+import eu.xenit.alfresco.healthprocessor.fixer.NodeFixService;
 import eu.xenit.alfresco.healthprocessor.indexing.AssertIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
@@ -38,9 +39,11 @@ class ProcessorServiceTest {
         processorPlugin = new AssertHealthProcessorPlugin();
         indexingStrategy = new AssertIndexingStrategy();
         ReportsService reportsService = mock(ReportsService.class);
+        NodeFixService nodeFixService = mock(NodeFixService.class);
         builder = ProcessorServiceBuilder.create()
                 .config(ProcConfigUtil.defaultConfig())
                 .indexingStrategy(indexingStrategy)
+                .nodeFixService(nodeFixService)
                 .reportsService(reportsService)
                 .transactionHelper(transactionHelper)
                 .plugin(processorPlugin);
@@ -128,6 +131,7 @@ class ProcessorServiceTest {
         private TransactionHelper transactionHelper;
         private List<HealthProcessorPlugin> plugins;
         private ReportsService reportsService;
+        private NodeFixService nodeFixService;
 
         ProcessorServiceBuilder plugin(HealthProcessorPlugin plugin) {
             if (plugins == null) {
@@ -139,7 +143,7 @@ class ProcessorServiceTest {
 
         ProcessorService build() {
             return new ProcessorService(config, indexingStrategy, transactionHelper, plugins, reportsService,
-                    new StateCache(new MemoryCache<>()));
+                    new StateCache(new MemoryCache<>()), nodeFixService);
         }
     }
 
