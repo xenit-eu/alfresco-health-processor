@@ -17,8 +17,9 @@ public class SimpleIndexingProgress implements IndexingProgress {
         this(startId, Instant.now(), endId, currentId);
     }
 
-    private static float interpolate(float start, float end, float current) {
-        return clampPercentage((current - start) / (end - start));
+    private static float interpolate(long start, long end, long current) {
+        // We are casting one side of the division to a float, so it performs float division instead of integer division
+        return clampPercentage((float)(current - start) / (end - start));
     }
 
     private static float clampPercentage(float in) {
