@@ -64,9 +64,14 @@ public class AlfredTelemetryHealthReporter extends SingleReportHealthReporter {
 
     @Override
     protected void processReport(NodeHealthReport report, Class<? extends HealthProcessorPlugin> pluginClass) {
-        plugins.add(pluginClass);
-        reportCounters.computeIfAbsent(new ReportCounterKey(pluginClass, report.getStatus()), this::createCounter)
-                .incrementAndGet();
+        if(plugins.add(pluginClass)) {
+            // First time that we see this plugin
+            // Create counters for all possible statuses (metrics with tags that are only sometimes present mess with Prometheus)
+            for (NodeHealthStatus healthStatus : NodeHealthStatus.values()) {
+                reportCounters.computeIfAbsent(new ReportCounterKey(pluginClass, healthStatus), this::createCounter);
+            }
+        }
+        reportCounters.get(new ReportCounterKey(pluginClass, report.getStatus())).incrementAndGet();
     }
 
     private void resetCounters() {
