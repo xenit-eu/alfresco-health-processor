@@ -6,6 +6,7 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,8 @@ public class ReportsService {
 
         List<ProcessorPluginOverview> overviews = new ArrayList<>();
         pluginClasses.forEach(clazz -> {
-            List<NodeHealthReport> reports = allReports.get(clazz);
-            Map<NodeHealthStatus, Long> stats = allStats.get(clazz);
+            List<NodeHealthReport> reports = allReports.getOrDefault(clazz, Collections.emptyList());
+            Map<NodeHealthStatus, Long> stats = allStats.getOrDefault(clazz, Collections.emptyMap());
             overviews.add(new ProcessorPluginOverview(clazz, stats, reports));
         });
         forEachEnabledReporter(reporter -> reporter.onCycleDone(overviews));
