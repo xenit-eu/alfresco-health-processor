@@ -224,6 +224,9 @@ Exposed metrics:
 * `health-processor.active`  
   Available tags: /  
   A gauge with value 0 or 1, indicating if the reporter and hence by extension the Health-Processor is active
+* `health-processor.progress`
+  Available tags: /
+  A gauge with a value between 0.0 and 1.0, indicating the progress of the current Health-Processor cycle
 * `health-processor.plugins`  
   Available tags: /  
   A gauge indicating the number of active `HealthProcessorPlugin` implementations.
@@ -251,6 +254,18 @@ Example output:
  2021-03-03 12:40:40,274  WARN  [healthprocessor.reporter.SummaryLoggingHealthReporter] [DefaultScheduler_Worker-2] Plugin[ContentValidationHealthProcessorPlugin] (#1): 
  2021-03-03 12:40:40,275  WARN  [healthprocessor.reporter.SummaryLoggingHealthReporter] [DefaultScheduler_Worker-2] 	workspace://SpacesStore/86796712-4dc6-4b8d-973f-a943ef7f23ed: [Property: '{http://www.alfresco.org/model/content/1.0}content', contentUrl: 'store://2021/3/3/12/27/cb664208-abae-4da9-b7ee-81167a43041a.bin']
  2021-03-03 12:40:40,275  WARN  [healthprocessor.reporter.SummaryLoggingHealthReporter] [DefaultScheduler_Worker-2]  --- 
+```
+
+Activation property: `eu.xenit.alfresco.healthprocessor.reporter.log.progress.enabled=true`
+
+A simple implementation that writes progress of a Health Processor cycle to the Alfresco logs.
+
+Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.ProgressLoggingHealthReporter=INFO`
+
+Example output:
+```text
+2021-08-27 08:25:44,150  INFO  [healthprocessor.reporter.ProgressLoggingHealthReporter] [DefaultScheduler_Worker-6] Health-Processor iteration 47% completed. ETA: 00:00:27.000
+2021-08-27 08:25:44,196  INFO  [healthprocessor.reporter.ProgressLoggingHealthReporter] [DefaultScheduler_Worker-6] Health-Processor iteration 53% completed. ETA: 00:00:21.000
 ```
 
 ## Extension points

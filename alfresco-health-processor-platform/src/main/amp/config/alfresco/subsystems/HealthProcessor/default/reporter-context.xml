@@ -20,6 +20,11 @@
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled}"/>
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.ProgressLoggingHealthReporter"
+            class="eu.xenit.alfresco.healthprocessor.reporter.ProgressLoggingHealthReporter">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.log.progress.enabled}"/>
+    </bean>
+
     <bean id="eu.xenit.alfresco.healthprocessor.reporter.telemetry.AlfredTelemetryHealthReporter"
             class="eu.xenit.alfresco.healthprocessor.reporter.telemetry.AlfredTelemetryHealthReporterFactoryBean">
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.alfred-telemetry.enabled}"/>
