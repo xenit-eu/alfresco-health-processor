@@ -12,6 +12,10 @@ public class IndexingProgressView {
 
     private final IndexingProgress indexingProgress;
 
+    public boolean isNone() {
+        return indexingProgress == IndexingProgress.NONE;
+    }
+
     public String getProgress() {
         float progress = indexingProgress.getProgress();
         if (Float.isNaN(progress)) {
