@@ -1,6 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
 import eu.xenit.alfresco.healthprocessor.plugins.api.ToggleableHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.EndpointHealthReport.EndpointHealthStatus;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
@@ -30,10 +31,6 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
     private final SolrSearchExecutor solrSearchExecutor;
 
     static final String MSG_NO_SEARCH_ENDPOINTS = "Node is not expected in any search index.";
-    static final String FMT_FOUND_INDEX = "Node is present in search index %s.";
-    static final String FMT_NOT_FOUND_INDEX = "Node is missing in search index %s.";
-    static final String FMT_NOT_INDEXED_TX = "Node is not yet indexed in search index %s (TX not yet processed).";
-    static final String FMT_EXCEPTION = "Exception occurred while checking node in search index %s.";
 
     @Override
     protected Logger getLogger() {
@@ -87,20 +84,20 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
                         searchResult);
 
                 for (Status status : searchResult.getFound()) {
-                    healthReports.get(status).markHealthy(String.format(FMT_FOUND_INDEX, searchEndpoint));
+                    healthReports.get(status).addHealthReport(EndpointHealthStatus.FOUND, status, searchEndpoint);
                 }
 
                 for (Status status : searchResult.getMissing()) {
-                    healthReports.get(status).markUnhealthy(String.format(FMT_NOT_FOUND_INDEX, searchEndpoint));
+                    healthReports.get(status).addHealthReport(EndpointHealthStatus.NOT_FOUND, status, searchEndpoint);
                 }
 
                 for (Status status : searchResult.getNotIndexed()) {
-                    healthReports.get(status).markUnknown(String.format(FMT_NOT_INDEXED_TX, searchEndpoint));
+                    healthReports.get(status).addHealthReport(EndpointHealthStatus.NOT_INDEXED, status, searchEndpoint);
                 }
             } catch (IOException exception) {
                 getLogger().error("Exception during healthcheck on search endpoint {}", searchEndpoint, exception);
                 for (Status nodeRefStatus : expectedNodeRefStatuses) {
-                    healthReports.get(nodeRefStatus).markUnknownForced(String.format(FMT_EXCEPTION, searchEndpoint));
+                    healthReports.get(nodeRefStatus).addHealthReport(EndpointHealthStatus.EXCEPTION, nodeRefStatus, searchEndpoint);
                 }
             }
         }

@@ -1,11 +1,14 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
+import eu.xenit.alfresco.healthprocessor.plugins.solr.EndpointHealthReport.EndpointHealthStatus;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import lombok.NonNull;
@@ -20,7 +23,7 @@ public class MutableHealthReport {
 
     @Nullable
     private NodeHealthStatus healthStatus = null;
-    private NodeHealthStatus forcedHealthStatus = null;
+    private final Set<EndpointHealthReport> endpointHealthReports = new HashSet<>();
 
     private Set<String> messages = new HashSet<>();
 
@@ -34,43 +37,46 @@ public class MutableHealthReport {
         this.messages = new HashSet<>(Arrays.asList(messages));
     }
 
-    private void mark(NodeHealthStatus healthStatus, String reason, boolean forced) {
-        this.healthStatus = healthStatus;
-        if (forced) {
-            forcedHealthStatus = healthStatus;
+    public void addHealthReport(EndpointHealthStatus healthStatus, NodeRef.Status nodeRefStatus,
+            SearchEndpoint searchEndpoint) {
+        addHealthReport(new EndpointHealthReport(healthStatus, nodeRefStatus, searchEndpoint));
+    }
+
+    public void addHealthReport(EndpointHealthReport endpointHealthReport) {
+        if (healthStatus != null) {
+            throw new IllegalStateException(
+                    "Can not add endpoint health reports when a health status is set directly.");
         }
-        messages.add(reason);
+        endpointHealthReports.add(endpointHealthReport);
     }
 
-    public void markUnhealthy(String reason) {
-        mark(NodeHealthStatus.UNHEALTHY, reason, true);
-    }
-
-    public void markUnknownForced(String reason) {
-        mark(NodeHealthStatus.NONE, reason, true);
-    }
-
-    public void markUnknown(String reason) {
-        if (healthStatus == null) {
-            mark(NodeHealthStatus.NONE, reason, false);
-        } else {
-            mark(healthStatus, reason, false);
+    private NodeHealthStatus getHealthStatus() {
+        if (healthStatus != null) {
+            return healthStatus;
         }
-    }
 
-    public void markHealthy(String reason) {
-        if (healthStatus == null || healthStatus == NodeHealthStatus.NONE) {
-            mark(NodeHealthStatus.HEALTHY, reason, false);
-        } else {
-            mark(healthStatus, reason, false);
+        EndpointHealthStatus highestHealthStatus = EndpointHealthStatus.UNSET;
+        for (EndpointHealthReport endpointHealthReport : endpointHealthReports) {
+            EndpointHealthStatus healthStatus = endpointHealthReport.getHealthStatus();
+            if (healthStatus.ordinal() < highestHealthStatus.ordinal()) {
+                highestHealthStatus = healthStatus;
+            }
         }
+
+        if (highestHealthStatus == EndpointHealthStatus.UNSET) {
+            throw new IllegalStateException("Can not have no health status set and have no endpoint health reports");
+        }
+        return highestHealthStatus.getNodeHealthStatus();
     }
 
     public NodeHealthReport getHealthReport() {
-        Objects.requireNonNull(healthStatus, "healthStatus");
-        if (forcedHealthStatus != null) {
-            return new NodeHealthReport(forcedHealthStatus, nodeRef, messages);
-        }
-        return new NodeHealthReport(healthStatus, nodeRef, messages);
+        Set<String> allMessages = Stream.concat(
+                messages.stream(),
+                endpointHealthReports.stream().map(EndpointHealthReport::getMessage)
+        ).collect(Collectors.toSet());
+
+        NodeHealthReport nodeHealthReport = new NodeHealthReport(getHealthStatus(), nodeRef, allMessages);
+        nodeHealthReport.data(EndpointHealthReport.class).addAll(endpointHealthReports);
+        return nodeHealthReport;
     }
 }

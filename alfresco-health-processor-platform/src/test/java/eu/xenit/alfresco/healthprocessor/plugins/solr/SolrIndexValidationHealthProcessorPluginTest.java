@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import eu.xenit.alfresco.healthprocessor.plugins.solr.EndpointHealthReport.EndpointHealthStatus;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
@@ -76,7 +77,7 @@ class SolrIndexValidationHealthProcessorPluginTest {
                 .allMatch(Predicate.isEqual(NodeHealthStatus.HEALTHY)), "Expect all nodes to be healthy");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(
                         Collections.singleton(
-                                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_FOUND_INDEX, searchEndpoint)))),
+                                EndpointHealthStatus.FOUND.formatReason(searchEndpoint)))),
                 "Expect all nodes to have a message");
     }
 
@@ -112,8 +113,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
         assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
                 .allMatch(Predicate.isEqual(NodeHealthStatus.HEALTHY)), "Expect all nodes to be healthy");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
-                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_FOUND_INDEX, searchEndpoint1),
-                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_FOUND_INDEX, searchEndpoint2)
+                EndpointHealthStatus.FOUND.formatReason(searchEndpoint1),
+                EndpointHealthStatus.FOUND.formatReason(searchEndpoint2)
         ))), "Expect all nodes to have a message");
     }
 
@@ -149,8 +150,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
         assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
                 .allMatch(Predicate.isEqual(NodeHealthStatus.UNHEALTHY)), "Expect all nodes to be unhealthy");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
-                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_FOUND_INDEX, searchEndpoint1),
-                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_NOT_FOUND_INDEX, searchEndpoint2)
+                EndpointHealthStatus.FOUND.formatReason(searchEndpoint1),
+                EndpointHealthStatus.NOT_FOUND.formatReason(searchEndpoint2)
         ))), "Expect all nodes to have a message");
     }
 
@@ -186,8 +187,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
         assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
                 .allMatch(Predicate.isEqual(NodeHealthStatus.HEALTHY)), "Expect all nodes to be healthy");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
-                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_FOUND_INDEX, searchEndpoint1),
-                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_NOT_INDEXED_TX, searchEndpoint2)
+                EndpointHealthStatus.FOUND.formatReason(searchEndpoint1),
+                EndpointHealthStatus.NOT_INDEXED.formatReason(searchEndpoint2)
         ))), "Expect all nodes to have a message");
     }
 
@@ -223,8 +224,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
         assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
                 .allMatch(Predicate.isEqual(NodeHealthStatus.NONE)), "Expect all nodes to be none");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
-                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_NOT_INDEXED_TX, searchEndpoint1),
-                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_NOT_INDEXED_TX, searchEndpoint2)
+                EndpointHealthStatus.NOT_INDEXED.formatReason(searchEndpoint1),
+                EndpointHealthStatus.NOT_INDEXED.formatReason(searchEndpoint2)
         ))), "Expect all nodes to have a message");
     }
 
@@ -283,8 +284,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
         assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
                 .allMatch(Predicate.isEqual(NodeHealthStatus.NONE)), "Expect all nodes to be none");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
-                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_EXCEPTION, searchEndpoint1),
-                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_FOUND_INDEX, searchEndpoint2)
+                EndpointHealthStatus.EXCEPTION.formatReason(searchEndpoint1),
+                EndpointHealthStatus.FOUND.formatReason(searchEndpoint2)
         ))), "Expect all nodes to have a message");
     }
 
@@ -313,7 +314,7 @@ class SolrIndexValidationHealthProcessorPluginTest {
         assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
                 .allMatch(Predicate.isEqual(NodeHealthStatus.NONE)), "Expect all nodes to be none");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
-                String.format(SolrIndexValidationHealthProcessorPlugin.FMT_EXCEPTION, searchEndpoint)
+                EndpointHealthStatus.EXCEPTION.formatReason(searchEndpoint)
         ))), "Expect all nodes to have a message");
     }
 }
