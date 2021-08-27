@@ -1,6 +1,5 @@
 package eu.xenit.alfresco.healthprocessor.indexing.txnid;
 
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
@@ -31,7 +30,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
     private boolean done = false;
     private long nextStartTxnIdToFetch;
 
-    private final IndexingConfiguration configuration;
+    private final TxnIdIndexingConfiguration configuration;
     private final TrackingComponent trackingComponent;
     private final AttributeStore attributeStore;
 

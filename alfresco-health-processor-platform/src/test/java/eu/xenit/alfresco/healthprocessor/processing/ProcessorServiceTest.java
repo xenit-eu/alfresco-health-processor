@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 
 import eu.xenit.alfresco.healthprocessor.indexing.AssertIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
-import eu.xenit.alfresco.healthprocessor.plugins.api.AssertHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.ReportsService;
 import eu.xenit.alfresco.healthprocessor.util.AssertTransactionHelper;

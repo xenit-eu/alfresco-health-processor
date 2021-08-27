@@ -116,8 +116,6 @@ strategy can be controlled with following property:
 eu.xenit.alfresco.healthprocessor.indexing.strategy=txn-id
 ```
 
-For now, the `txn-id` is the only available strategy.
-
 #### Indexing based on transaction ID
 
 Strategy id: `txn-id`
@@ -128,6 +126,20 @@ Loops over (a subset of) nodes based on the ID of transactions in Alfresco.
 eu.xenit.alfresco.healthprocessor.indexing.txn-id.start=-1
 eu.xenit.alfresco.healthprocessor.indexing.txn-id.stop=9223372036854775807
 eu.xenit.alfresco.healthprocessor.indexing.txn-id.txn-batch-size=5000
+```
+
+#### Indexing based on last N transactions
+
+Strategy id: `last-txns`
+
+Loops over a subset of nodes based on the ID of transactions in Alfresco.
+Only nodes in the last _N_ transactions are considered, so the only the most recently modified nodes are considered.
+
+Indexing begins at the latest transaction and works its way backwards until `lookback-transactions` transactions with nodes have been processed.
+
+```properties
+eu.xenit.alfresco.healthprocessor.indexing.last-txns.lookback-transactions=10000
+eu.xenit.alfresco.healthprocessor.indexing.last-txns.txn-batch-size=5000
 ```
 
 ### HealthProcessorPlugin implementations

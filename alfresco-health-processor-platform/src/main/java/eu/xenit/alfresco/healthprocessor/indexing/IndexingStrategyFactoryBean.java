@@ -1,9 +1,10 @@
 package eu.xenit.alfresco.healthprocessor.indexing;
 
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration.IndexingStrategyKey;
+import eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsBasedIndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsIndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdIndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
-import java.util.Objects;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 
@@ -24,12 +25,14 @@ public final class IndexingStrategyFactoryBean extends AbstractFactoryBean<Index
         return createIndexingStrategy(configuration.getIndexingStrategy());
     }
 
-    private IndexingStrategy createIndexingStrategy(IndexingStrategyKey indexingStrategy) {
+    private IndexingStrategy createIndexingStrategy(IndexingStrategy.IndexingStrategyKey indexingStrategy) {
         switch(indexingStrategy) {
             case TXNID:
-                return new TxnIdBasedIndexingStrategy(configuration, trackingComponent, attributeStore);
+                return new TxnIdBasedIndexingStrategy((TxnIdIndexingConfiguration) configuration, trackingComponent, attributeStore);
+            case LAST_TXNS:
+                return new LastTxnsBasedIndexingStrategy((LastTxnsIndexingConfiguration) configuration, trackingComponent);
             default:
-                throw new IllegalArgumentException("Unknown indexing strategy: "+ Objects.toString(indexingStrategy));
+                throw new IllegalArgumentException("Unknown indexing strategy: "+ indexingStrategy);
         }
     }
 }

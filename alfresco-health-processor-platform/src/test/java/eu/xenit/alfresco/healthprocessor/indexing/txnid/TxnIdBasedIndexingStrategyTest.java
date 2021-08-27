@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import eu.xenit.alfresco.healthprocessor.indexing.FakeTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfigUtil;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration.IndexingStrategyKey;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy.IndexingStrategyKey;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
 import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeStore;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
@@ -59,7 +59,7 @@ class TxnIdBasedIndexingStrategyTest {
         bulkInitTrackingComponent(10, 1);
 
         assertThrows(IllegalArgumentException.class,
-                () -> new IndexingConfiguration(IndexingStrategyKey.TXNID, 6L, 2L, 1000));
+                () -> new TxnIdIndexingConfiguration(6L, 2L, 1000));
     }
 
     @Test
@@ -179,7 +179,7 @@ class TxnIdBasedIndexingStrategyTest {
         return strategy(IndexingConfigUtil.defaultConfig());
     }
 
-    private TxnIdBasedIndexingStrategy strategy(IndexingConfiguration configuration) {
+    private TxnIdBasedIndexingStrategy strategy(TxnIdIndexingConfiguration configuration) {
         return new TxnIdBasedIndexingStrategy(configuration, trackingComponent, attributeStore);
     }
 
