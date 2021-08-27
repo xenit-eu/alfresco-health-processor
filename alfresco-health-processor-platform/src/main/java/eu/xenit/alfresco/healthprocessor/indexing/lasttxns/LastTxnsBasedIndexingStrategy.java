@@ -24,13 +24,11 @@ public class LastTxnsBasedIndexingStrategy implements IndexingStrategy {
 
     private final LastTxnsIndexingConfiguration configuration;
     private final TrackingComponent trackingComponent;
-
+    private final Queue<NodeInfo> nodeQueue = new PriorityQueue<>(
+            Collections.reverseOrder(Comparator.comparingLong((NodeInfo::getTxnId))));
     private long initialMaxTxId;
     private long nextMaxTxId;
     private long processedTransactions;
-
-    private final Queue<NodeInfo> nodeQueue = new PriorityQueue<>(
-            Collections.reverseOrder(Comparator.comparingLong((NodeInfo::getTxnId))));
 
     @Override
     public void onStart() {
@@ -44,8 +42,11 @@ public class LastTxnsBasedIndexingStrategy implements IndexingStrategy {
     public Set<NodeRef> getNextNodeIds(int amount) {
         Set<NodeRef> ret = new HashSet<>();
 
-        boolean done = nextMaxTxId <= 0 || processedTransactions > configuration.getLookbackTransactions();
-        while (!done && nodeQueue.size() < amount) {
+        while (
+                nextMaxTxId > 0
+                        && processedTransactions < configuration.getLookbackTransactions()
+                        && nodeQueue.size() < amount
+        ) {
             fetchMoreNodes();
         }
 
@@ -65,7 +66,9 @@ public class LastTxnsBasedIndexingStrategy implements IndexingStrategy {
                 configuration.getBatchSize(),
                 configuration.getLookbackTransactions() - processedTransactions
         );
+        assert transactionsToLookBack > 0;
         long startTxId = Math.max(0, endTxIdExclusive - transactionsToLookBack);
+        assert startTxId < endTxIdExclusive;
         log.debug("Fetching more nodes. startTxId={}, endTxIdExclusive={}", startTxId, endTxIdExclusive);
         Set<NodeInfo> nodeInfo = trackingComponent.getNodesForTxnIds(
                 LongStream.range(startTxId, endTxIdExclusive).boxed().collect(Collectors.toList())
