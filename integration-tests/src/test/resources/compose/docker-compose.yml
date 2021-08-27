@@ -22,6 +22,7 @@ services:
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:content
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-index-node.enabled=true
     depends_on:
       - postgresql
   solr:

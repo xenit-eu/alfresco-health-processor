@@ -22,4 +22,13 @@ public class SearchEndpoint {
             this.baseUri = baseUri;
         }
     }
+
+    public URI getAdminUri() {
+        return baseUri.resolve("../admin/");
+    }
+
+    public String getCoreName() {
+        String[] path = baseUri.getPath().split("/");
+        return path[path.length - 1];
+    }
 }

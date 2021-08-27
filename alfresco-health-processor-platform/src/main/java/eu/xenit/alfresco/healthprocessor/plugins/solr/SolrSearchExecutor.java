@@ -93,6 +93,17 @@ public class SolrSearchExecutor {
         return solrSearchResult;
     }
 
+    public boolean forceNodeIndex(SearchEndpoint endpoint, Status nodeStatus) throws IOException {
+        String coreName = endpoint.getCoreName();
+        HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve("cores?action=index&nodeid="+nodeStatus.getDbId()+"&wt=json&coreName="+coreName));
+
+        log.trace("Executing HTTP request {}", indexRequest);
+        JsonNode response = httpClient.execute(indexRequest, new JSONResponseHandler());
+        log.trace("Response: {}", response.asText());
+
+        return response.path("action").path(coreName).path("status").asText().equals("scheduled");
+    }
+
     private static class JSONResponseHandler implements ResponseHandler<JsonNode> {
 
         @Override
@@ -116,5 +127,4 @@ public class SolrSearchExecutor {
             return objectMapper.readTree(entity.getContent());
         }
     }
-
 }
