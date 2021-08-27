@@ -29,6 +29,7 @@ Version template:
 * [[#33](https://github.com/xenit-eu/alfresco-health-processor/pull/33)] Validate that plugins send reports for all nodes.
 * [[#34](https://github.com/xenit-eu/alfresco-health-processor/pull/34)] Solr index validation plugin
 * [[#35](https://github.com/xenit-eu/alfresco-health-processor/pull/35)] Last N transactions indexing strategy
+* [[#36](https://github.com/xenit-eu/alfresco-health-processor/pull/36)] User-friendly progress reporting
 
 ### Fixed
 
