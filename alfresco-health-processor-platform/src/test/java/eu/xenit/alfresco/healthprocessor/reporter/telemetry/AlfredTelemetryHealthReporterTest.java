@@ -1,12 +1,17 @@
 package eu.xenit.alfresco.healthprocessor.reporter.telemetry;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.not;
 
-import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.indexing.AssertIndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.SimpleIndexingProgress;
 import eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.TestReports;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Key;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Tag;
@@ -68,6 +73,21 @@ class AlfredTelemetryHealthReporterTest {
         assertThat(getReportGaugesValue("UNHEALTHY", null), is(equalTo(2d)));
         assertThat(getReportGaugesValue("UNHEALTHY", "AssertHealthProcessorPlugin"), is(equalTo(2d)));
         assertThat(getReportGaugesValue(null, "NoOpHealthProcessorPlugin"), is(equalTo(1d)));
+    }
+
+    @Test
+    void progress() {
+        reporter.onProgress(AssertIndexingStrategy.class, new SimpleIndexingProgress(1, 2, () -> 1));
+        assertThat(meterRegistry.get(Key.PROGRESS).gauge().value(), is(closeTo(0.5, 0.0001)));
+
+        reporter.onProgress(AssertIndexingStrategy.class, new SimpleIndexingProgress(1, 2, () -> 2));
+        assertThat(meterRegistry.get(Key.PROGRESS).gauge().value(), is(closeTo(1.0, 0.0001)));
+
+        reporter.onProgress(AssertIndexingStrategy.class, new SimpleIndexingProgress(1, 2, () -> 0));
+        assertThat(meterRegistry.get(Key.PROGRESS).gauge().value(), is(closeTo(0.0, 0.0001)));
+
+        reporter.onProgress(AssertIndexingStrategy.class, IndexingProgress.NONE);
+        assertThat(meterRegistry.get(Key.PROGRESS).gauge().value(), is(Double.NaN));
     }
 
     private void assertActiveGaugeEquals(double expected) {

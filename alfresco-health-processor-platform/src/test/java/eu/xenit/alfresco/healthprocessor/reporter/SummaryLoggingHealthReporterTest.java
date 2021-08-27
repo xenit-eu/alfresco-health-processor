@@ -4,6 +4,8 @@ import static eu.xenit.alfresco.healthprocessor.util.SetUtil.set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import eu.xenit.alfresco.healthprocessor.indexing.AssertIndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
@@ -34,6 +36,7 @@ class SummaryLoggingHealthReporterTest {
 
         reporter.onStart();
         reporter.processReports(AssertHealthProcessorPlugin.class, set(REPORT_1, REPORT_2));
+        reporter.onProgress(AssertIndexingStrategy.class, IndexingProgress.NONE);
         reporter.onCycleDone(Collections.singletonList(overview));
     }
 
