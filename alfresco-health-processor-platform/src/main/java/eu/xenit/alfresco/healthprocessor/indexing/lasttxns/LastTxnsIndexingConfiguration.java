@@ -22,7 +22,7 @@ public class LastTxnsIndexingConfiguration implements IndexingConfiguration {
     @Override
     public Map<String, String> getConfiguration() {
         Map<String, String> ret = new HashMap<>();
-        ret.put("number-of-transactions", Long.toString(lookbackTransactions));
+        ret.put("lookback-transactions", Long.toString(lookbackTransactions));
         ret.put("txn-batch-size", Long.toString(batchSize));
         return ret;
     }

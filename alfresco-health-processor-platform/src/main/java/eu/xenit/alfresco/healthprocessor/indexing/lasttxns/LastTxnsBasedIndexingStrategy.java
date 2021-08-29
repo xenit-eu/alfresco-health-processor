@@ -1,6 +1,8 @@
 package eu.xenit.alfresco.healthprocessor.indexing.lasttxns;
 
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.SimpleIndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
 import java.util.Collections;
@@ -30,11 +32,14 @@ public class LastTxnsBasedIndexingStrategy implements IndexingStrategy {
     private long nextMaxTxId;
     private long processedTransactions;
 
+    private IndexingProgress indexingProgress = IndexingProgress.NONE;
+
     @Override
     public void onStart() {
         nodeQueue.clear();
         initialMaxTxId = nextMaxTxId = trackingComponent.getMaxTxnId();
         processedTransactions = 0;
+        indexingProgress = new SimpleIndexingProgress(0, Math.min(initialMaxTxId, configuration.getLookbackTransactions()), () -> processedTransactions);
     }
 
     @Nonnull
@@ -86,6 +91,7 @@ public class LastTxnsBasedIndexingStrategy implements IndexingStrategy {
     public void onStop() {
         log.info("Processed nodes from transaction {} until transaction {}. #{} transactions with nodes",
                 nextMaxTxId + 1, initialMaxTxId, processedTransactions);
+        indexingProgress = IndexingProgress.NONE;
     }
 
     @Nonnull
@@ -99,5 +105,11 @@ public class LastTxnsBasedIndexingStrategy implements IndexingStrategy {
         ret.put("initial-max-txn-id", Long.toString(initialMaxTxId));
 
         return ret;
+    }
+
+    @Nonnull
+    @Override
+    public IndexingProgress getIndexingProgress() {
+        return indexingProgress;
     }
 }
