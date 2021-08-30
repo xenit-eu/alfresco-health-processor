@@ -29,14 +29,13 @@ public class IndexingProgressView {
     }
 
     public String getElapsed() {
-        return DurationFormatUtils.formatDurationHMS(indexingProgress.getElapsed().withNanos(0).toMillis());
+        return format(indexingProgress.getElapsed().withNanos(0));
     }
 
     public String getEstimatedCompletion() {
         return indexingProgress.getEstimatedCompletion()
                 .map(duration -> duration.withNanos(0))
-                .map(Duration::toMillis)
-                .map(DurationFormatUtils::formatDurationHMS)
+                .map(IndexingProgressView::format)
                 .orElse("Unknown");
     }
 
@@ -45,5 +44,24 @@ public class IndexingProgressView {
                 .map(duration -> Instant.now().plus(duration))
                 .map(Date::from)
                 .orElse(null);
+    }
+
+    private static String format(Duration duration) {
+        long fullDays = duration.toDays();
+        Duration rest = duration.minusDays(fullDays);
+        StringBuilder formattedDuration = new StringBuilder();
+        if(fullDays > 0) {
+            formattedDuration.append(fullDays)
+                    .append(' ')
+                    .append("day");
+            if(fullDays > 1) {
+                formattedDuration.append('s');
+            }
+            formattedDuration.append(' ');
+        }
+
+        formattedDuration.append(DurationFormatUtils.formatDuration(rest.toMillis(), "HH:mm:ss"));
+
+        return formattedDuration.toString();
     }
 }
