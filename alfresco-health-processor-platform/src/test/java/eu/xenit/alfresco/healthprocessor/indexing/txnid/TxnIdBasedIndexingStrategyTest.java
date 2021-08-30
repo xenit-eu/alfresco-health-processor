@@ -12,9 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import eu.xenit.alfresco.healthprocessor.indexing.FakeTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfigUtil;
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy.IndexingStrategyKey;
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
 import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeStore;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;

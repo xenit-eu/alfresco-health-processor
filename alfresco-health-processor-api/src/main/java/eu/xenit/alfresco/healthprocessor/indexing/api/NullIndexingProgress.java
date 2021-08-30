@@ -1,13 +1,21 @@
-package eu.xenit.alfresco.healthprocessor.indexing;
+package eu.xenit.alfresco.healthprocessor.indexing.api;
 
 import java.time.Duration;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import lombok.Singular;
 
 
 final class NullIndexingProgress implements IndexingProgress {
 
-    static final NullIndexingProgress INSTANCE = new NullIndexingProgress();
+    private static class NullIndexingProgressHolder {
+
+        private static final IndexingProgress INSTANCE = new NullIndexingProgress();
+    }
+
+    public static IndexingProgress getInstance() {
+        return NullIndexingProgressHolder.INSTANCE;
+    }
 
     private NullIndexingProgress() {
 

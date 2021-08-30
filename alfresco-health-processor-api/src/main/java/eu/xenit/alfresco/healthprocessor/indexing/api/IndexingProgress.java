@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.indexing;
+package eu.xenit.alfresco.healthprocessor.indexing.api;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 
 public interface IndexingProgress {
 
-    IndexingProgress NONE = NullIndexingProgress.INSTANCE;
+    IndexingProgress NONE = NullIndexingProgress.getInstance();
 
     float getProgress();
 

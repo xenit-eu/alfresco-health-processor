@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.indexing;
 
+import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.function.LongSupplier;

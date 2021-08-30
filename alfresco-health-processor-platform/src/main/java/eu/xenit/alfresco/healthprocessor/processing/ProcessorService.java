@@ -127,7 +127,7 @@ public class ProcessorService {
     }
 
     private void updateIndexingProgress() {
-        transactionHelper.inNewTransaction(() -> reportsService.onProgress(indexingStrategy.getClass(), indexingStrategy.getIndexingProgress()), false);
+        transactionHelper.inNewTransaction(() -> reportsService.onProgress(indexingStrategy.getIndexingProgress()), false);
     }
 
     private Set<NodeHealthReport> validateNodeReports(Set<NodeRef> nodesToProcess, Set<NodeHealthReport> reports, HealthProcessorPlugin plugin) {

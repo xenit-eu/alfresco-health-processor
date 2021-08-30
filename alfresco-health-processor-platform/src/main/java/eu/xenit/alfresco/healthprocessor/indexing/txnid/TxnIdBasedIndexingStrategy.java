@@ -1,6 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.indexing.txnid;
 
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.SimpleIndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;

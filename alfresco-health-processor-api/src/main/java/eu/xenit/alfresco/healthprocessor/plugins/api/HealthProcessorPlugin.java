@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.plugins.api;
 
+import eu.xenit.alfresco.healthprocessor.extensibility.BaseExtension;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -14,9 +15,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @see SingleNodeHealthProcessorPlugin implementation dividing the batch in individual {@link
  * SingleNodeHealthProcessorPlugin#process(NodeRef)} calls.
  */
-public interface HealthProcessorPlugin {
-
-    boolean isEnabled();
+public interface HealthProcessorPlugin extends BaseExtension {
 
     /**
      * Process a batch of nodes. Each execution will be wrapped in a new transaction by the Health-Processor.

@@ -1,6 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.webscripts.console.model;
 
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
