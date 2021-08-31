@@ -139,4 +139,15 @@ public class ContentValidationHealthProcessorPlugin extends SingleNodeHealthProc
     private static String toMessage(QName property, String contentUrl) {
         return "Property: '" + property + "', contentUrl: '" + contentUrl + "'";
     }
+
+    @Override
+    public Map<String, String> getConfiguration() {
+        Map<String, String> configuration = new HashMap<>();
+        configuration.put("enabled", Boolean.toString(isEnabled()));
+        configuration.put("properties", propertyQNamesToValidate.stream()
+                .map(QName::toPrefixString)
+                .collect(Collectors.joining(", "))
+        );
+        return configuration;
+    }
 }

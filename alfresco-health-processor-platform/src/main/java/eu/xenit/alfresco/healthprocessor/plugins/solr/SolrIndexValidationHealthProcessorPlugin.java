@@ -109,4 +109,12 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
                 .map(MutableHealthReport::getHealthReport)
                 .collect(Collectors.toSet());
     }
+
+    @Override
+    public Map<String, String> getConfiguration() {
+        Map<String, String> configuration = new HashMap<>();
+        configuration.put("enabled", Boolean.toString(isEnabled()));
+        configuration.put("solrServerSelector", solrServerSelector.toString());
+        return configuration;
+    }
 }

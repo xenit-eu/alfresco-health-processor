@@ -4,12 +4,14 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 
 /**
  * Endpoint selector that only selects an endpoint when the database id of a node is within a range
  */
 @AllArgsConstructor
+@ToString
 public class DbIdRangeSearchEndpointSelector implements SearchEndpointSelector {
 
     private final Long dbIdStart;
