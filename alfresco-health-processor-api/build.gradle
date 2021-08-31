@@ -1,0 +1,35 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    withJavadocJar()
+    withSourcesJar()
+}
+
+apply from: "${rootDir}/gradle/publish.gradle"
+apply from: "${rootDir}/gradle/internalPlatform.gradle"
+
+dependencies {
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+
+    internalPlatform platform("eu.xenit.alfresco:alfresco-community-bom:${alfrescoVersion}")
+    api("org.alfresco:alfresco-data-model") {
+        // We only need the NodeRef class, not all dependencies
+        transitive = false
+    }
+    api 'org.slf4j:slf4j-api'
+}
+
+publishing {
+    publications {
+        java(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
