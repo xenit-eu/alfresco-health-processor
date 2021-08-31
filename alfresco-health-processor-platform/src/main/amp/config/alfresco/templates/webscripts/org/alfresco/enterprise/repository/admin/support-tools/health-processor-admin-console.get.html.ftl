@@ -11,10 +11,13 @@
             value="${healthprocessor.status}" />
     </div>
 
-    <#macro map_dump map>
+    <#macro map_dump name map>
+        <#if name != "">
+            <h4>${name}</h4>
+        </#if>
         <ul>
             <#list map?keys as key>
-                <li>${key}: <b>${map[key]}</b></li>
+                <li><b>${key}</b>: ${map[key]}</li>
             </#list>
         </ul>
     </#macro>
@@ -50,41 +53,40 @@
     </div>
 
     <div class="column-full">
-        <@section label="Indexing Strategy"/>
+        <@section label="Indexing Strategy" />
         <@field label="ID"
             description="The ID of the Indexing Strategy in use"
             value="${healthprocessor.indexing.id}" />
         <div class="column-left">
-            <h4>State</h4>
-            <@map_dump healthprocessor.indexing.state />
+            <@map_dump "State", healthprocessor.indexing.state />
         </div>
         <div class="column-right">
-            <h4>Configuration</h4>
-            <@map_dump healthprocessor.indexing.configuration />
+            <@map_dump "Configuration", healthprocessor.indexing.configuration />
         </div>
+        <div style="clear:both"></div>
     </div>
 
-    <#macro extensions_map_dump map name="">
-        <#if map?size gt 0>
-            <#if name != "">${name}: </#if>[<#list map?keys as key>${key}: ${map[key]}<#if key_has_next>, </#if></#list>]
-        </#if>
-    </#macro>
-
-    <#macro extensions_list extensions>
-        <ul>
+    <#macro extensions_list type extensions>
             <#list extensions as extension>
-                <li>${extension.name} <@extensions_map_dump map=extension.configuration /> <@extensions_map_dump map=extension.state name="State" />
+                <div class="column-full">
+                    <@section label="${type}: ${extension.name}" />
+                    <#assign hasState = extension.state?size gt 0 />
+                    <#if hasState>
+                        <div class="column-left">
+                            <@map_dump "Configuration", extension.configuration />
+                        </div>
+                        <div class="column-right">
+                            <@map_dump "State", extension.state />
+                        </div>
+                    <#else>
+                        <@map_dump "", extension.configuration />
+                    </#if>
+                </div>
            </#list>
     </#macro>
 
-    <div class="column-full">
-        <@section label="Plugins"/>
-        <@extensions_list healthprocessor.plugins.extensions />
-    </div>
+    <@extensions_list "Plugin", healthprocessor.plugins.extensions />
 
-    <div class="column-full">
-        <@section label="Reporters"/>
-        <@extensions_list healthprocessor.reporters.extensions />
-    </div>
+    <@extensions_list "Reporter", healthprocessor.reporters.extensions />
 
 </@page>
