@@ -11,6 +11,14 @@
             value="${healthprocessor.status}" />
     </div>
 
+    <#macro map_dump map>
+        <ul>
+            <#list map?keys as key>
+                <li>${key}: <b>${map[key]}</b></li>
+            </#list>
+        </ul>
+    </#macro>
+
     <div class="column-full">
         <@section label="Cycle progress"/>
         <#assign progress=healthprocessor.indexing.progress>
@@ -48,38 +56,35 @@
             value="${healthprocessor.indexing.id}" />
         <div class="column-left">
             <h4>State</h4>
-            <ul>
-                <#list healthprocessor.indexing.state?keys as key>
-                    <li>${key}: <b>${healthprocessor.indexing.state[key]}</b></li>
-                </#list>
-            </ul>
+            <@map_dump healthprocessor.indexing.state />
         </div>
         <div class="column-right">
             <h4>Configuration</h4>
-            <ul>
-                <#list healthprocessor.indexing.configuration?keys as key>
-                    <li>${key}: <b>${healthprocessor.indexing.configuration[key]}</b></li>
-                </#list>
-            </ul>
+            <@map_dump healthprocessor.indexing.configuration />
         </div>
     </div>
 
+    <#macro extensions_map_dump map name="">
+        <#if map?size gt 0>
+            <#if name != "">${name}: </#if>[<#list map?keys as key>${key}: ${map[key]}<#if key_has_next>, </#if></#list>]
+        </#if>
+    </#macro>
+
+    <#macro extensions_list extensions>
+        <ul>
+            <#list extensions as extension>
+                <li>${extension.name} <@extensions_map_dump map=extension.configuration /> <@extensions_map_dump map=extension.state name="State" />
+           </#list>
+    </#macro>
+
     <div class="column-full">
         <@section label="Plugins"/>
-        <ul>
-            <#list healthprocessor.plugins.plugins as plugin>
-                <li>${plugin.name} [enabled: ${plugin.enabled?c}]</li>
-            </#list>
-        </ul>
+        <@extensions_list healthprocessor.plugins.extensions />
     </div>
 
     <div class="column-full">
         <@section label="Reporters"/>
-        <ul>
-            <#list healthprocessor.reporters.reporters as reporter>
-                <li>${reporter.name} [enabled: ${reporter.enabled?c}]</li>
-            </#list>
-        </ul>
+        <@extensions_list healthprocessor.reporters.extensions />
     </div>
 
 </@page>

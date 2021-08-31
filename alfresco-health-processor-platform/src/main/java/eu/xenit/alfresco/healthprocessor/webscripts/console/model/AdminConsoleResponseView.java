@@ -12,11 +12,11 @@ public class AdminConsoleResponseView {
     String status;
 
     IndexingStrategyView indexing;
-    PluginsView plugins;
-    ReportersView reporters;
+    ExtensionsView plugins;
+    ExtensionsView reporters;
 
     public AdminConsoleResponseView(ModuleDetails moduleDetails, String status, IndexingStrategyView indexing,
-            PluginsView plugins, ReportersView reporters) {
+            ExtensionsView plugins, ExtensionsView reporters) {
         this(extractVersionNumber(moduleDetails), status, indexing, plugins, reporters);
     }
 
