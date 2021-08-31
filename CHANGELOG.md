@@ -35,6 +35,10 @@ Version template:
 
 * [[#37]](https://github.com/xenit-eu/alfresco-health-processor/pull/37)]  Export all node health statuses in micrometer
 
+### Changed
+
+* [[#38](https://github.com/xenit-eu/alfresco-health-processor/pull/38)] Moved public APIs to separate artifact
+
 ## [0.4.0] - 2021-07-08
 ### Added
 * Alfresco 7 support
