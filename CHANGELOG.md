@@ -30,6 +30,10 @@ Version template:
 * [[#34](https://github.com/xenit-eu/alfresco-health-processor/pull/34)] Solr index validation plugin
 * [[#35](https://github.com/xenit-eu/alfresco-health-processor/pull/35)] Last N transactions indexing strategy
 
+### Fixed
+
+* [[#37]](https://github.com/xenit-eu/alfresco-health-processor/pull/37)]  Export all node health statuses in micrometer
+
 ## [0.4.0] - 2021-07-08
 ### Added
 * Alfresco 7 support
