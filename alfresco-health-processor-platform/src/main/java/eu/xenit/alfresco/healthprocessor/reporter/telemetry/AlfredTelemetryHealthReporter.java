@@ -64,7 +64,7 @@ public class AlfredTelemetryHealthReporter extends SingleReportHealthReporter {
 
     @Override
     protected void processReport(NodeHealthReport report, Class<? extends HealthProcessorPlugin> pluginClass) {
-        if(plugins.add(pluginClass)) {
+        if (plugins.add(pluginClass)) {
             // First time that we see this plugin
             // Create counters for all possible statuses (metrics with tags that are only sometimes present mess with Prometheus)
             for (NodeHealthStatus healthStatus : NodeHealthStatus.values()) {

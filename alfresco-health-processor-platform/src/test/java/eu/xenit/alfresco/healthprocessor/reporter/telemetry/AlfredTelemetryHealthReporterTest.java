@@ -5,8 +5,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-import eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.TestReports;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Key;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Tag;
@@ -55,6 +55,7 @@ class AlfredTelemetryHealthReporterTest {
         reporter.processReport(TestReports.healthy(), NoOpHealthProcessorPlugin.class);
 
         assertThat(getReportGaugesValue(null, null), is(equalTo(2d)));
+        assertThat(getReportGaugesValue("UNHEALTHY", null), is(equalTo(0d)));
         assertThat(getReportGaugesValue("HEALTHY", null), is(equalTo(2d)));
         assertThat(getReportGaugesValue("HEALTHY", "AssertHealthProcessorPlugin"), is(equalTo(1d)));
         assertThat(getReportGaugesValue(null, "NoOpHealthProcessorPlugin"), is(equalTo(1d)));
