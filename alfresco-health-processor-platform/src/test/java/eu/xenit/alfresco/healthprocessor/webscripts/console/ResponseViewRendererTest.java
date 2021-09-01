@@ -64,6 +64,10 @@ class ResponseViewRendererTest {
         assertThat(view.getIndexing().getId(), is("txn-id"));
         assertThat(view.getIndexing().getConfiguration().keySet(), is(not(empty())));
 
+        assertThat(view.getIndexing().getProgress(), is(notNullValue()));
+        assertThat(view.getIndexing().getProgress().isNone(), is(equalTo(true)));
+        assertThat(view.getIndexing().getProgress().getProgress(), is(equalTo("Unknown")));
+
         assertThat(view.getPlugins(), is(notNullValue()));
         assertThat(view.getPlugins().getPlugins(), hasSize(1));
         assertThat(view.getPlugins().getPlugins().get(0).getName(), is(equalTo("AssertHealthProcessorPlugin")));
@@ -72,6 +76,6 @@ class ResponseViewRendererTest {
         assertThat(view.getReporters().getReporters(), hasSize(1));
         assertThat(view.getReporters().getReporters().get(0).getName(), is(equalTo("SummaryLoggingHealthReporter")));
 
-    }
 
+    }
 }

@@ -17,6 +17,7 @@ services:
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.max-batches-per-second=100
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.noop.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.progress.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.alfred-telemetry.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:content

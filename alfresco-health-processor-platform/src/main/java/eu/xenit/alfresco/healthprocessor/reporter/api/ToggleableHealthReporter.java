@@ -1,10 +1,12 @@
 package eu.xenit.alfresco.healthprocessor.reporter.api;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
 public abstract class ToggleableHealthReporter implements HealthReporter {
 
+    @Getter
+    @Setter
     private boolean enabled;
 
 }
