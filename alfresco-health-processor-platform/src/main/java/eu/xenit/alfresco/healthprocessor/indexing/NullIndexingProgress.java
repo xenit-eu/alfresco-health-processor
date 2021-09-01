@@ -2,6 +2,8 @@ package eu.xenit.alfresco.healthprocessor.indexing;
 
 import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import java.time.Duration;
+import java.util.Optional;
+import javax.annotation.Nonnull;
 
 
 public final class NullIndexingProgress implements IndexingProgress {
@@ -20,6 +22,11 @@ public final class NullIndexingProgress implements IndexingProgress {
     }
 
     @Override
+    public boolean isUnknown() {
+        return true;
+    }
+
+    @Override
     public float getProgress() {
         return Float.NaN;
     }
@@ -27,5 +34,11 @@ public final class NullIndexingProgress implements IndexingProgress {
     @Override
     public Duration getElapsed() {
         return Duration.ZERO;
+    }
+
+    @Nonnull
+    @Override
+    public Optional<Duration> getEstimatedCompletion() {
+        return Optional.empty();
     }
 }

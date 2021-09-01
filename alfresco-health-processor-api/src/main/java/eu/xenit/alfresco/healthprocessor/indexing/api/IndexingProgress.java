@@ -6,24 +6,12 @@ import javax.annotation.Nonnull;
 
 public interface IndexingProgress {
 
+    boolean isUnknown();
+
     float getProgress();
 
     Duration getElapsed();
 
     @Nonnull
-    default Optional<Duration> getEstimatedCompletion() {
-        if (isUnknown()) {
-            return Optional.empty();
-        }
-        long done = (long) (getProgress() * 10_000L);
-        long toDo = 10_000L - done;
-        if (done == 0) {
-            return Optional.empty();
-        }
-        return Optional.of(getElapsed().dividedBy(done).multipliedBy(toDo));
-    }
-
-    default boolean isUnknown() {
-        return Float.isNaN(getProgress());
-    }
+    Optional<Duration> getEstimatedCompletion();
 }
