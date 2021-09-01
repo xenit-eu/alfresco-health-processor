@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
-import eu.xenit.alfresco.healthprocessor.reporter.api.DisabledHealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +23,7 @@ class AlfredTelemetryHealthReporterFactoryBeanTest {
 
     @Test
     void createInstance_micrometerNotPresent_enabled() {
-        assertCreateInstance(false, true, DisabledHealthReporter.class, false);
+        assertCreateInstance(false, true, HealthReporter.disabled.getClass(), false);
     }
 
     @Test
@@ -34,7 +33,7 @@ class AlfredTelemetryHealthReporterFactoryBeanTest {
 
     @Test
     void createInstance_micrometerNotPresent_notEnabled() {
-        assertCreateInstance(false, false, DisabledHealthReporter.class, false);
+        assertCreateInstance(false, false, HealthReporter.disabled.getClass(), false);
     }
 
     private void assertCreateInstance(boolean isMicrometerPresent, boolean isEnabled,

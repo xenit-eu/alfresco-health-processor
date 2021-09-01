@@ -24,6 +24,10 @@ public class ProgressLoggingHealthReporter extends ToggleableHealthReporter {
             return;
         }
 
+        if(progress.isUnknown()) {
+            return;
+        }
+
         float progressPercentage = progress.getProgress();
         if (Float.isNaN(progressPercentage)) {
             return;

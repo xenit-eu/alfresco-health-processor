@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.indexing.lasttxns;
 
+import eu.xenit.alfresco.healthprocessor.indexing.NullIndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.SimpleIndexingProgress;
@@ -32,7 +33,7 @@ public class LastTxnsBasedIndexingStrategy implements IndexingStrategy {
     private long nextMaxTxId;
     private long processedTransactions;
 
-    private IndexingProgress indexingProgress = IndexingProgress.NONE;
+    private IndexingProgress indexingProgress = NullIndexingProgress.getInstance();
 
     @Override
     public void onStart() {
@@ -91,7 +92,7 @@ public class LastTxnsBasedIndexingStrategy implements IndexingStrategy {
     public void onStop() {
         log.info("Processed nodes from transaction {} until transaction {}. #{} transactions with nodes",
                 nextMaxTxId + 1, initialMaxTxId, processedTransactions);
-        indexingProgress = IndexingProgress.NONE;
+        indexingProgress = NullIndexingProgress.getInstance();
     }
 
     @Nonnull

@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import eu.xenit.alfresco.healthprocessor.indexing.FakeTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfigUtil;
+import eu.xenit.alfresco.healthprocessor.indexing.NullIndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
 import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeStore;
@@ -161,7 +162,7 @@ class TxnIdBasedIndexingStrategyTest {
         bulkInitTrackingComponent(10, 3); // 30 nodes in total
 
         TxnIdBasedIndexingStrategy strategy = strategy(IndexingConfigUtil.config(-1, Long.MAX_VALUE, 2)); // 6 nodes per fetch
-        assertThat(strategy.getIndexingProgress(), is(IndexingProgress.NONE));
+        assertThat(strategy.getIndexingProgress().isUnknown(), is(true));
 
         strategy.onStart();
         assertThat(strategy.getIndexingProgress().getProgress(), is(0.0f));

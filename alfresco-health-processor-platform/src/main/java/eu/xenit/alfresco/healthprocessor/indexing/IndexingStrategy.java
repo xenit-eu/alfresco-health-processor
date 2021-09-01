@@ -37,7 +37,7 @@ public interface IndexingStrategy {
 
     @Nonnull
     default IndexingProgress getIndexingProgress() {
-        return IndexingProgress.NONE;
+        return NullIndexingProgress.getInstance();
     }
 
     enum IndexingStrategyKey {

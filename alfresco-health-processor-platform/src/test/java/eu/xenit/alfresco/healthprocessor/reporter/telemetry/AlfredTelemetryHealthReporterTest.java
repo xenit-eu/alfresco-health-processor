@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.not;
 
+import eu.xenit.alfresco.healthprocessor.indexing.NullIndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.SimpleIndexingProgress;
 import eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin;
@@ -85,7 +86,7 @@ class AlfredTelemetryHealthReporterTest {
         reporter.onProgress(new SimpleIndexingProgress(1, 2, () -> 0));
         assertThat(meterRegistry.get(Key.PROGRESS).gauge().value(), is(closeTo(0.0, 0.0001)));
 
-        reporter.onProgress(IndexingProgress.NONE);
+        reporter.onProgress(NullIndexingProgress.getInstance());
         assertThat(meterRegistry.get(Key.PROGRESS).gauge().value(), is(Double.NaN));
     }
 

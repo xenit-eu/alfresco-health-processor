@@ -13,7 +13,8 @@ public interface HealthReporter extends BaseExtension {
 
     }
 
-    default void processReports(@Nonnull Class<? extends HealthProcessorPlugin> pluginClass, @Nonnull Set<NodeHealthReport> reports) {
+    default void processReports(@Nonnull Class<? extends HealthProcessorPlugin> pluginClass,
+            @Nonnull Set<NodeHealthReport> reports) {
 
     }
 
@@ -29,5 +30,5 @@ public interface HealthReporter extends BaseExtension {
 
     }
 
-    HealthReporter disabled = new DisabledHealthReporter();
+    HealthReporter disabled = DisabledHealthReporter.getInstance();
 }
