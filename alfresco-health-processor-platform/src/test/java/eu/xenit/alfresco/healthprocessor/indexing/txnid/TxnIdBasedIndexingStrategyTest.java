@@ -12,8 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import eu.xenit.alfresco.healthprocessor.indexing.FakeTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfigUtil;
-import eu.xenit.alfresco.healthprocessor.indexing.NullIndexingProgress;
-import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
 import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeStore;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
@@ -162,28 +160,28 @@ class TxnIdBasedIndexingStrategyTest {
         bulkInitTrackingComponent(10, 3); // 30 nodes in total
 
         TxnIdBasedIndexingStrategy strategy = strategy(IndexingConfigUtil.config(-1, Long.MAX_VALUE, 2)); // 6 nodes per fetch
-        assertThat(strategy.getIndexingProgress().isUnknown(), is(true));
+        assertThat(strategy.getCycleProgress().isUnknown(), is(true));
 
         strategy.onStart();
-        assertThat(strategy.getIndexingProgress().getProgress(), is(0.0f));
+        assertThat(strategy.getCycleProgress().getProgress(), is(0.0f));
 
         strategy.getNextNodeIds(2); // Fetched 2/10 transactions (batch size)
-        assertThat((double)strategy.getIndexingProgress().getProgress(), is(closeTo(0.2, 0.0001)));
+        assertThat((double)strategy.getCycleProgress().getProgress(), is(closeTo(0.2, 0.0001)));
 
         strategy.getNextNodeIds(1); // Processed 3 in total (no extra tx fetched)
-        assertThat((double)strategy.getIndexingProgress().getProgress(), is(closeTo(0.2, 0.0001)));
+        assertThat((double)strategy.getCycleProgress().getProgress(), is(closeTo(0.2, 0.0001)));
 
         strategy.getNextNodeIds(6); // Processed 9 in total (2 extra tx fetched)
-        assertThat((double)strategy.getIndexingProgress().getProgress(), is(closeTo(0.4, 0.0001)));
+        assertThat((double)strategy.getCycleProgress().getProgress(), is(closeTo(0.4, 0.0001)));
 
         strategy.getNextNodeIds(10); // Processed 19 in total (4 extra tx fetched)
-        assertThat((double)strategy.getIndexingProgress().getProgress(), is(closeTo(0.8, 0.0001)));
+        assertThat((double)strategy.getCycleProgress().getProgress(), is(closeTo(0.8, 0.0001)));
 
         strategy.getNextNodeIds(20); // Processed 29 in total (all Tx fetched)
-        assertThat((double)strategy.getIndexingProgress().getProgress(), is(closeTo(1.0, 0.0001)));
+        assertThat((double)strategy.getCycleProgress().getProgress(), is(closeTo(1.0, 0.0001)));
 
         strategy.getNextNodeIds(100); // Processed 30 in total
-        assertThat((double)strategy.getIndexingProgress().getProgress(), is(1.0));
+        assertThat((double)strategy.getCycleProgress().getProgress(), is(1.0));
     }
 
     @Test

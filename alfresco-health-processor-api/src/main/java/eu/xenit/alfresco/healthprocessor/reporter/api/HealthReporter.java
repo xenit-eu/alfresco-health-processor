@@ -1,7 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.reporter.api;
 
 import eu.xenit.alfresco.healthprocessor.extensibility.BaseExtension;
-import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +21,7 @@ public interface HealthReporter extends BaseExtension {
 
     }
 
-    default void onProgress(@Nonnull IndexingProgress progress) {
+    default void onProgress(@Nonnull CycleProgress progress) {
 
     }
 

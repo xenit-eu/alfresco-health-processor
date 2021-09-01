@@ -1,7 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.reporter.telemetry;
 
-import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
@@ -67,7 +66,7 @@ public class AlfredTelemetryHealthReporter extends SingleReportHealthReporter {
     }
 
     @Override
-    public void onProgress(@Nonnull IndexingProgress progress) {
+    public void onProgress(@Nonnull CycleProgress progress) {
         this.progress.set(progress.getProgress());
     }
 

@@ -1,7 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.reporter;
 
-import eu.xenit.alfresco.healthprocessor.indexing.NullIndexingProgress;
-import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.NullCycleProgress;
 import org.junit.jupiter.api.Test;
 
 class ProgressLoggingHealthReporterTest {
@@ -11,7 +10,7 @@ class ProgressLoggingHealthReporterTest {
         ProgressLoggingHealthReporter reporter = new ProgressLoggingHealthReporter();
 
         reporter.onStart();
-        reporter.onProgress(NullIndexingProgress.getInstance());
+        reporter.onProgress(NullCycleProgress.getInstance());
     }
 
 }

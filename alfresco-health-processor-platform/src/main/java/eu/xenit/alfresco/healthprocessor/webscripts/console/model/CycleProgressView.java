@@ -1,6 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.webscripts.console.model;
 
-import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -8,39 +8,39 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 @AllArgsConstructor
-public class IndexingProgressView {
+public class CycleProgressView {
 
-    private final IndexingProgress indexingProgress;
+    private final CycleProgress cycleProgress;
 
     public boolean isNone() {
-        return indexingProgress.isUnknown();
+        return cycleProgress.isUnknown();
     }
 
     public String getProgress() {
-        if (indexingProgress.isUnknown()) {
+        if (cycleProgress.isUnknown()) {
             return "Unknown";
         }
-        float progress = indexingProgress.getProgress();
+        float progress = cycleProgress.getProgress();
         return String.format("%.2f%%", progress * 100);
     }
 
     public Date getStartTime() {
-        return Date.from(Instant.now().minus(indexingProgress.getElapsed()));
+        return Date.from(Instant.now().minus(cycleProgress.getElapsed()));
     }
 
     public String getElapsed() {
-        return format(indexingProgress.getElapsed().withNanos(0));
+        return format(cycleProgress.getElapsed().withNanos(0));
     }
 
     public String getEstimatedCompletion() {
-        return indexingProgress.getEstimatedCompletion()
+        return cycleProgress.getEstimatedCompletion()
                 .map(duration -> duration.withNanos(0))
-                .map(IndexingProgressView::format)
+                .map(CycleProgressView::format)
                 .orElse("Unknown");
     }
 
     public Date getEstimatedCompletionTime() {
-        return indexingProgress.getEstimatedCompletion()
+        return cycleProgress.getEstimatedCompletion()
                 .map(duration -> Instant.now().plus(duration))
                 .map(Date::from)
                 .orElse(null);

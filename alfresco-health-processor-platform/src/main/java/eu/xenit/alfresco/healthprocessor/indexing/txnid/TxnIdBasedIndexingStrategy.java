@@ -1,9 +1,9 @@
 package eu.xenit.alfresco.healthprocessor.indexing.txnid;
 
-import eu.xenit.alfresco.healthprocessor.indexing.NullIndexingProgress;
-import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.NullCycleProgress;
+import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
-import eu.xenit.alfresco.healthprocessor.indexing.SimpleIndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.SimpleCycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
@@ -36,7 +36,7 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
     private final TxnIdIndexingConfiguration configuration;
     private final TrackingComponent trackingComponent;
     private final AttributeStore attributeStore;
-    private IndexingProgress indexingProgress = NullIndexingProgress.getInstance();
+    private CycleProgress cycleProgress = NullCycleProgress.getInstance();
 
     @Nonnull
     @Override
@@ -53,8 +53,8 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
 
     @Nonnull
     @Override
-    public IndexingProgress getIndexingProgress() {
-        return indexingProgress;
+    public CycleProgress getCycleProgress() {
+        return cycleProgress;
     }
 
     @Override
@@ -63,13 +63,13 @@ public class TxnIdBasedIndexingStrategy implements IndexingStrategy {
         nodeQueue.clear();
         initializeStartTxnId();
         initializeMaxTxnId();
-        indexingProgress = new SimpleIndexingProgress(nextStartTxnIdToFetch, maxTxnIdInclusive, () -> nextStartTxnIdToFetch - 1);
+        cycleProgress = new SimpleCycleProgress(nextStartTxnIdToFetch, maxTxnIdInclusive, () -> nextStartTxnIdToFetch - 1);
     }
 
     @Override
     public void onStop() {
         attributeStore.removeAttributes(ATTR_KEY_LAST_PROCESSED_TXN_ID);
-        indexingProgress = NullIndexingProgress.getInstance();
+        cycleProgress = NullCycleProgress.getInstance();
     }
 
     @Override

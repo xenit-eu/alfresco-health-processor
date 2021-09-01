@@ -1,6 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.reporter;
 
-import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
@@ -34,7 +34,7 @@ public class ReportsService {
         forEachEnabledReporter(reporter -> reporter.onException(e));
     }
 
-    public void onProgress(IndexingProgress progress) {
+    public void onProgress(CycleProgress progress) {
         forEachEnabledReporter(reporter -> reporter.onProgress(progress));
     }
 

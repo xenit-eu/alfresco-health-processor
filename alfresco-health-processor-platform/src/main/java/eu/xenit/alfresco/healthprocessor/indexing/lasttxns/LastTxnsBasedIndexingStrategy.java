@@ -1,9 +1,9 @@
 package eu.xenit.alfresco.healthprocessor.indexing.lasttxns;
 
-import eu.xenit.alfresco.healthprocessor.indexing.NullIndexingProgress;
-import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.NullCycleProgress;
+import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
-import eu.xenit.alfresco.healthprocessor.indexing.SimpleIndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.SimpleCycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
 import java.util.Collections;
@@ -33,14 +33,14 @@ public class LastTxnsBasedIndexingStrategy implements IndexingStrategy {
     private long nextMaxTxId;
     private long processedTransactions;
 
-    private IndexingProgress indexingProgress = NullIndexingProgress.getInstance();
+    private CycleProgress cycleProgress = NullCycleProgress.getInstance();
 
     @Override
     public void onStart() {
         nodeQueue.clear();
         initialMaxTxId = nextMaxTxId = trackingComponent.getMaxTxnId();
         processedTransactions = 0;
-        indexingProgress = new SimpleIndexingProgress(0, Math.min(initialMaxTxId, configuration.getLookbackTransactions()), () -> processedTransactions);
+        cycleProgress = new SimpleCycleProgress(0, Math.min(initialMaxTxId, configuration.getLookbackTransactions()), () -> processedTransactions);
     }
 
     @Nonnull
@@ -92,7 +92,7 @@ public class LastTxnsBasedIndexingStrategy implements IndexingStrategy {
     public void onStop() {
         log.info("Processed nodes from transaction {} until transaction {}. #{} transactions with nodes",
                 nextMaxTxId + 1, initialMaxTxId, processedTransactions);
-        indexingProgress = NullIndexingProgress.getInstance();
+        cycleProgress = NullCycleProgress.getInstance();
     }
 
     @Nonnull
@@ -110,7 +110,7 @@ public class LastTxnsBasedIndexingStrategy implements IndexingStrategy {
 
     @Nonnull
     @Override
-    public IndexingProgress getIndexingProgress() {
-        return indexingProgress;
+    public CycleProgress getCycleProgress() {
+        return cycleProgress;
     }
 }

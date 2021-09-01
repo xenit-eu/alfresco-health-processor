@@ -1,7 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.reporter;
 
-import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ToggleableHealthReporter;
 import java.time.Duration;
 import javax.annotation.Nonnull;
@@ -19,7 +18,7 @@ public class ProgressLoggingHealthReporter extends ToggleableHealthReporter {
     }
 
     @Override
-    public void onProgress(@Nonnull IndexingProgress progress) {
+    public void onProgress(@Nonnull CycleProgress progress) {
         if (!log.isInfoEnabled()) {
             return;
         }

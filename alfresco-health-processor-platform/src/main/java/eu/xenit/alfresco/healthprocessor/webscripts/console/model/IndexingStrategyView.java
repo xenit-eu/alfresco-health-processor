@@ -15,14 +15,14 @@ public class IndexingStrategyView {
     Map<String, String> state;
     Map<String, String> configuration;
 
-    IndexingProgressView progress;
+    CycleProgressView progress;
 
     public IndexingStrategyView(IndexingConfiguration configuration, IndexingStrategy strategy) {
         this(
                 configuration.getIndexingStrategy().getKey(),
                 strategy.getState(),
                 configuration.getConfiguration(),
-                new IndexingProgressView(strategy.getIndexingProgress())
+                new CycleProgressView(strategy.getCycleProgress())
         );
     }
 }
