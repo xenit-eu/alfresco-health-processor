@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.indexing;
 
+import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +37,7 @@ public interface IndexingStrategy {
 
     @Nonnull
     default IndexingProgress getIndexingProgress() {
-        return IndexingProgress.NONE;
+        return NullIndexingProgress.getInstance();
     }
 
     enum IndexingStrategyKey {

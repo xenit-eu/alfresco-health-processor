@@ -7,8 +7,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.not;
 
-import eu.xenit.alfresco.healthprocessor.indexing.AssertIndexingStrategy;
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.NullIndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.SimpleIndexingProgress;
 import eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
@@ -77,16 +77,16 @@ class AlfredTelemetryHealthReporterTest {
 
     @Test
     void progress() {
-        reporter.onProgress(AssertIndexingStrategy.class, new SimpleIndexingProgress(1, 2, () -> 1));
+        reporter.onProgress(new SimpleIndexingProgress(1, 2, () -> 1));
         assertThat(meterRegistry.get(Key.PROGRESS).gauge().value(), is(closeTo(0.5, 0.0001)));
 
-        reporter.onProgress(AssertIndexingStrategy.class, new SimpleIndexingProgress(1, 2, () -> 2));
+        reporter.onProgress(new SimpleIndexingProgress(1, 2, () -> 2));
         assertThat(meterRegistry.get(Key.PROGRESS).gauge().value(), is(closeTo(1.0, 0.0001)));
 
-        reporter.onProgress(AssertIndexingStrategy.class, new SimpleIndexingProgress(1, 2, () -> 0));
+        reporter.onProgress(new SimpleIndexingProgress(1, 2, () -> 0));
         assertThat(meterRegistry.get(Key.PROGRESS).gauge().value(), is(closeTo(0.0, 0.0001)));
 
-        reporter.onProgress(AssertIndexingStrategy.class, IndexingProgress.NONE);
+        reporter.onProgress(NullIndexingProgress.getInstance());
         assertThat(meterRegistry.get(Key.PROGRESS).gauge().value(), is(Double.NaN));
     }
 

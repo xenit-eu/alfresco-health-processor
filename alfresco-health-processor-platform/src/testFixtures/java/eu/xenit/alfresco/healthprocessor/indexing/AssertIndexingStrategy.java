@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
+import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;

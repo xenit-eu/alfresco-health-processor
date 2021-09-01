@@ -6,9 +6,8 @@ import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.processing.ProcessorService;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.webscripts.console.model.AdminConsoleResponseView;
+import eu.xenit.alfresco.healthprocessor.webscripts.console.model.ExtensionsView;
 import eu.xenit.alfresco.healthprocessor.webscripts.console.model.IndexingStrategyView;
-import eu.xenit.alfresco.healthprocessor.webscripts.console.model.PluginsView;
-import eu.xenit.alfresco.healthprocessor.webscripts.console.model.ReportersView;
 import java.util.List;
 import lombok.Setter;
 import org.alfresco.service.ServiceRegistry;
@@ -36,8 +35,8 @@ public class ResponseViewRenderer {
                 moduleDetails,
                 processorService.getState().toString(),
                 new IndexingStrategyView(indexingConfiguration, indexingStrategy),
-                new PluginsView(plugins),
-                new ReportersView(reporters)
+                new ExtensionsView(plugins),
+                new ExtensionsView(reporters)
         );
     }
 

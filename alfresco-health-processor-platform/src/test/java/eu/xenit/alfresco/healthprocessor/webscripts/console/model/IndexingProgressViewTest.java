@@ -5,7 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.NullIndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.SimpleIndexingProgress;
 import java.sql.Date;
 import java.time.Duration;
@@ -19,7 +20,7 @@ class IndexingProgressViewTest {
 
     @Test
     void isNone_none() {
-        IndexingProgressView indexingProgressView = new IndexingProgressView(IndexingProgress.NONE);
+        IndexingProgressView indexingProgressView = new IndexingProgressView(NullIndexingProgress.getInstance());
 
         assertThat(indexingProgressView.isNone(), is(equalTo(true)));
     }

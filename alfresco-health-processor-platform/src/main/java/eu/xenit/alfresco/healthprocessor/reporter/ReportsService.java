@@ -1,7 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.reporter;
 
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
@@ -35,8 +34,8 @@ public class ReportsService {
         forEachEnabledReporter(reporter -> reporter.onException(e));
     }
 
-    public void onProgress(Class<? extends IndexingStrategy> indexingStrategyClass, IndexingProgress progress) {
-        forEachEnabledReporter(reporter -> reporter.onProgress(indexingStrategyClass, progress));
+    public void onProgress(IndexingProgress progress) {
+        forEachEnabledReporter(reporter -> reporter.onProgress(progress));
     }
 
     public void onCycleDone() {

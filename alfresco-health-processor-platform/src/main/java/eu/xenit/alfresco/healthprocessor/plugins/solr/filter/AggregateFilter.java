@@ -2,6 +2,7 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr.filter;
 
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 
 /**
@@ -10,6 +11,7 @@ import org.alfresco.service.cmr.repository.NodeRef.Status;
  * If any of the sub-filters indicate that the node should be ignored, the node will be ignored
  */
 @AllArgsConstructor
+@ToString
 public class AggregateFilter implements SolrNodeFilter {
 
     private final List<SolrNodeFilter> filters;

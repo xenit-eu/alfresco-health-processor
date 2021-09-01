@@ -11,6 +11,17 @@
             value="${healthprocessor.status}" />
     </div>
 
+    <#macro map_dump name map>
+        <#if name != "">
+            <h4>${name}</h4>
+        </#if>
+        <ul>
+            <#list map?keys as key>
+                <li><b>${key}</b>: ${map[key]}</li>
+            </#list>
+        </ul>
+    </#macro>
+
     <div class="column-full">
         <@section label="Cycle progress"/>
         <#assign progress=healthprocessor.indexing.progress>
@@ -42,44 +53,40 @@
     </div>
 
     <div class="column-full">
-        <@section label="Indexing Strategy"/>
+        <@section label="Indexing Strategy" />
         <@field label="ID"
             description="The ID of the Indexing Strategy in use"
             value="${healthprocessor.indexing.id}" />
         <div class="column-left">
-            <h4>State</h4>
-            <ul>
-                <#list healthprocessor.indexing.state?keys as key>
-                    <li>${key}: <b>${healthprocessor.indexing.state[key]}</b></li>
-                </#list>
-            </ul>
+            <@map_dump "State", healthprocessor.indexing.state />
         </div>
         <div class="column-right">
-            <h4>Configuration</h4>
-            <ul>
-                <#list healthprocessor.indexing.configuration?keys as key>
-                    <li>${key}: <b>${healthprocessor.indexing.configuration[key]}</b></li>
-                </#list>
-            </ul>
+            <@map_dump "Configuration", healthprocessor.indexing.configuration />
         </div>
+        <div style="clear:both"></div>
     </div>
 
-    <div class="column-full">
-        <@section label="Plugins"/>
-        <ul>
-            <#list healthprocessor.plugins.plugins as plugin>
-                <li>${plugin.name} [enabled: ${plugin.enabled?c}]</li>
-            </#list>
-        </ul>
-    </div>
+    <#macro extensions_list type extensions>
+            <#list extensions as extension>
+                <div class="column-full">
+                    <@section label="${type}: ${extension.name}" />
+                    <#assign hasState = extension.state?size gt 0 />
+                    <#if hasState>
+                        <div class="column-left">
+                            <@map_dump "Configuration", extension.configuration />
+                        </div>
+                        <div class="column-right">
+                            <@map_dump "State", extension.state />
+                        </div>
+                    <#else>
+                        <@map_dump "", extension.configuration />
+                    </#if>
+                </div>
+           </#list>
+    </#macro>
 
-    <div class="column-full">
-        <@section label="Reporters"/>
-        <ul>
-            <#list healthprocessor.reporters.reporters as reporter>
-                <li>${reporter.name} [enabled: ${reporter.enabled?c}]</li>
-            </#list>
-        </ul>
-    </div>
+    <@extensions_list "Plugin", healthprocessor.plugins.extensions />
+
+    <@extensions_list "Reporter", healthprocessor.reporters.extensions />
 
 </@page>

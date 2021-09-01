@@ -5,6 +5,7 @@ import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSel
 import java.util.Collections;
 import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 
@@ -13,6 +14,7 @@ import org.alfresco.service.cmr.repository.NodeRef.Status;
  */
 @Slf4j
 @AllArgsConstructor
+@ToString
 public class FilteringSearchEndpointSelector implements SearchEndpointSelector {
 
     private final SearchEndpointSelector solrServerEndpointSelector;

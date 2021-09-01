@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

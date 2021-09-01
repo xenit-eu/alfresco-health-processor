@@ -44,7 +44,7 @@ Please consult the official Alfresco documentation on how to install Module Pack
 
 ### Supported Alfresco versions
 
-The module is systematically integration tested against Alfresco 5.2, 6.1, 6.2 and 70.
+The module is systematically integration tested against Alfresco 5.2, 6.1, 6.2 and 7.0.
 
 ## Overview
 
@@ -278,14 +278,14 @@ The API, containing required interfaces and helpful classes is available in Mave
 dependency in your project:
 
 ```groovy
-implementation "eu.xenit.alfresco:alfresco-health-processor-platform:${last - version}"
+implementation "eu.xenit.alfresco:alfresco-health-processor-api:${last_version}"
 ```
 
 ```xml
 
 <dependency>
     <groupId>eu.xenit.alfresco</groupId>
-    <artifactId>alfresco-health-processor-platform</artifactId>
+    <artifactId>alfresco-health-processor-api</artifactId>
     <version>${last-version}</version>
 </dependency>
 ```

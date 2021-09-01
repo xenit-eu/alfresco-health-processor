@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -22,8 +23,10 @@ import org.alfresco.service.namespace.QName;
  */
 @Slf4j
 @AllArgsConstructor
+@ToString
 public class PropertySolrNodeFilter implements SolrNodeFilter {
 
+    @ToString.Exclude
     private final NodeService nodeService;
     private final Map<QName, Serializable> filteredProperties;
 

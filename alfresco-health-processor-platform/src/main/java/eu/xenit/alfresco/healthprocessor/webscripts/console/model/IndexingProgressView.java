@@ -1,6 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.webscripts.console.model;
 
-import eu.xenit.alfresco.healthprocessor.indexing.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -13,14 +13,14 @@ public class IndexingProgressView {
     private final IndexingProgress indexingProgress;
 
     public boolean isNone() {
-        return indexingProgress == IndexingProgress.NONE;
+        return indexingProgress.isUnknown();
     }
 
     public String getProgress() {
-        float progress = indexingProgress.getProgress();
-        if (Float.isNaN(progress)) {
+        if (indexingProgress.isUnknown()) {
             return "Unknown";
         }
+        float progress = indexingProgress.getProgress();
         return String.format("%.2f%%", progress * 100);
     }
 
@@ -50,11 +50,11 @@ public class IndexingProgressView {
         long fullDays = duration.toDays();
         Duration rest = duration.minusDays(fullDays);
         StringBuilder formattedDuration = new StringBuilder();
-        if(fullDays > 0) {
+        if (fullDays > 0) {
             formattedDuration.append(fullDays)
                     .append(' ')
                     .append("day");
-            if(fullDays > 1) {
+            if (fullDays > 1) {
                 formattedDuration.append('s');
             }
             formattedDuration.append(' ');

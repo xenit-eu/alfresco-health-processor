@@ -1,5 +1,6 @@
 rootProject.name = 'alfresco-health-processor'
 
+include 'alfresco-health-processor-api'
 include 'alfresco-health-processor-platform'
 include 'alfresco-health-processor-platform:alfresco-7-upwards'
 include 'integration-tests'
