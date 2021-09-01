@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -49,8 +49,8 @@ public class AssertIndexingStrategy implements IndexingStrategy {
 
     @Nonnull
     @Override
-    public IndexingProgress getIndexingProgress() {
-        return new SimpleIndexingProgress(0, nodeQueue.size(), () -> numberOfRequestedNodes);
+    public CycleProgress getCycleProgress() {
+        return new SimpleCycleProgress(0, nodeQueue.size(), () -> numberOfRequestedNodes);
     }
 
     public void nextThrow(RuntimeException e) {

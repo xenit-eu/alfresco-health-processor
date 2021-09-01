@@ -1,6 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.indexing;
 
-import eu.xenit.alfresco.healthprocessor.indexing.api.IndexingProgress;
+import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -9,14 +9,14 @@ import javax.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class SimpleIndexingProgress implements IndexingProgress {
+public class SimpleCycleProgress implements CycleProgress {
 
     private final long startId;
     private final Instant startTime;
     private final long endId;
     private final LongSupplier currentId;
 
-    public SimpleIndexingProgress(long startId, long endId, LongSupplier currentId) {
+    public SimpleCycleProgress(long startId, long endId, LongSupplier currentId) {
         this(startId, Instant.now(), endId, currentId);
     }
 
@@ -39,6 +39,7 @@ public class SimpleIndexingProgress implements IndexingProgress {
         return interpolate(startId - 1, endId, currentId.getAsLong());
     }
 
+    @Nonnull
     @Override
     public Duration getElapsed() {
         return Duration.between(startTime, Instant.now());

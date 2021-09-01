@@ -11,7 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import eu.xenit.alfresco.healthprocessor.indexing.SimpleIndexingProgress;
+import eu.xenit.alfresco.healthprocessor.indexing.SimpleCycleProgress;
 import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
@@ -91,9 +91,9 @@ class ReportsServiceTest {
 
     @Test
     void onProgress() {
-        service.onProgress(new SimpleIndexingProgress(0, 1, () -> 1));
+        service.onProgress(new SimpleCycleProgress(0, 1, () -> 1));
 
-        verify(healthReporter).onProgress(any(SimpleIndexingProgress.class));
+        verify(healthReporter).onProgress(any(SimpleCycleProgress.class));
     }
 
     @Test
