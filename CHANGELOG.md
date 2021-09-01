@@ -38,6 +38,7 @@ Version template:
 ### Changed
 
 * [[#38](https://github.com/xenit-eu/alfresco-health-processor/pull/38)] Moved public APIs to separate artifact
+* [[#39](https://github.com/xenit-eu/alfresco-health-processor/pull/39)] Rename IndexingProgress to CycleProgress and remove default methods
 
 ## [0.4.0] - 2021-07-08
 ### Added
