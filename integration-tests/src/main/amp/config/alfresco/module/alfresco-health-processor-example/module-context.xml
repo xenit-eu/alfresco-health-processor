@@ -38,4 +38,14 @@
             </list>
         </property>
     </bean>
+    <bean id="webscript.eu.xenit.alfresco.healthprocessor.solr.configure.get"
+            class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>
+        <property name="sourceBeanName" value="solr.ConfigureWebScript"/>
+        <property name="interfaces">
+            <list>
+                <value>org.springframework.extensions.webscripts.WebScript</value>
+            </list>
+        </property>
+    </bean>
 </beans>

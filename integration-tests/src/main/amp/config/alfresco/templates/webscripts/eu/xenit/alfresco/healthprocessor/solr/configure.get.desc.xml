@@ -1,0 +1,8 @@
+<webscript>
+    <shortname>Health Processor Solr plugin configure webscript</shortname>
+    <description>For integration testing purposes</description>
+    <url>/xenit/healthprocessor/solr/configure</url>
+    <authentication>user</authentication>
+    <format default="json"/>
+    <family>Health Processor Test</family>
+</webscript>

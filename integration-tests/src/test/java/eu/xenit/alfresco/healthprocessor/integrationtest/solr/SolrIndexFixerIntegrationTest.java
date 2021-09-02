@@ -23,7 +23,7 @@ class SolrIndexFixerIntegrationTest extends RestAssuredTest {
 
     private static final long EXPECTED_INDEXED_NODES = 11L;
 
-    private static final Duration SOLR_INDEXING_WAIT_DEFAULT = Duration.ofSeconds(60);
+    private static final Duration SOLR_INDEXING_WAIT_DEFAULT = Duration.ofSeconds(120);
     private static final Duration SOLR_INDEXING_MAX_WAIT = SOLR_INDEXING_WAIT_DEFAULT.multipliedBy(4);
     private static final Duration SOLR_INDEXING_POLL_INTERVAL = Duration.ofSeconds(1);
     private static final Duration HEALTH_PROCESSOR_MAX_WAIT = Duration.ofSeconds(40);
@@ -33,6 +33,9 @@ class SolrIndexFixerIntegrationTest extends RestAssuredTest {
 
     @Test
     void reindexesNodesAfterPurge() {
+        // Disable health fixer plugin
+        setHealthFixerPlugin(false);
+
         // Wait until nodes are all indexed in solr
         waitUntilNodesIndexed("Wait for initial index to be completed", EXPECTED_INDEXED_NODES, SOLR_INDEXING_MAX_WAIT);
 
@@ -44,9 +47,8 @@ class SolrIndexFixerIntegrationTest extends RestAssuredTest {
         waitUntilHealthProcessorIdle("Wait for health processor being finished to record number of healthy nodes");
         long allHealthyNodes = getHealthProcessorReport(NodeHealthStatus.HEALTHY);
 
-        // Purge nodes now
+        // Purge nodes from solr index
         purgeNodes();
-
         // Wait until there are no more indexed nodes (they have been purged from the index by solr in the next maintenance interval)
         waitUntilNodesIndexed("Wait until nodes have been purged from the index", 0L);
 
@@ -59,8 +61,17 @@ class SolrIndexFixerIntegrationTest extends RestAssuredTest {
         // Then wait until health processor is IDLE
         waitUntilHealthProcessorIdle("Until health processor cycle has completed to detect number of fixed nodes");
 
-        // Check fixed reports is the number of nodes that we purged
-        assertThat(getHealthProcessorReport(NodeHealthStatus.FIXED), equalTo(EXPECTED_INDEXED_NODES));
+        // Check that unhealthy reports are received for unindexed nodes
+        assertThat(getHealthProcessorReport(NodeHealthStatus.UNHEALTHY), equalTo(EXPECTED_INDEXED_NODES));
+
+        // Enable health fixer plugin again
+        setHealthFixerPlugin(true);
+
+        // Wait until our health checker has re-run and has fixed the issues
+        await("Until fixed nodes are detected")
+                .atMost(HEALTH_PROCESSOR_MAX_WAIT)
+                .pollInterval(HEALTH_PROCESSOR_POLL_INTERVAL)
+                .until(() -> getHealthProcessorReport(NodeHealthStatus.FIXED), equalTo(EXPECTED_INDEXED_NODES));
 
         // And then that the purged nodes are indexed again
         waitUntilNodesIndexed("Wait until fixed nodes have been reindexed", EXPECTED_INDEXED_NODES);
@@ -112,6 +123,15 @@ class SolrIndexFixerIntegrationTest extends RestAssuredTest {
     private long getHealthProcessorReport(NodeHealthStatus healthStatus) {
         return getMeterValue(
                 "health-processor.reports?tag=status:" + healthStatus.name() + "&tag=plugin:" + SOLR_PLUGIN_NAME);
+    }
+
+    private void setHealthFixerPlugin(boolean enabled) {
+        given()
+                .log().ifValidationFails()
+                .when()
+                .get("s/xenit/healthprocessor/solr/configure?enabled=" + enabled)
+                .then()
+                .statusCode(200);
     }
 
     private void waitUntilNodesIndexed(String alias, long nodesToAwait) {

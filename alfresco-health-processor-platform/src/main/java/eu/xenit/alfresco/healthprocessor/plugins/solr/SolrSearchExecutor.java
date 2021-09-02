@@ -84,6 +84,7 @@ public class SolrSearchExecutor {
             } else if (foundDbIds.contains(nodeStatus.getDbId())) {
                 solrSearchResult.getFound().add(nodeStatus);
             } else {
+                log.trace("Node {} is not indexed (solr indexed TX: {})", nodeStatus, lastIndexedTransaction);
                 solrSearchResult.getMissing().add(nodeStatus);
             }
 
