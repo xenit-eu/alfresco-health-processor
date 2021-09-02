@@ -59,10 +59,12 @@ public class NodeFixService {
         log.trace("{}", unhealthyNodes);
         Set<NodeFixReport> allFixReports = new HashSet<>();
         for (HealthFixerPlugin fixer : fixers) {
-            log.debug("Fixer '{}' will process #{} unhealthy reports", fixer.getClass(), unhealthyNodes.size());
-            Set<NodeFixReport> fixReports = transactionHelper.inNewTransaction(
-                    () -> fixer.fix(pluginClass, unhealthyNodes), false);
-            allFixReports.addAll(fixReports);
+            if (fixer.isEnabled()) {
+                log.debug("Fixer '{}' will process #{} unhealthy reports", fixer.getClass(), unhealthyNodes.size());
+                Set<NodeFixReport> fixReports = transactionHelper.inNewTransaction(
+                        () -> fixer.fix(pluginClass, unhealthyNodes), false);
+                allFixReports.addAll(fixReports);
+            }
         }
         return allFixReports;
     }
