@@ -59,6 +59,7 @@ public class SolrSearchExecutor {
 
         JsonNode docs = response.path("response").path("docs");
         if(docs.size() == nodeStatuses.size()) {
+            log.debug("Received #{} docs (identical to requested #{} nodes), marking all as found.", docs.size(), nodeStatuses.size());
             // Fast path: all searched for nodes were found.
             return new SolrSearchResult(new HashSet<>(nodeStatuses), Collections.emptySet(), Collections.emptySet());
         }
@@ -67,6 +68,11 @@ public class SolrSearchExecutor {
                 .filter(JsonNode::isObject)
                 .map(o -> o.path("DBID").asLong())
                 .collect(Collectors.toSet());
+
+        log.debug("Last indexed transaction in solr: {}", lastIndexedTransaction);
+        if(log.isTraceEnabled()) {
+            log.trace("Transactions on nodes: {}", nodeStatuses.stream().map(Status::getDbTxnId).collect(Collectors.toSet()));
+        }
 
         SolrSearchResult solrSearchResult = new SolrSearchResult();
 

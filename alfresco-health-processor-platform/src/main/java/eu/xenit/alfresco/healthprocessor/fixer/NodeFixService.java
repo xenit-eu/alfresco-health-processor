@@ -79,7 +79,7 @@ public class NodeFixService {
             Map<NodeFixStatus, Integer> reportStats = reportsByStatus.entrySet()
                     .stream()
                     .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().size()));
-            log.debug("Health report {}: {}", healthReport, reportStats);
+            log.debug("Health report {} has NodeFixReports: {}", healthReport, reportStats);
         }
         log.trace("Fix reports [{}]", fixReports);
 

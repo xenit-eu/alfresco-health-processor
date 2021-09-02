@@ -4,6 +4,7 @@ import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 
 import eu.xenit.alfresco.healthprocessor.integrationtest.RestAssuredTest;
@@ -22,8 +23,8 @@ class SolrIndexFixerIntegrationTest extends RestAssuredTest {
 
     private static final long EXPECTED_INDEXED_NODES = 11L;
 
-    private static final Duration SOLR_INDEXING_INTERVAL = Duration.ofSeconds(30);
-    private static final Duration SOLR_INDEXING_MAX_WAIT = SOLR_INDEXING_INTERVAL.multipliedBy(2);
+    private static final Duration SOLR_INDEXING_WAIT_DEFAULT = Duration.ofSeconds(60);
+    private static final Duration SOLR_INDEXING_MAX_WAIT = SOLR_INDEXING_WAIT_DEFAULT.multipliedBy(4);
     private static final Duration SOLR_INDEXING_POLL_INTERVAL = Duration.ofSeconds(1);
     private static final Duration HEALTH_PROCESSOR_MAX_WAIT = Duration.ofSeconds(40);
     private static final Duration HEALTH_PROCESSOR_POLL_INTERVAL = Duration.ofSeconds(1).dividedBy(2);
@@ -33,32 +34,36 @@ class SolrIndexFixerIntegrationTest extends RestAssuredTest {
     @Test
     void reindexesNodesAfterPurge() {
         // Wait until nodes are all indexed in solr
-        waitUntilNodesIndexed(EXPECTED_INDEXED_NODES);
+        waitUntilNodesIndexed("Wait for initial index to be completed", EXPECTED_INDEXED_NODES, SOLR_INDEXING_MAX_WAIT);
 
-        // Wait for the health processor to become IDLE
-        waitUntilHealthProcessorIdle();
-
+        // Wait for the health processor to become IDLE and it has had at least one iteration
+        await("Until some health reports have been received")
+                .atMost(HEALTH_PROCESSOR_MAX_WAIT)
+                .pollInterval(HEALTH_PROCESSOR_POLL_INTERVAL)
+                .until(() -> getHealthProcessorReport(NodeHealthStatus.HEALTHY), greaterThan(0L));
+        waitUntilHealthProcessorIdle("Wait for health processor being finished to record number of healthy nodes");
         long allHealthyNodes = getHealthProcessorReport(NodeHealthStatus.HEALTHY);
+
         // Purge nodes now
         purgeNodes();
 
         // Wait until there are no more indexed nodes (they have been purged from the index by solr in the next maintenance interval)
-        waitUntilNodesIndexed(0L);
+        waitUntilNodesIndexed("Wait until nodes have been purged from the index", 0L);
 
         // Wait until our health checker has detected less healthy nodes than before
-        await()
+        await("Until non-healthy nodes are detected")
                 .atMost(HEALTH_PROCESSOR_MAX_WAIT)
                 .pollInterval(HEALTH_PROCESSOR_POLL_INTERVAL)
                 .until(() -> getHealthProcessorReport(NodeHealthStatus.HEALTHY), lessThan(allHealthyNodes));
 
         // Then wait until health processor is IDLE
-        waitUntilHealthProcessorIdle();
+        waitUntilHealthProcessorIdle("Until health processor cycle has completed to detect number of fixed nodes");
 
         // Check fixed reports is the number of nodes that we purged
         assertThat(getHealthProcessorReport(NodeHealthStatus.FIXED), equalTo(EXPECTED_INDEXED_NODES));
 
         // And then that the purged nodes are indexed again
-        waitUntilNodesIndexed(EXPECTED_INDEXED_NODES);
+        waitUntilNodesIndexed("Wait until fixed nodes have been reindexed", EXPECTED_INDEXED_NODES);
     }
 
 
@@ -109,15 +114,19 @@ class SolrIndexFixerIntegrationTest extends RestAssuredTest {
                 "health-processor.reports?tag=status:" + healthStatus.name() + "&tag=plugin:" + SOLR_PLUGIN_NAME);
     }
 
-    private void waitUntilNodesIndexed(long nodesToAwait) {
-        await()
-                .atMost(SOLR_INDEXING_MAX_WAIT)
+    private void waitUntilNodesIndexed(String alias, long nodesToAwait) {
+        waitUntilNodesIndexed(alias, nodesToAwait, SOLR_INDEXING_WAIT_DEFAULT);
+    }
+
+    private void waitUntilNodesIndexed(String alias, long nodesToAwait, Duration maxWait) {
+        await(alias)
+                .atMost(maxWait)
                 .pollInterval(SOLR_INDEXING_POLL_INTERVAL)
                 .until(this::getNumberOfIndexedNodes, equalTo(nodesToAwait));
     }
 
-    private void waitUntilHealthProcessorIdle() {
-        await()
+    private void waitUntilHealthProcessorIdle(String alias) {
+        await(alias)
                 .atMost(HEALTH_PROCESSOR_MAX_WAIT)
                 .pollInterval(HEALTH_PROCESSOR_POLL_INTERVAL)
                 .until(this::getHealthProcessorActive, equalTo(false));

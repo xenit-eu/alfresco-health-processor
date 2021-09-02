@@ -23,6 +23,8 @@ services:
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:content
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-index-node.enabled=true
+      # Disable this loud logger which sends errors in Alfresco 7.0.
+      - LOG4J_logger.org.alfresco.repo.content.transform.LocalTransformServiceRegistry=OFF
     depends_on:
       - postgresql
   solr:
