@@ -125,7 +125,7 @@ public class ProcessorService {
 
         Set<NodeHealthReport> reports = validateNodeReports(nodesToProcess, pluginReports, plugin);
 
-        Set<NodeHealthReport> healthAfterFixing = fixService.fixUnhealthyNodes(plugin, reports);
+        Set<NodeHealthReport> healthAfterFixing = fixService.fixUnhealthyNodes(plugin.getClass(), reports);
 
         transactionHelper.inNewTransaction(() -> reportsService.processReports(plugin.getClass(), healthAfterFixing),
                 false);

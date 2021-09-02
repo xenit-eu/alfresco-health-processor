@@ -7,16 +7,16 @@ import static org.hamcrest.Matchers.is;
 import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
 import javax.annotation.Nonnull;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public class AssertIndexingStrategy implements IndexingStrategy {
 
-    private final Queue<NodeRef> nodeQueue = new LinkedBlockingQueue<>();
+    private final Queue<NodeRef> nodeQueue = new LinkedList<>();
     private RuntimeException toThrow;
     private int numberOfOnStartInvocations;
     private int numberOfGetNextNodeIdsInvocations;

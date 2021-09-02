@@ -1,8 +1,7 @@
-package eu.xenit.alfresco.healthprocessor.reporter;
+package eu.xenit.alfresco.healthprocessor.util;
 
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
-import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

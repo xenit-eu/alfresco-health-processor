@@ -5,15 +5,14 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.not;
 
 import eu.xenit.alfresco.healthprocessor.indexing.NullCycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.SimpleCycleProgress;
-import eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.reporter.TestReports;
+import eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Key;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Tag;
+import eu.xenit.alfresco.healthprocessor.util.TestReports;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.search.RequiredSearch;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;

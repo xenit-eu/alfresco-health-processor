@@ -13,6 +13,7 @@ import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeStore;
+import eu.xenit.alfresco.healthprocessor.util.TestReports;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;

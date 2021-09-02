@@ -24,7 +24,7 @@ public class NodeFixService {
     private final List<HealthFixerPlugin> fixers;
     private final TransactionHelper transactionHelper;
 
-    public Set<NodeHealthReport> fixUnhealthyNodes(HealthProcessorPlugin healthProcessorPlugin,
+    public Set<NodeHealthReport> fixUnhealthyNodes(Class<? extends HealthProcessorPlugin> pluginClass,
             Set<NodeHealthReport> nodeHealthReports) {
         Set<NodeHealthReport> unhealthyReports = nodeHealthReports.stream()
                 .filter(healthReport -> healthReport.getStatus() == NodeHealthStatus.UNHEALTHY)
@@ -34,7 +34,7 @@ public class NodeFixService {
             return nodeHealthReports;
         }
 
-        Set<NodeFixReport> fixReports = fixNodes(healthProcessorPlugin.getClass(), unhealthyReports);
+        Set<NodeFixReport> fixReports = fixNodes(pluginClass, unhealthyReports);
 
         Set<NodeHealthReport> revisedHealthReports = new HashSet<>(nodeHealthReports);
 

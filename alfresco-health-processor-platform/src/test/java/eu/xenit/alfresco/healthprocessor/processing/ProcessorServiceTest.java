@@ -39,7 +39,7 @@ class ProcessorServiceTest {
         processorPlugin = new AssertHealthProcessorPlugin();
         indexingStrategy = new AssertIndexingStrategy();
         ReportsService reportsService = mock(ReportsService.class);
-        NodeFixService nodeFixService = mock(NodeFixService.class);
+        NodeFixService nodeFixService = new NodeFixService(Collections.emptyList(), transactionHelper);
         builder = ProcessorServiceBuilder.create()
                 .config(ProcConfigUtil.defaultConfig())
                 .indexingStrategy(indexingStrategy)

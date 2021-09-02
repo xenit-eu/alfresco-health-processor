@@ -9,6 +9,7 @@ import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
+import eu.xenit.alfresco.healthprocessor.util.TestReports;
 import java.util.Collections;
 import java.util.EnumMap;
 import org.junit.jupiter.api.Test;
