@@ -17,4 +17,25 @@
             </list>
         </property>
     </bean>
+
+    <bean id="webscript.eu.xenit.alfresco.healthprocessor.solr.purge.get"
+            class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>
+        <property name="sourceBeanName" value="solr.PurgeWebScript"/>
+        <property name="interfaces">
+            <list>
+                <value>org.springframework.extensions.webscripts.WebScript</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="webscript.eu.xenit.alfresco.healthprocessor.solr.check.get"
+            class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>
+        <property name="sourceBeanName" value="solr.CheckWebScript"/>
+        <property name="interfaces">
+            <list>
+                <value>org.springframework.extensions.webscripts.WebScript</value>
+            </list>
+        </property>
+    </bean>
 </beans>
