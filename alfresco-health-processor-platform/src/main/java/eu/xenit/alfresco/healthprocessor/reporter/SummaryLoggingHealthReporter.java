@@ -1,6 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.reporter;
 
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
+import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
@@ -89,7 +90,7 @@ public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
         log.warn("\t{}: {}", healthReport.getNodeRef(), healthReport.getMessages());
         Set<NodeFixReport> fixReports = healthReport.data(NodeFixReport.class);
         for (NodeFixReport fixReport : fixReports) {
-            if(fixReport.getFixStatus().isInteresting()) {
+            if (fixReport.getFixStatus() != NodeFixStatus.SKIPPED) {
                 log.info("\t\tFix {}: {}", fixReport.getFixStatus(), fixReport.getMessages());
             }
         }
