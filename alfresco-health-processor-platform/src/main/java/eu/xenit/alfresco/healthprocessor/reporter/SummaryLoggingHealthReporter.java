@@ -33,7 +33,6 @@ public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
         log.info("Health-Processor done in {}", printDuration());
         logSummary(overviews);
         Arrays.stream(NodeHealthStatus.values())
-                .filter(NodeHealthStatus::isInteresting)
                 .forEachOrdered(status -> logNodesWithStatus(status, overviews));
     }
 
@@ -64,7 +63,7 @@ public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
             return;
         }
 
-        log.warn(status+" NODES ---");
+        boolean loggedStart = false;
 
         for (ProcessorPluginOverview overview : overviews) {
             List<NodeHealthReport> reports = overview.getReports().stream()
@@ -73,11 +72,16 @@ public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
             if (reports.isEmpty()) {
                 continue;
             }
+            if (!loggedStart) {
+                log.warn(status + " NODES ---");
+                loggedStart = true;
+            }
             log.warn("Plugin[{}] (#{}): ", overview.getPluginClass().getSimpleName(), reports.size());
             reports.forEach(this::logReport);
         }
-
-        log.warn(" --- ");
+        if (loggedStart) {
+            log.warn(" --- ");
+        }
 
     }
 

@@ -31,7 +31,7 @@ class AttributeHealthReportsStoreTest {
     @BeforeEach
     void setup() {
         attributeStore = new InMemoryAttributeStore();
-        reportsStore = new AttributeHealthReportsStore(attributeStore);
+        reportsStore = new AttributeHealthReportsStore(attributeStore, new NodeHealthReportClassifier());
     }
 
     @Test
