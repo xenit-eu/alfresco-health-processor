@@ -63,7 +63,8 @@ reports to available health reporters.
 
 All interactions done by the Health Processor are highly customizable and extensible. To iterate over batches of nodes,
 a single `IndexingStrategy` is used. Batches of nodes are offered for processing to all enabled `HealthProcessorPlugin`
-implementations. Any reports received will be offered for processing to all available `HealthReporter` implementations.
+implementations. Reports indicating unhealthy nodes are sent to all enabled `HealthFixerPlugin` implementations that can
+try to automatically resolve the problem. The resulting reports will be offered for processing to all available `HealthReporter` implementations.
 
 ### Core configuration
 
@@ -210,6 +211,23 @@ eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard2.indexe
 
 </details>
 
+### HealthFixerPlugin implementations
+
+#### Solr index node
+
+Activation property: `eu.xenit.alfresco.healthprocessor.fixer.solr-index-node.enabled=true`
+
+Attempts to fix nodes that are not indexed in Solr as detected by the [Solr index Validation](#solr-index-validation) plugin.
+
+The fixer will send an asynchronous `INDEX` command to all Solr endpoints that are determined to miss the node.
+The Solr server will then re-index the node during its next tracking cycle.
+
+All nodes for which an `INDEX` command has been succesfully sent are marked as `FIXED`.
+
+> **Note**: Although the nodes are marked as _FIXED_, asynchronous indexing by the Solr server may still fail.
+> Currently, this case can not be detected automatically, but a node that does not become _HEALTHY_ in a subsequent
+> Health-Processor run should be investigated why it is not being indexed.
+
 ### HealthReporter implementations
 
 #### Alfred Telemetry
@@ -271,7 +289,7 @@ Example output:
 ## Extension points
 
 Besides out of the box functionality, it is very easy to provide custom plugins and reporters. All the
-`HealthProcessorPlugin` or `HealthReporter` implementations available in the Spring context will be detected and used by
+`HealthProcessorPlugin`, `HealthFixerPlugin` and `HealthReporter` implementations available in the Spring context will be detected and used by
 the Health Processor platform.
 
 The API, containing required interfaces and helpful classes is available in Maven Central and can be added as a
