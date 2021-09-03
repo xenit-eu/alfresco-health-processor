@@ -7,6 +7,7 @@ import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSel
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -29,6 +30,7 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
     private final NodeService nodeService;
     private final SearchEndpointSelector solrServerSelector;
     private final SolrSearchExecutor solrSearchExecutor;
+    private boolean shutdownPlugin = false;
 
     static final String MSG_NO_SEARCH_ENDPOINTS = "Node is not expected in any search index.";
 
@@ -40,6 +42,20 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
     @Nonnull
     @Override
     protected Set<NodeHealthReport> doProcess(Set<NodeRef> nodeRefs) {
+        try {
+            if(!shutdownPlugin) {
+                return processInternal(nodeRefs);
+            }
+        } catch(ShutdownPluginException e) {
+            log.error("Fatal error during execution of Health-Processor plugin, disabling it.", e);
+            shutdownPlugin = true;
+        }
+        // Let this final batch of nodes go unreported
+        return Collections.emptySet();
+    }
+
+    @Nonnull
+    protected Set<NodeHealthReport> processInternal(Set<NodeRef> nodeRefs) throws ShutdownPluginException {
         Map<NodeRef.Status, MutableHealthReport> healthReports = new HashMap<>(nodeRefs.size());
 
         // Collect node statuses
@@ -113,5 +129,10 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
         configuration.put("enabled", Boolean.toString(isEnabled()));
         configuration.put("solrServerSelector", solrServerSelector.toString());
         return configuration;
+    }
+
+    @Override
+    public Map<String, String> getState() {
+        return Collections.singletonMap("shutdown", Boolean.toString(shutdownPlugin));
     }
 }

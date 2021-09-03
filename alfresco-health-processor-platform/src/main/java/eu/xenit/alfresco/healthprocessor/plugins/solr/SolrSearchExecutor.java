@@ -39,7 +39,7 @@ public class SolrSearchExecutor {
      * @throws IOException When the HTTP request goes wrong
      */
     public SolrSearchResult checkNodeIndexed(SearchEndpoint endpoint, Collection<Status> nodeStatuses)
-            throws IOException {
+            throws IOException, ShutdownPluginException {
 
         String dbIdsQuery = nodeStatuses.stream()
                 .map(Status::getDbId)
@@ -56,6 +56,11 @@ public class SolrSearchExecutor {
         JsonNode response = httpClient.execute(searchRequest, new JSONResponseHandler());
 
         Long lastIndexedTransaction = response.path("lastIndexedTx").asLong();
+        Long numberOfFoundDocs = response.path("response").path("numFound").asLong();
+
+        if(numberOfFoundDocs > nodeStatuses.size()) {
+            throw new ShutdownPluginException("Found more documents ("+numberOfFoundDocs+") than requested ("+nodeStatuses.size()+").");
+        }
 
         JsonNode docs = response.path("response").path("docs");
         if(docs.size() == nodeStatuses.size()) {
