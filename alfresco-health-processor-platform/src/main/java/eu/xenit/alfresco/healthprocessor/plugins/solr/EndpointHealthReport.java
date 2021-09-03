@@ -28,6 +28,7 @@ public class EndpointHealthReport {
         // Higher in this list = higher priority
         EXCEPTION(NodeHealthStatus.NONE, "Exception occurred while checking node in search index %s."),
         NOT_FOUND(NodeHealthStatus.UNHEALTHY, "Node is missing in search index %s."),
+        DUPLICATE(NodeHealthStatus.UNHEALTHY, "Node is present multiple times in search index %s."),
         FOUND(NodeHealthStatus.HEALTHY, "Node is present in search index %s."),
         NOT_INDEXED(NodeHealthStatus.NONE, "Node is not yet indexed in search index %s (TX not yet processed)."),
         UNSET(null, null);

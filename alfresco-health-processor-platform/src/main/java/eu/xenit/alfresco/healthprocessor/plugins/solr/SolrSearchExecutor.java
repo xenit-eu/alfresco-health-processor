@@ -6,9 +6,12 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
@@ -39,40 +42,30 @@ public class SolrSearchExecutor {
      * @throws IOException When the HTTP request goes wrong
      */
     public SolrSearchResult checkNodeIndexed(SearchEndpoint endpoint, Collection<Status> nodeStatuses)
-            throws IOException, ShutdownPluginException {
+            throws IOException {
 
-        String dbIdsQuery = nodeStatuses.stream()
-                .map(Status::getDbId)
-                .map(dbId -> "DBID:" + dbId)
-                .collect(Collectors.joining("%20OR%20"));
+        // Initially, try a fetch for double the size of the node statuses array
+        // This is so we can immediately detect the case where all nodes are indexed twice.
+        int fetchSize = nodeStatuses.size()*2;
+        JsonNode response = executeSearchRequest(endpoint, nodeStatuses, fetchSize);
 
-        log.debug("Search query to endpoint {}: {}", endpoint, dbIdsQuery);
-
-        HttpUriRequest searchRequest = new HttpGet(
-                endpoint.getBaseUri()
-                        .resolve("select?q=" + dbIdsQuery + "&fl=DBID&wt=json&rows=" + nodeStatuses.size()));
-
-        log.trace("Executing HTTP request {}", searchRequest);
-        JsonNode response = httpClient.execute(searchRequest, new JSONResponseHandler());
+        long numberOfFoundDocs = response.path("response").path("numFound").asLong();
+        if(numberOfFoundDocs > fetchSize) {
+            // We did not fetch enough in one batch to fetch all duplicates (when nodes are duplicated more than once)
+            // Send a new request for the number of rows we actually need.
+            log.debug("Found number of docs #{} is larger than the requested number of rows #{}. Fetching again with larger number of rows.", numberOfFoundDocs, fetchSize);
+            response = executeSearchRequest(endpoint ,nodeStatuses, numberOfFoundDocs);
+        }
 
         Long lastIndexedTransaction = response.path("lastIndexedTx").asLong();
-        Long numberOfFoundDocs = response.path("response").path("numFound").asLong();
-
-        if(numberOfFoundDocs > nodeStatuses.size()) {
-            throw new ShutdownPluginException("Found more documents ("+numberOfFoundDocs+") than requested ("+nodeStatuses.size()+").");
-        }
 
         JsonNode docs = response.path("response").path("docs");
-        if(docs.size() == nodeStatuses.size()) {
-            log.debug("Received #{} docs (identical to requested #{} nodes), marking all as found.", docs.size(), nodeStatuses.size());
-            // Fast path: all searched for nodes were found.
-            return new SolrSearchResult(new HashSet<>(nodeStatuses), Collections.emptySet(), Collections.emptySet());
-        }
 
-        Set<Long> foundDbIds = StreamSupport.stream(docs.spliterator(), false)
+        // Map from DBID to number of times that it is present
+        Map<Long, Long> foundDbIds = StreamSupport.stream(docs.spliterator(), false)
                 .filter(JsonNode::isObject)
                 .map(o -> o.path("DBID").asLong())
-                .collect(Collectors.toSet());
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
         log.debug("Last indexed transaction in solr: {}", lastIndexedTransaction);
         if(log.isTraceEnabled()) {
@@ -82,31 +75,66 @@ public class SolrSearchExecutor {
         SolrSearchResult solrSearchResult = new SolrSearchResult();
 
         for (Status nodeStatus : nodeStatuses) {
-            // Node is in a transaction that has not yet been indexed
-            if (nodeStatus.getDbTxnId() > lastIndexedTransaction) {
-                log.trace("Node {} is not yet indexed (solr indexed TX: {})", nodeStatus, lastIndexedTransaction);
-                solrSearchResult.getNotIndexed().add(nodeStatus);
-            } else if (foundDbIds.contains(nodeStatus.getDbId())) {
-                solrSearchResult.getFound().add(nodeStatus);
-            } else {
-                log.trace("Node {} is not indexed (solr indexed TX: {})", nodeStatus, lastIndexedTransaction);
-                solrSearchResult.getMissing().add(nodeStatus);
+            switch (foundDbIds.getOrDefault(nodeStatus.getDbId(), 0L).intValue()) {
+                case 0:
+                    // Node is in a transaction that has not yet been indexed
+                    if (nodeStatus.getDbTxnId() > lastIndexedTransaction) {
+                        log.trace("Node {} is not yet indexed (solr indexed TX: {})", nodeStatus, lastIndexedTransaction);
+                        solrSearchResult.getNotIndexed().add(nodeStatus);
+                    } else {
+                        log.trace("Node {} is not indexed (solr indexed TX: {})", nodeStatus, lastIndexedTransaction);
+                        solrSearchResult.getMissing().add(nodeStatus);
+                    }
+                    break;
+                case 1:
+                    solrSearchResult.getFound().add(nodeStatus);
+                    break;
+                default:
+                    log.trace("Node {} is indexed multiple times (found {} times)", nodeStatus, foundDbIds.get(nodeStatus.getDbId()));
+                    solrSearchResult.getDuplicate().add(nodeStatus);
             }
-
         }
 
         return solrSearchResult;
     }
 
-    public boolean forceNodeIndex(SearchEndpoint endpoint, Status nodeStatus) throws IOException {
+    private JsonNode executeSearchRequest(SearchEndpoint endpoint, Collection<Status> nodeStatuses, long fetchSize)
+            throws IOException {
+        String dbIdsQuery = nodeStatuses.stream()
+                .map(Status::getDbId)
+                .map(dbId -> "DBID:" + dbId)
+                .collect(Collectors.joining("%20OR%20"));
+
+        log.debug("Search query to endpoint {}: {}", endpoint, dbIdsQuery);
+
+        HttpUriRequest searchRequest = new HttpGet(
+                endpoint.getBaseUri()
+                        .resolve("select?q=" + dbIdsQuery + "&fl=DBID&wt=json&rows=" + fetchSize));
+
+        log.trace("Executing HTTP request {}", searchRequest);
+        return httpClient.execute(searchRequest, new JSONResponseHandler());
+    }
+
+    public boolean executeNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
+            throws IOException {
         String coreName = endpoint.getCoreName();
-        HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve("cores?action=index&nodeid="+nodeStatus.getDbId()+"&wt=json&coreName="+coreName));
+        HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve("cores?action="+command.getCommand()+"&nodeid="+nodeStatus.getDbId()+"&wt=json&coreName="+coreName));
 
         log.trace("Executing HTTP request {}", indexRequest);
         JsonNode response = httpClient.execute(indexRequest, new JSONResponseHandler());
         log.trace("Response: {}", response.asText());
 
         return response.path("action").path(coreName).path("status").asText().equals("scheduled");
+    }
+
+
+    @AllArgsConstructor
+    public enum SolrNodeCommand {
+        REINDEX("reindex"),
+        PURGE("purge");
+
+        @Getter
+        private final String command;
     }
 
 }

@@ -61,10 +61,9 @@ class SolrSearchExecutorTest {
                 .withParameter("q", "DBID:10 OR DBID:11 OR DBID:100 OR DBID:999 OR DBID:1000")
                 .withParameter("fl", "DBID")
                 .withParameter("wt", "json")
-                .withParameter("rows", "5")
                 .doReturnJSON("{"
                         + "\"lastIndexedTx\":" + LAST_INDEXED_TX + ","
-                        + "\"response\": { \"docs\": ["
+                        + "\"response\": { \"numFound\": 3, \"docs\": ["
                         + "{\"DBID\": 10 },"
                         + "{\"DBID\": 11 },"
                         + "{\"DBID\": 999 }"
@@ -76,6 +75,7 @@ class SolrSearchExecutorTest {
         assertEquals(SetUtil.set(10L, 11L, 999L), toDbIds(solrSearchResult.getFound()));
         assertEquals(SetUtil.set(100L), toDbIds(solrSearchResult.getMissing()));
         assertEquals(SetUtil.set(1000L), toDbIds(solrSearchResult.getNotIndexed()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getDuplicate()));
     }
 
     @Test
@@ -93,7 +93,7 @@ class SolrSearchExecutorTest {
         httpClientMock.onGet("http://nowhere/solr/index/select")
                 .doReturnJSON("{"
                         + "\"lastIndexedTx\":" + LAST_INDEXED_TX + ","
-                        + "\"response\": { \"docs\": ["
+                        + "\"response\": { \"numFound\": 5, \"docs\": ["
                         + "{\"DBID\": 10 },"
                         + "{\"DBID\": 11 },"
                         + "{\"DBID\": 999 },"
@@ -107,6 +107,7 @@ class SolrSearchExecutorTest {
         assertEquals(SetUtil.set(10L, 11L, 999L, 1000L, 100L), toDbIds(solrSearchResult.getFound()));
         assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getMissing()));
         assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getNotIndexed()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getDuplicate()));
     }
 
     @Test
@@ -143,7 +144,7 @@ class SolrSearchExecutorTest {
         httpClientMock.onGet("http://nowhere/solr/index/select")
                 .doReturnJSON("{"
                         + "\"lastIndexedTx\":" + LAST_INDEXED_TX + ","
-                        + "\"response\": { \"docs\": ["
+                        + "\"response\": { \"numFound\": 0, \"docs\": ["
                         + "]}"
                         + "}");
 
@@ -152,5 +153,81 @@ class SolrSearchExecutorTest {
         assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getFound()));
         assertEquals(SetUtil.set(10L, 11L, 999L, 100L), toDbIds(solrSearchResult.getMissing()));
         assertEquals(SetUtil.set(1000L), toDbIds(solrSearchResult.getNotIndexed()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getDuplicate()));
+    }
+
+    @Test
+    void checkDuplicateNodes() throws IOException {
+        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+
+        List<Status> nodeRefs = new ArrayList<>();
+
+        nodeRefs.add(randomNodeRefStatus(10L, LAST_INDEXED_TX - 10));
+        nodeRefs.add(randomNodeRefStatus(11L, LAST_INDEXED_TX - 9));
+        nodeRefs.add(randomNodeRefStatus(100L, 5L));
+        nodeRefs.add(randomNodeRefStatus(999L, LAST_INDEXED_TX));
+        nodeRefs.add(randomNodeRefStatus(1000L, LAST_INDEXED_TX));
+
+        httpClientMock.onGet("http://nowhere/solr/index/select")
+                .doReturnJSON("{"
+                        + "\"lastIndexedTx\":" + LAST_INDEXED_TX + ","
+                        + "\"response\": { \"numFound\": 5, \"docs\": ["
+                        + "{\"DBID\": 10 },"
+                        + "{\"DBID\": 10 },"
+                        + "{\"DBID\": 999 },"
+                        + "{\"DBID\": 1000 },"
+                        + "{\"DBID\": 100 }"
+                        + "]}"
+                        + "}");
+
+        SolrSearchResult solrSearchResult = solrSearchExecutor.checkNodeIndexed(endpoint, nodeRefs);
+
+        assertEquals(SetUtil.set(999L, 1000L, 100L), toDbIds(solrSearchResult.getFound()));
+        assertEquals(SetUtil.set(11L), toDbIds(solrSearchResult.getMissing()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getNotIndexed()));
+        assertEquals(SetUtil.set(10L), toDbIds(solrSearchResult.getDuplicate()));
+    }
+
+    @Test
+    void checkManyDuplicateNodes() throws IOException {
+        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+
+        List<Status> nodeRefs = new ArrayList<>();
+
+        nodeRefs.add(randomNodeRefStatus(10L, LAST_INDEXED_TX - 10));
+        nodeRefs.add(randomNodeRefStatus(11L, LAST_INDEXED_TX - 9));
+
+        httpClientMock.onGet("http://nowhere/solr/index/select")
+                .withParameter("rows", "4")
+                .doReturnJSON("{"
+                        + "\"lastIndexedTx\":" + LAST_INDEXED_TX + ","
+                        + "\"response\": { \"numFound\": 6, \"docs\": ["
+                        + "{\"DBID\": 10 },"
+                        + "{\"DBID\": 10 },"
+                        + "{\"DBID\": 10 },"
+                        + "{\"DBID\": 10 }"
+                        + "]}"
+                        + "}");
+
+        httpClientMock.onGet("http://nowhere/solr/index/select")
+                .withParameter("rows", "6")
+                .doReturnJSON("{"
+                        + "\"lastIndexedTx\":" + LAST_INDEXED_TX + ","
+                        + "\"response\": { \"numFound\": 6, \"docs\": ["
+                        + "{\"DBID\": 10 },"
+                        + "{\"DBID\": 10 },"
+                        + "{\"DBID\": 10 },"
+                        + "{\"DBID\": 10 },"
+                        + "{\"DBID\": 11 },"
+                        + "{\"DBID\": 10 }"
+                        + "]}"
+                        + "}");
+
+        SolrSearchResult solrSearchResult = solrSearchExecutor.checkNodeIndexed(endpoint, nodeRefs);
+
+        assertEquals(SetUtil.set(11L), toDbIds(solrSearchResult.getFound()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getMissing()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getNotIndexed()));
+        assertEquals(SetUtil.set(10L), toDbIds(solrSearchResult.getDuplicate()));
     }
 }
