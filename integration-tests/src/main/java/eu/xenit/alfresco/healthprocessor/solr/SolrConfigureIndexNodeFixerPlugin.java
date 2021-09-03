@@ -1,6 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.solr;
 
-import eu.xenit.alfresco.healthprocessor.fixer.solr.SolrIndexNodeFixerPlugin;
+import eu.xenit.alfresco.healthprocessor.fixer.solr.SolrMissingNodeFixerPlugin;
 import java.io.IOException;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -8,10 +8,10 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 
 public class SolrConfigureIndexNodeFixerPlugin extends AbstractWebScript {
 
-    private final SolrIndexNodeFixerPlugin fixerPlugin;
+    private final SolrMissingNodeFixerPlugin fixerPlugin;
 
     public SolrConfigureIndexNodeFixerPlugin(
-            SolrIndexNodeFixerPlugin fixerPlugin) {
+            SolrMissingNodeFixerPlugin fixerPlugin) {
         this.fixerPlugin = fixerPlugin;
     }
 

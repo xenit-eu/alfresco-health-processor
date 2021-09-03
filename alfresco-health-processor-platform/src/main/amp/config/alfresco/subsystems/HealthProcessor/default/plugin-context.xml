@@ -62,9 +62,15 @@
 
     <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.DeletedNodeFilter" />
 
-    <bean id="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrIndexNodeFixerPlugin"
-        class="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrIndexNodeFixerPlugin">
-        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.fixer.solr-index-node.enabled}" />
+    <bean id="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrMissingNodeFixerPlugin"
+        class="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrMissingNodeFixerPlugin">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled}" />
+        <constructor-arg name="solrSearchExecutor"
+                ref="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
+    </bean>
+    <bean id="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrDuplicateNodeFixerPlugin"
+            class="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrDuplicateNodeFixerPlugin">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled}" />
         <constructor-arg name="solrSearchExecutor"
                 ref="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
     </bean>

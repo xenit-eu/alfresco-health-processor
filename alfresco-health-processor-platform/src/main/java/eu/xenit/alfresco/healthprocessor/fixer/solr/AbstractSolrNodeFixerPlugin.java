@@ -5,11 +5,9 @@ import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
 import eu.xenit.alfresco.healthprocessor.fixer.api.ToggleableHealthFixerPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.EndpointHealthReport;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.EndpointHealthReport.EndpointHealthStatus;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrIndexValidationHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor.SolrNodeCommand;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,11 +15,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 @AllArgsConstructor
 @Slf4j
-public class SolrIndexNodeFixerPlugin extends ToggleableHealthFixerPlugin {
+abstract class AbstractSolrNodeFixerPlugin extends ToggleableHealthFixerPlugin {
 
     private final SolrSearchExecutor solrSearchExecutor;
 
@@ -41,28 +38,18 @@ public class SolrIndexNodeFixerPlugin extends ToggleableHealthFixerPlugin {
             Set<EndpointHealthReport> endpointHealthReports = unhealthyReport.data(EndpointHealthReport.class);
 
             for (EndpointHealthReport endpointHealthReport : endpointHealthReports) {
-                switch (endpointHealthReport.getHealthStatus()) {
-                    case NOT_FOUND:
-                        fixReports.add(trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.REINDEX));
-                        break;
-                    case DUPLICATE:
-                        // When a duplicate node is detected, purge it from the index and reindex it
-                        // According to MetadataTracker#maintenance(), purge is processed before reindex
-                        // Even if it is executed in the same maintenance cycle.
-                        // Ref: https://github.com/Alfresco/SearchServices/blob/e7f05e2f13a709cd28afa3ae6acfd3d0000b22ff/search-services/alfresco-search/src/main/java/org/alfresco/solr/tracker/MetadataTracker.java#L257-L266
-                        // Purge has to be done before reindex, else we end up with a broken index which will only be fixed
-                        // by a subsequent health processor cycle, which would be unacceptable.
-                        fixReports.add(trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.PURGE));
-                        fixReports.add(trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.REINDEX));
-                        break;
-                }
+                fixReports.addAll(handleHealthReport(unhealthyReport, endpointHealthReport));
             }
         }
 
         return fixReports;
     }
 
-    private NodeFixReport trySendSolrCommand(NodeHealthReport unhealthyReport, EndpointHealthReport endpointHealthReport, SolrNodeCommand command) {
+    protected abstract Set<NodeFixReport> handleHealthReport(NodeHealthReport unhealthyReport,
+            EndpointHealthReport endpointHealthReport);
+
+    protected NodeFixReport trySendSolrCommand(NodeHealthReport unhealthyReport,
+            EndpointHealthReport endpointHealthReport, SolrNodeCommand command) {
         try {
             log.debug("Requesting index for node {} on {}",
                     endpointHealthReport.getNodeRefStatus().getNodeRef(),
@@ -71,10 +58,10 @@ public class SolrIndexNodeFixerPlugin extends ToggleableHealthFixerPlugin {
                     endpointHealthReport.getNodeRefStatus(), SolrNodeCommand.REINDEX);
             if (isReIndexed) {
                 return new NodeFixReport(NodeFixStatus.SUCCEEDED, unhealthyReport,
-                        command+" scheduled on " + endpointHealthReport.getEndpoint());
+                        command + " scheduled on " + endpointHealthReport.getEndpoint());
             } else {
                 return new NodeFixReport(NodeFixStatus.FAILED, unhealthyReport,
-                        command+" failed to schedule on " + endpointHealthReport.getEndpoint());
+                        command + " failed to schedule on " + endpointHealthReport.getEndpoint());
             }
 
         } catch (Exception e) {
@@ -83,7 +70,7 @@ public class SolrIndexNodeFixerPlugin extends ToggleableHealthFixerPlugin {
                     endpointHealthReport.getNodeRefStatus().getNodeRef(),
                     endpointHealthReport.getEndpoint(), e);
             return new NodeFixReport(NodeFixStatus.FAILED, unhealthyReport,
-                    "Exception when requesting "+ command+" on " + endpointHealthReport.getEndpoint());
+                    "Exception when requesting " + command + " on " + endpointHealthReport.getEndpoint());
         }
     }
 }

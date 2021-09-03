@@ -213,18 +213,33 @@ eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard2.indexe
 
 ### HealthFixerPlugin implementations
 
-#### Solr index node
+#### Solr missing node fixer
 
-Activation property: `eu.xenit.alfresco.healthprocessor.fixer.solr-index-node.enabled=true`
+Activation property: `eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled=true`
 
 Attempts to fix nodes that are not indexed in Solr as detected by the [Solr index Validation](#solr-index-validation) plugin.
 
-The fixer will send an asynchronous `INDEX` command to all Solr endpoints that are determined to miss the node.
+The fixer will send an asynchronous `REINDEX` command to all Solr endpoints that are determined to miss the node.
 The Solr server will then re-index the node during its next tracking cycle.
 
-All nodes for which an `INDEX` command has been succesfully sent are marked as `FIXED`.
+All nodes for which an `REINDEX` command has been succesfully sent are marked as `FIXED`.
 
 > **Note**: Although the nodes are marked as _FIXED_, asynchronous indexing by the Solr server may still fail.
+> Currently, this case can not be detected automatically, but a node that does not become _HEALTHY_ in a subsequent
+> Health-Processor run should be investigated why it is not being indexed.
+
+#### Solr duplicate node fixer
+
+Activation property: `eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled=true`
+
+Attempts to fix nodes that are duplicated in Solr as detected by the [Solr index Validation](#solr-index-validation) plugin.
+
+The fixer will send an asynchronous `PURGE` command, followed by a `REINDEX` command to all Solr endpoints that are determined to duplicate the node.
+The Solr server will then be purge and re-index the node during its next tracking cycle.
+
+All nodes for which an `PURGE` and `REINDEX` commands has been succesfully sent are marked as `FIXED`.
+
+> **Note**: Although the nodes are marked as _FIXED_, asynchronous purging/indexing by the Solr server may still fail.
 > Currently, this case can not be detected automatically, but a node that does not become _HEALTHY_ in a subsequent
 > Health-Processor run should be investigated why it is not being indexed.
 
