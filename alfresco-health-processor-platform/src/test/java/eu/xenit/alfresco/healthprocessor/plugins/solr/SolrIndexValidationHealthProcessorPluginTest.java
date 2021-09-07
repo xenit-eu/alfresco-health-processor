@@ -39,14 +39,14 @@ class SolrIndexValidationHealthProcessorPluginTest {
     private SearchEndpointSelector searchEndpointSelector;
 
     @Mock
-    private SolrSearchExecutor solrSearchExecutor;
+    private SolrRequestExecutor solrRequestExecutor;
 
     private SolrIndexValidationHealthProcessorPlugin healthProcessorPlugin;
 
     @BeforeEach
     void setup() {
         healthProcessorPlugin = new SolrIndexValidationHealthProcessorPlugin(nodeService, searchEndpointSelector,
-                solrSearchExecutor);
+                solrRequestExecutor);
     }
 
     @Test
@@ -61,7 +61,7 @@ class SolrIndexValidationHealthProcessorPluginTest {
         });
 
         // All noderefs are regarded as "found" for this test
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint), Mockito.any())).thenAnswer(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint), Mockito.any())).thenAnswer(
                 invocation -> new SolrSearchResult(invocation.getArgument(1, Set.class), Collections.emptySet(),
                         Collections.emptySet(), Collections.emptySet()));
 
@@ -69,7 +69,7 @@ class SolrIndexValidationHealthProcessorPluginTest {
         Set<NodeHealthReport> healthReports = healthProcessorPlugin.process(nodeRefs);
 
         // Verify that the search endpoint was only called *once*
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint), Mockito.any());
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
@@ -94,10 +94,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
         });
 
         // All noderefs are regarded as "found" in endpoint 1 and endpoint 2
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any())).thenAnswer(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any())).thenAnswer(
                 invocation -> new SolrSearchResult(invocation.getArgument(1, Set.class), Collections.emptySet(),
                         Collections.emptySet(), Collections.emptySet()));
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any())).thenAnswer(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any())).thenAnswer(
                 invocation -> new SolrSearchResult(invocation.getArgument(1, Set.class), Collections.emptySet(),
                         Collections.emptySet(), Collections.emptySet()));
 
@@ -105,8 +105,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
         Set<NodeHealthReport> healthReports = healthProcessorPlugin.process(nodeRefs);
 
         // Verify that each search endpoint was only called *once*
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any());
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any());
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
@@ -131,10 +131,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
         });
 
         // All noderefs are regarded as "found" in endpoint 1 for this test and missing in endpoint 2
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any())).thenAnswer(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any())).thenAnswer(
                 invocation -> new SolrSearchResult(invocation.getArgument(1, Set.class), Collections.emptySet(),
                         Collections.emptySet(), Collections.emptySet()));
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any())).thenAnswer(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any())).thenAnswer(
                 invocation -> new SolrSearchResult(Collections.emptySet(), invocation.getArgument(1, Set.class),
                         Collections.emptySet(), Collections.emptySet()));
 
@@ -142,8 +142,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
         Set<NodeHealthReport> healthReports = healthProcessorPlugin.process(nodeRefs);
 
         // Verify that each search endpoint was only called *once*
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any());
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any());
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
@@ -168,10 +168,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
         });
 
         // All noderefs are regarded as "found" in endpoint 1 for this test and not indexed in endpoint 2
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any())).thenAnswer(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any())).thenAnswer(
                 invocation -> new SolrSearchResult(invocation.getArgument(1, Set.class), Collections.emptySet(),
                         Collections.emptySet(), Collections.emptySet()));
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any())).thenAnswer(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any())).thenAnswer(
                 invocation -> new SolrSearchResult(Collections.emptySet(), Collections.emptySet(),
                         invocation.getArgument(1, Set.class), Collections.emptySet()));
 
@@ -179,8 +179,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
         Set<NodeHealthReport> healthReports = healthProcessorPlugin.process(nodeRefs);
 
         // Verify that each search endpoint was only called *once*
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any());
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any());
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
@@ -205,10 +205,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
         });
 
         // All noderefs are regarded as "found" in endpoint 1 for this test and not indexed in endpoint 2
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any())).thenAnswer(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any())).thenAnswer(
                 invocation -> new SolrSearchResult(Collections.emptySet(), Collections.emptySet(),
                         invocation.getArgument(1, Set.class), Collections.emptySet()));
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any())).thenAnswer(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any())).thenAnswer(
                 invocation -> new SolrSearchResult(Collections.emptySet(), Collections.emptySet(),
                         invocation.getArgument(1, Set.class), Collections.emptySet()));
 
@@ -216,8 +216,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
         Set<NodeHealthReport> healthReports = healthProcessorPlugin.process(nodeRefs);
 
         // Verify that each search endpoint was only called *once*
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any());
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any());
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
@@ -242,10 +242,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
         });
 
         // All noderefs are regarded as "duplicate" in endpoint 1 for this test and not indexed in endpoint 2
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any())).thenAnswer(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any())).thenAnswer(
                 invocation -> new SolrSearchResult(Collections.emptySet(), Collections.emptySet(),
                         Collections.emptySet(), invocation.getArgument(1, Set.class)));
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any())).thenAnswer(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any())).thenAnswer(
                 invocation -> new SolrSearchResult(Collections.emptySet(), Collections.emptySet(),
                         invocation.getArgument(1, Set.class), Collections.emptySet()));
 
@@ -253,8 +253,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
         Set<NodeHealthReport> healthReports = healthProcessorPlugin.process(nodeRefs);
 
         // Verify that each search endpoint was only called *once*
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any());
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any());
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
@@ -280,7 +280,7 @@ class SolrIndexValidationHealthProcessorPluginTest {
         Set<NodeHealthReport> healthReports = healthProcessorPlugin.process(nodeRefs);
 
         // Verify that no search endpoints were contacted
-        verifyNoInteractions(solrSearchExecutor);
+        verifyNoInteractions(solrRequestExecutor);
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
@@ -304,9 +304,9 @@ class SolrIndexValidationHealthProcessorPluginTest {
         });
 
         // All endpoint 1 throws an exception, endpoint 2 says they are present
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any())).thenThrow(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any())).thenThrow(
                 new IOException("My server is broken"));
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any())).thenAnswer(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any())).thenAnswer(
                 invocation -> new SolrSearchResult(invocation.getArgument(1, Set.class), Collections.emptySet(),
                         Collections.emptySet(), Collections.emptySet()));
 
@@ -314,8 +314,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
         Set<NodeHealthReport> healthReports = healthProcessorPlugin.process(nodeRefs);
 
         // Verify that each search endpoint was only called *once*
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any());
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint1), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint2), Mockito.any());
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
@@ -338,14 +338,14 @@ class SolrIndexValidationHealthProcessorPluginTest {
         });
 
         // Endpoint throws an HTTP error
-        when(solrSearchExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint), Mockito.any())).thenThrow(
+        when(solrRequestExecutor.checkNodeIndexed(Mockito.eq(searchEndpoint), Mockito.any())).thenThrow(
                 new HttpResponseException(404, "Not Found"));
 
         Set<NodeRef> nodeRefs = set(TestNodeRefs.REFS);
         Set<NodeHealthReport> healthReports = healthProcessorPlugin.process(nodeRefs);
 
         // Verify that the search endpoint was only called *once*
-        verify(solrSearchExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint), Mockito.any());
+        verify(solrRequestExecutor).checkNodeIndexed(Mockito.eq(searchEndpoint), Mockito.any());
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");

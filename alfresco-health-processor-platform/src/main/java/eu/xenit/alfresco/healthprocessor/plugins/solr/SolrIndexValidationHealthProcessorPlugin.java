@@ -28,7 +28,7 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
 
     private final NodeService nodeService;
     private final SearchEndpointSelector solrServerSelector;
-    private final SolrSearchExecutor solrSearchExecutor;
+    private final SolrRequestExecutor solrRequestExecutor;
 
     static final String MSG_NO_SEARCH_ENDPOINTS = "Node is not expected in any search index.";
 
@@ -77,7 +77,7 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
             SearchEndpoint searchEndpoint = entry.getKey();
             Set<NodeRef.Status> expectedNodeRefStatuses = new HashSet<>(entry.getValue());
             try {
-                SolrSearchResult searchResult = solrSearchExecutor.checkNodeIndexed(searchEndpoint,
+                SolrSearchResult searchResult = solrRequestExecutor.checkNodeIndexed(searchEndpoint,
                         expectedNodeRefStatuses);
 
                 getLogger().trace("Search endpoint {}: expected nodes {}, result {}", searchEndpoint,

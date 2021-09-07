@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -21,15 +19,15 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 /**
- * Performs a search operation on a {@link SearchEndpoint}
+ * Performs HTTP requests on a {@link SearchEndpoint}
  */
 @Slf4j
 @RequiredArgsConstructor
-public class SolrSearchExecutor {
+public class SolrRequestExecutor {
 
     private final HttpClient httpClient;
 
-    public SolrSearchExecutor() {
+    public SolrRequestExecutor() {
         this(HttpClientBuilder.create().build());
     }
 
@@ -46,15 +44,17 @@ public class SolrSearchExecutor {
 
         // Initially, try a fetch for double the size of the node statuses array
         // This is so we can immediately detect the case where all nodes are indexed twice.
-        int fetchSize = nodeStatuses.size()*2;
+        int fetchSize = nodeStatuses.size() * 2;
         JsonNode response = executeSearchRequest(endpoint, nodeStatuses, fetchSize);
 
         long numberOfFoundDocs = response.path("response").path("numFound").asLong();
-        if(numberOfFoundDocs > fetchSize) {
+        if (numberOfFoundDocs > fetchSize) {
             // We did not fetch enough in one batch to fetch all duplicates (when nodes are duplicated more than once)
             // Send a new request for the number of rows we actually need.
-            log.debug("Found number of docs #{} is larger than the requested number of rows #{}. Fetching again with larger number of rows.", numberOfFoundDocs, fetchSize);
-            response = executeSearchRequest(endpoint ,nodeStatuses, numberOfFoundDocs);
+            log.debug(
+                    "Found number of docs #{} is larger than the requested number of rows #{}. Fetching again with larger number of rows.",
+                    numberOfFoundDocs, fetchSize);
+            response = executeSearchRequest(endpoint, nodeStatuses, numberOfFoundDocs);
         }
 
         Long lastIndexedTransaction = response.path("lastIndexedTx").asLong();
@@ -68,8 +68,9 @@ public class SolrSearchExecutor {
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
         log.debug("Last indexed transaction in solr: {}", lastIndexedTransaction);
-        if(log.isTraceEnabled()) {
-            log.trace("Transactions on nodes: {}", nodeStatuses.stream().map(Status::getDbTxnId).collect(Collectors.toSet()));
+        if (log.isTraceEnabled()) {
+            log.trace("Transactions on nodes: {}",
+                    nodeStatuses.stream().map(Status::getDbTxnId).collect(Collectors.toSet()));
         }
 
         SolrSearchResult solrSearchResult = new SolrSearchResult();
@@ -79,7 +80,8 @@ public class SolrSearchExecutor {
                 case 0:
                     // Node is in a transaction that has not yet been indexed
                     if (nodeStatus.getDbTxnId() > lastIndexedTransaction) {
-                        log.trace("Node {} is not yet indexed (solr indexed TX: {})", nodeStatus, lastIndexedTransaction);
+                        log.trace("Node {} is not yet indexed (solr indexed TX: {})", nodeStatus,
+                                lastIndexedTransaction);
                         solrSearchResult.getNotIndexed().add(nodeStatus);
                     } else {
                         log.trace("Node {} is not indexed (solr indexed TX: {})", nodeStatus, lastIndexedTransaction);
@@ -90,7 +92,8 @@ public class SolrSearchExecutor {
                     solrSearchResult.getFound().add(nodeStatus);
                     break;
                 default:
-                    log.trace("Node {} is indexed multiple times (found {} times)", nodeStatus, foundDbIds.get(nodeStatus.getDbId()));
+                    log.trace("Node {} is indexed multiple times (found {} times)", nodeStatus,
+                            foundDbIds.get(nodeStatus.getDbId()));
                     solrSearchResult.getDuplicate().add(nodeStatus);
             }
         }
@@ -118,7 +121,9 @@ public class SolrSearchExecutor {
     public boolean executeNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
             throws IOException {
         String coreName = endpoint.getCoreName();
-        HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve("cores?action="+command.getCommand()+"&nodeid="+nodeStatus.getDbId()+"&wt=json&coreName="+coreName));
+        HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve(
+                "cores?action=" + command.getCommand() + "&nodeid=" + nodeStatus.getDbId() + "&wt=json&coreName="
+                        + coreName));
 
         log.trace("Executing HTTP request {}", indexRequest);
         JsonNode response = httpClient.execute(indexRequest, new JSONResponseHandler());

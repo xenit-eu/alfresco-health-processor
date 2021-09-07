@@ -1,9 +1,12 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.paweladamski.httpclientmock.HttpClientMock;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrNodeCommand;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.util.SetUtil;
 import java.io.IOException;
@@ -20,17 +23,17 @@ import org.apache.http.client.HttpResponseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class SolrSearchExecutorTest {
+class SolrRequestExecutorTest {
 
     private HttpClientMock httpClientMock;
-    private SolrSearchExecutor solrSearchExecutor;
+    private SolrRequestExecutor solrRequestExecutor;
 
     private static final long LAST_INDEXED_TX = 1000L;
 
     @BeforeEach
     void setup() {
         httpClientMock = new HttpClientMock();
-        solrSearchExecutor = new SolrSearchExecutor(httpClientMock);
+        solrRequestExecutor = new SolrRequestExecutor(httpClientMock);
     }
 
     private static NodeRef randomNodeRef() {
@@ -70,7 +73,7 @@ class SolrSearchExecutorTest {
                         + "]}"
                         + "}");
 
-        SolrSearchResult solrSearchResult = solrSearchExecutor.checkNodeIndexed(endpoint, nodeRefs);
+        SolrSearchResult solrSearchResult = solrRequestExecutor.checkNodeIndexed(endpoint, nodeRefs);
 
         assertEquals(SetUtil.set(10L, 11L, 999L), toDbIds(solrSearchResult.getFound()));
         assertEquals(SetUtil.set(100L), toDbIds(solrSearchResult.getMissing()));
@@ -102,7 +105,7 @@ class SolrSearchExecutorTest {
                         + "]}"
                         + "}");
 
-        SolrSearchResult solrSearchResult = solrSearchExecutor.checkNodeIndexed(endpoint, nodeRefs);
+        SolrSearchResult solrSearchResult = solrRequestExecutor.checkNodeIndexed(endpoint, nodeRefs);
 
         assertEquals(SetUtil.set(10L, 11L, 999L, 1000L, 100L), toDbIds(solrSearchResult.getFound()));
         assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getMissing()));
@@ -125,7 +128,7 @@ class SolrSearchExecutorTest {
                 .doReturnWithStatus(400);
 
         assertThrows(HttpResponseException.class, () -> {
-            solrSearchExecutor.checkNodeIndexed(endpoint, nodeRefs);
+            solrRequestExecutor.checkNodeIndexed(endpoint, nodeRefs);
         });
     }
 
@@ -148,7 +151,7 @@ class SolrSearchExecutorTest {
                         + "]}"
                         + "}");
 
-        SolrSearchResult solrSearchResult = solrSearchExecutor.checkNodeIndexed(endpoint, nodeRefs);
+        SolrSearchResult solrSearchResult = solrRequestExecutor.checkNodeIndexed(endpoint, nodeRefs);
 
         assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getFound()));
         assertEquals(SetUtil.set(10L, 11L, 999L, 100L), toDbIds(solrSearchResult.getMissing()));
@@ -180,7 +183,7 @@ class SolrSearchExecutorTest {
                         + "]}"
                         + "}");
 
-        SolrSearchResult solrSearchResult = solrSearchExecutor.checkNodeIndexed(endpoint, nodeRefs);
+        SolrSearchResult solrSearchResult = solrRequestExecutor.checkNodeIndexed(endpoint, nodeRefs);
 
         assertEquals(SetUtil.set(999L, 1000L, 100L), toDbIds(solrSearchResult.getFound()));
         assertEquals(SetUtil.set(11L), toDbIds(solrSearchResult.getMissing()));
@@ -223,11 +226,59 @@ class SolrSearchExecutorTest {
                         + "]}"
                         + "}");
 
-        SolrSearchResult solrSearchResult = solrSearchExecutor.checkNodeIndexed(endpoint, nodeRefs);
+        SolrSearchResult solrSearchResult = solrRequestExecutor.checkNodeIndexed(endpoint, nodeRefs);
 
         assertEquals(SetUtil.set(11L), toDbIds(solrSearchResult.getFound()));
         assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getMissing()));
         assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getNotIndexed()));
         assertEquals(SetUtil.set(10L), toDbIds(solrSearchResult.getDuplicate()));
+    }
+
+    @Test
+    void performNodeCommandReindex() throws IOException {
+        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+
+        NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
+
+        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=reindex&nodeid=25&wt=json&coreName=index")
+                .doReturnJSON("{"
+                        + "\"action\": {"
+                        + "\"index\": { \"status\": \"scheduled\" }"
+                        + "}"
+                        + "}");
+
+        assertTrue(solrRequestExecutor.executeNodeCommand(endpoint, nodeRefStatus, SolrNodeCommand.REINDEX));
+    }
+
+    @Test
+    void performNodeCommandPurge() throws IOException {
+        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/some-index/"));
+
+        NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
+
+        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&nodeid=25&wt=json&coreName=some-index")
+                .doReturnJSON("{"
+                        + "\"action\": {"
+                        + "\"some-index\": { \"status\": \"scheduled\" }"
+                        + "}"
+                        + "}");
+
+        assertTrue(solrRequestExecutor.executeNodeCommand(endpoint, nodeRefStatus, SolrNodeCommand.PURGE));
+    }
+
+    @Test
+    void performNodeCommandFails() throws IOException {
+        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+
+        NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
+
+        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&nodeid=25&wt=json&coreName=index")
+                .doReturnJSON("{"
+                        + "\"action\": {"
+                        + "\"index\": { \"status\": \"failed\" }"
+                        + "}"
+                        + "}");
+
+        assertFalse(solrRequestExecutor.executeNodeCommand(endpoint, nodeRefStatus, SolrNodeCommand.PURGE));
     }
 }
