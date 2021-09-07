@@ -1,6 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
-import eu.xenit.alfresco.healthprocessor.plugins.solr.EndpointHealthReport.EndpointHealthStatus;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
@@ -23,7 +23,7 @@ public class MutableHealthReport {
 
     @Nullable
     private NodeHealthStatus healthStatus = null;
-    private final Set<EndpointHealthReport> endpointHealthReports = new HashSet<>();
+    private final Set<NodeIndexHealthReport> endpointHealthReports = new HashSet<>();
 
     private Set<String> messages = new HashSet<>();
 
@@ -37,12 +37,12 @@ public class MutableHealthReport {
         this.messages = new HashSet<>(Arrays.asList(messages));
     }
 
-    public void addHealthReport(EndpointHealthStatus healthStatus, NodeRef.Status nodeRefStatus,
+    public void addHealthReport(IndexHealthStatus healthStatus, NodeRef.Status nodeRefStatus,
             SearchEndpoint searchEndpoint) {
-        addHealthReport(new EndpointHealthReport(healthStatus, nodeRefStatus, searchEndpoint));
+        addHealthReport(new NodeIndexHealthReport(healthStatus, nodeRefStatus, searchEndpoint));
     }
 
-    public void addHealthReport(EndpointHealthReport endpointHealthReport) {
+    public void addHealthReport(NodeIndexHealthReport endpointHealthReport) {
         if (healthStatus != null) {
             throw new IllegalStateException(
                     "Can not add endpoint health reports when a health status is set directly.");
@@ -55,15 +55,15 @@ public class MutableHealthReport {
             return healthStatus;
         }
 
-        EndpointHealthStatus highestHealthStatus = EndpointHealthStatus.UNSET;
-        for (EndpointHealthReport endpointHealthReport : endpointHealthReports) {
-            EndpointHealthStatus healthStatus = endpointHealthReport.getHealthStatus();
+        IndexHealthStatus highestHealthStatus = IndexHealthStatus.UNSET;
+        for (NodeIndexHealthReport endpointHealthReport : endpointHealthReports) {
+            IndexHealthStatus healthStatus = endpointHealthReport.getHealthStatus();
             if (healthStatus.ordinal() < highestHealthStatus.ordinal()) {
                 highestHealthStatus = healthStatus;
             }
         }
 
-        if (highestHealthStatus == EndpointHealthStatus.UNSET) {
+        if (highestHealthStatus == IndexHealthStatus.UNSET) {
             throw new IllegalStateException("Can not have no health status set and have no endpoint health reports");
         }
         return highestHealthStatus.getNodeHealthStatus();
@@ -72,11 +72,11 @@ public class MutableHealthReport {
     public NodeHealthReport getHealthReport() {
         Set<String> allMessages = Stream.concat(
                 messages.stream(),
-                endpointHealthReports.stream().map(EndpointHealthReport::getMessage)
+                endpointHealthReports.stream().map(NodeIndexHealthReport::getMessage)
         ).collect(Collectors.toSet());
 
         NodeHealthReport nodeHealthReport = new NodeHealthReport(getHealthStatus(), nodeRef, allMessages);
-        nodeHealthReport.data(EndpointHealthReport.class).addAll(endpointHealthReports);
+        nodeHealthReport.data(NodeIndexHealthReport.class).addAll(endpointHealthReports);
         return nodeHealthReport;
     }
 }

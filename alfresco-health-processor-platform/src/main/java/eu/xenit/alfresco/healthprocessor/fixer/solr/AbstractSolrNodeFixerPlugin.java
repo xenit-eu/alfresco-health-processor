@@ -4,7 +4,7 @@ import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
 import eu.xenit.alfresco.healthprocessor.fixer.api.ToggleableHealthFixerPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.EndpointHealthReport;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrIndexValidationHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor.SolrNodeCommand;
@@ -35,9 +35,9 @@ abstract class AbstractSolrNodeFixerPlugin extends ToggleableHealthFixerPlugin {
         Set<NodeFixReport> fixReports = new HashSet<>();
 
         for (NodeHealthReport unhealthyReport : unhealthyReports) {
-            Set<EndpointHealthReport> endpointHealthReports = unhealthyReport.data(EndpointHealthReport.class);
+            Set<NodeIndexHealthReport> endpointHealthReports = unhealthyReport.data(NodeIndexHealthReport.class);
 
-            for (EndpointHealthReport endpointHealthReport : endpointHealthReports) {
+            for (NodeIndexHealthReport endpointHealthReport : endpointHealthReports) {
                 fixReports.addAll(handleHealthReport(unhealthyReport, endpointHealthReport));
             }
         }
@@ -46,10 +46,10 @@ abstract class AbstractSolrNodeFixerPlugin extends ToggleableHealthFixerPlugin {
     }
 
     protected abstract Set<NodeFixReport> handleHealthReport(NodeHealthReport unhealthyReport,
-            EndpointHealthReport endpointHealthReport);
+            NodeIndexHealthReport endpointHealthReport);
 
     protected NodeFixReport trySendSolrCommand(NodeHealthReport unhealthyReport,
-            EndpointHealthReport endpointHealthReport, SolrNodeCommand command) {
+            NodeIndexHealthReport endpointHealthReport, SolrNodeCommand command) {
         try {
             log.debug("Requesting index for node {} on {}",
                     endpointHealthReport.getNodeRefStatus().getNodeRef(),

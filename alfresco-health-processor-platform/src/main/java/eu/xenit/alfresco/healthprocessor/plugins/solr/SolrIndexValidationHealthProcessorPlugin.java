@@ -1,7 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
 import eu.xenit.alfresco.healthprocessor.plugins.api.ToggleableHealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.EndpointHealthReport.EndpointHealthStatus;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
@@ -85,24 +85,24 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
                         searchResult);
 
                 for (Status status : searchResult.getFound()) {
-                    healthReports.get(status).addHealthReport(EndpointHealthStatus.FOUND, status, searchEndpoint);
+                    healthReports.get(status).addHealthReport(IndexHealthStatus.FOUND, status, searchEndpoint);
                 }
 
                 for (Status status : searchResult.getMissing()) {
-                    healthReports.get(status).addHealthReport(EndpointHealthStatus.NOT_FOUND, status, searchEndpoint);
+                    healthReports.get(status).addHealthReport(IndexHealthStatus.NOT_FOUND, status, searchEndpoint);
                 }
 
                 for (Status status : searchResult.getNotIndexed()) {
-                    healthReports.get(status).addHealthReport(EndpointHealthStatus.NOT_INDEXED, status, searchEndpoint);
+                    healthReports.get(status).addHealthReport(IndexHealthStatus.NOT_INDEXED, status, searchEndpoint);
                 }
 
                 for(Status status: searchResult.getDuplicate()) {
-                    healthReports.get(status).addHealthReport(EndpointHealthStatus.DUPLICATE, status, searchEndpoint);
+                    healthReports.get(status).addHealthReport(IndexHealthStatus.DUPLICATE, status, searchEndpoint);
                 }
             } catch (IOException exception) {
                 getLogger().error("Exception during healthcheck on search endpoint {}", searchEndpoint, exception);
                 for (Status nodeRefStatus : expectedNodeRefStatuses) {
-                    healthReports.get(nodeRefStatus).addHealthReport(EndpointHealthStatus.EXCEPTION, nodeRefStatus, searchEndpoint);
+                    healthReports.get(nodeRefStatus).addHealthReport(IndexHealthStatus.EXCEPTION, nodeRefStatus, searchEndpoint);
                 }
             }
         }

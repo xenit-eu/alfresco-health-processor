@@ -1,8 +1,8 @@
 package eu.xenit.alfresco.healthprocessor.fixer.solr;
 
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.EndpointHealthReport;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.EndpointHealthReport.EndpointHealthStatus;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor.SolrNodeCommand;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
@@ -18,8 +18,8 @@ public class SolrDuplicateNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
 
     @Override
     protected Set<NodeFixReport> handleHealthReport(NodeHealthReport unhealthyReport,
-            EndpointHealthReport endpointHealthReport) {
-        if(endpointHealthReport.getHealthStatus() != EndpointHealthStatus.DUPLICATE) {
+            NodeIndexHealthReport endpointHealthReport) {
+        if (endpointHealthReport.getHealthStatus() != IndexHealthStatus.DUPLICATE) {
             return Collections.emptySet();
         }
         // When a duplicate node is detected, purge it from the index and reindex it

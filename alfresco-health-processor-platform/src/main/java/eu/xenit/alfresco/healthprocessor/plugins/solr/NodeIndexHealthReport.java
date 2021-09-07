@@ -10,9 +10,9 @@ import lombok.experimental.FieldDefaults;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 @Value
-public class EndpointHealthReport {
+public class NodeIndexHealthReport {
 
-    EndpointHealthStatus healthStatus;
+    IndexHealthStatus healthStatus;
     NodeRef.Status nodeRefStatus;
     SearchEndpoint endpoint;
 
@@ -23,7 +23,7 @@ public class EndpointHealthReport {
 
     @AllArgsConstructor
     @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-    public enum EndpointHealthStatus {
+    public enum IndexHealthStatus {
         // Fields are ordered by priority they take when multiple are present and the NodeHealthStatus has to be resolved from them
         // Higher in this list = higher priority
         EXCEPTION(NodeHealthStatus.NONE, "Exception occurred while checking node in search index %s."),
