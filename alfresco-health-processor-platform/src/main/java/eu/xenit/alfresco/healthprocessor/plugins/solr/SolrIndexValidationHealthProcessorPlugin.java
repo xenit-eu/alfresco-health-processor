@@ -1,5 +1,11 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
+import static eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus.DUPLICATE;
+import static eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus.EXCEPTION;
+import static eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus.FOUND;
+import static eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus.NOT_FOUND;
+import static eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus.NOT_INDEXED;
+
 import eu.xenit.alfresco.healthprocessor.plugins.api.ToggleableHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
@@ -7,9 +13,11 @@ import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSel
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -41,7 +49,8 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
     @Override
     protected Set<NodeHealthReport> doProcess(Set<NodeRef> nodeRefs) {
 
-        Map<NodeRef.Status, MutableHealthReport> healthReports = new HashMap<>(nodeRefs.size());
+        Set<NodeHealthReport> healthReports = new HashSet<>(nodeRefs.size());
+        Map<NodeRef.Status, Set<NodeIndexHealthReport>> indexHealthReports = new HashMap<>(nodeRefs.size());
 
         // Collect node statuses
         Set<NodeRef.Status> nodeRefStatuses = nodeRefs.stream()
@@ -58,17 +67,12 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
             }
             if (searchEndpoints.isEmpty()) {
                 getLogger().debug("Node {} has no search endpoints", nodeRefStatus.getNodeRef());
-                healthReports.put(
-                        nodeRefStatus,
-                        new MutableHealthReport(NodeHealthStatus.NONE, nodeRefStatus.getNodeRef(),
+                healthReports.add(
+                        new NodeHealthReport(NodeHealthStatus.NONE, nodeRefStatus.getNodeRef(),
                                 MSG_NO_SEARCH_ENDPOINTS)
                 );
             } else {
-                // Pre-allocate reports for other nodes (will be overwritten as appropriate)
-                healthReports.put(
-                        nodeRefStatus,
-                        new MutableHealthReport(nodeRefStatus.getNodeRef())
-                );
+                indexHealthReports.put(nodeRefStatus, new HashSet<>());
             }
         }
 
@@ -85,31 +89,51 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
                         searchResult);
 
                 for (Status status : searchResult.getFound()) {
-                    healthReports.get(status).addHealthReport(IndexHealthStatus.FOUND, status, searchEndpoint);
+                    indexHealthReports.get(status).add(new NodeIndexHealthReport(FOUND, status, searchEndpoint));
                 }
 
                 for (Status status : searchResult.getMissing()) {
-                    healthReports.get(status).addHealthReport(IndexHealthStatus.NOT_FOUND, status, searchEndpoint);
+                    indexHealthReports.get(status).add(new NodeIndexHealthReport(NOT_FOUND, status, searchEndpoint));
                 }
 
                 for (Status status : searchResult.getNotIndexed()) {
-                    healthReports.get(status).addHealthReport(IndexHealthStatus.NOT_INDEXED, status, searchEndpoint);
+                    indexHealthReports.get(status).add(new NodeIndexHealthReport(NOT_INDEXED, status, searchEndpoint));
                 }
 
-                for(Status status: searchResult.getDuplicate()) {
-                    healthReports.get(status).addHealthReport(IndexHealthStatus.DUPLICATE, status, searchEndpoint);
+                for (Status status : searchResult.getDuplicate()) {
+                    indexHealthReports.get(status).add(new NodeIndexHealthReport(DUPLICATE, status, searchEndpoint));
                 }
             } catch (IOException exception) {
                 getLogger().error("Exception during healthcheck on search endpoint {}", searchEndpoint, exception);
                 for (Status nodeRefStatus : expectedNodeRefStatuses) {
-                    healthReports.get(nodeRefStatus).addHealthReport(IndexHealthStatus.EXCEPTION, nodeRefStatus, searchEndpoint);
+                    indexHealthReports.get(nodeRefStatus)
+                            .add(new NodeIndexHealthReport(EXCEPTION, nodeRefStatus, searchEndpoint));
                 }
             }
         }
 
-        return healthReports.values().stream()
-                .map(MutableHealthReport::getHealthReport)
-                .collect(Collectors.toSet());
+        indexHealthReports.entrySet()
+                .stream()
+                .map(entry -> {
+                    Optional<IndexHealthStatus> highestHealthStatus = entry.getValue()
+                            .stream()
+                            .map(NodeIndexHealthReport::getHealthStatus)
+                            .min(Comparator.comparingInt(IndexHealthStatus::ordinal));
+                    Set<String> messages = entry.getValue()
+                            .stream()
+                            .map(NodeIndexHealthReport::getMessage)
+                            .collect(Collectors.toSet());
+                    NodeHealthReport healthReport = new NodeHealthReport(
+                            highestHealthStatus.get().getNodeHealthStatus(),
+                            entry.getKey().getNodeRef(),
+                            messages
+                    );
+                    healthReport.data(NodeIndexHealthReport.class).addAll(entry.getValue());
+                    return healthReport;
+                })
+                .forEach(healthReports::add);
+
+        return healthReports;
     }
 
     @Override
@@ -119,5 +143,4 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
         configuration.put("solrServerSelector", solrServerSelector.toString());
         return configuration;
     }
-
 }
