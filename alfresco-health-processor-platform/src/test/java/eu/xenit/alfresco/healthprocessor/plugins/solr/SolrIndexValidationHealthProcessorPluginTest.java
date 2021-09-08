@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -73,8 +74,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
-        assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
-                .allMatch(Predicate.isEqual(NodeHealthStatus.HEALTHY)), "Expect all nodes to be healthy");
+        assertEquals(
+                Collections.singleton(NodeHealthStatus.HEALTHY),
+                healthReports.stream().map(NodeHealthReport::getStatus).collect(Collectors.toSet()),
+                "Expect all nodes to be healthy");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(
                         Collections.singleton(
                                 IndexHealthStatus.FOUND.formatReason(searchEndpoint)))),
@@ -110,8 +113,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
-        assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
-                .allMatch(Predicate.isEqual(NodeHealthStatus.HEALTHY)), "Expect all nodes to be healthy");
+        assertEquals(
+                Collections.singleton(NodeHealthStatus.HEALTHY),
+                healthReports.stream().map(NodeHealthReport::getStatus).collect(Collectors.toSet()),
+                "Expect all nodes to be healthy");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
                 IndexHealthStatus.FOUND.formatReason(searchEndpoint1),
                 IndexHealthStatus.FOUND.formatReason(searchEndpoint2)
@@ -147,8 +152,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
-        assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
-                .allMatch(Predicate.isEqual(NodeHealthStatus.UNHEALTHY)), "Expect all nodes to be unhealthy");
+        assertEquals(
+                Collections.singleton(NodeHealthStatus.UNHEALTHY),
+                healthReports.stream().map(NodeHealthReport::getStatus).collect(Collectors.toSet()),
+                "Expect all nodes to be unhealthy");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
                 IndexHealthStatus.FOUND.formatReason(searchEndpoint1),
                 IndexHealthStatus.NOT_FOUND.formatReason(searchEndpoint2)
@@ -184,8 +191,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
-        assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
-                .allMatch(Predicate.isEqual(NodeHealthStatus.HEALTHY)), "Expect all nodes to be healthy");
+        assertEquals(
+                Collections.singleton(NodeHealthStatus.HEALTHY),
+                healthReports.stream().map(NodeHealthReport::getStatus).collect(Collectors.toSet()),
+                "Expect all nodes to be healthy");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
                 IndexHealthStatus.FOUND.formatReason(searchEndpoint1),
                 IndexHealthStatus.NOT_INDEXED.formatReason(searchEndpoint2)
@@ -221,8 +230,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
-        assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
-                .allMatch(Predicate.isEqual(NodeHealthStatus.NONE)), "Expect all nodes to be none");
+        assertEquals(
+                Collections.singleton(NodeHealthStatus.NONE),
+                healthReports.stream().map(NodeHealthReport::getStatus).collect(Collectors.toSet()),
+                "Expect all nodes to be healthy");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
                 IndexHealthStatus.NOT_INDEXED.formatReason(searchEndpoint1),
                 IndexHealthStatus.NOT_INDEXED.formatReason(searchEndpoint2)
@@ -258,8 +269,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
-        assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
-                .allMatch(Predicate.isEqual(NodeHealthStatus.UNHEALTHY)), "Expect all nodes to be unhealthy");
+        assertEquals(
+                Collections.singleton(NodeHealthStatus.UNHEALTHY),
+                healthReports.stream().map(NodeHealthReport::getStatus).collect(Collectors.toSet()),
+                "Expect all nodes to be unhealthy");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
                 IndexHealthStatus.DUPLICATE.formatReason(searchEndpoint1),
                 IndexHealthStatus.NOT_INDEXED.formatReason(searchEndpoint2)
@@ -284,8 +297,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
-        assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
-                .allMatch(Predicate.isEqual(NodeHealthStatus.NONE)), "Expect all nodes to be none");
+        assertEquals(
+                Collections.singleton(NodeHealthStatus.NONE),
+                healthReports.stream().map(NodeHealthReport::getStatus).collect(Collectors.toSet()),
+                "Expect all nodes to be none");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
                 SolrIndexValidationHealthProcessorPlugin.MSG_NO_SEARCH_ENDPOINTS
         ))), "Expect all nodes to have a message");
@@ -319,8 +334,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
-        assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
-                .allMatch(Predicate.isEqual(NodeHealthStatus.NONE)), "Expect all nodes to be none");
+        assertEquals(
+                Collections.singleton(NodeHealthStatus.NONE),
+                healthReports.stream().map(NodeHealthReport::getStatus).collect(Collectors.toSet()),
+                "Expect all nodes to be none");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
                 IndexHealthStatus.EXCEPTION.formatReason(searchEndpoint1),
                 IndexHealthStatus.FOUND.formatReason(searchEndpoint2)
@@ -349,8 +366,10 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
         assertEquals(nodeRefs.size(), healthReports.size(),
                 "Expected an equal number of health reports as the number of passed noderefs");
-        assertTrue(healthReports.stream().map(NodeHealthReport::getStatus)
-                .allMatch(Predicate.isEqual(NodeHealthStatus.NONE)), "Expect all nodes to be none");
+        assertEquals(
+                Collections.singleton(NodeHealthStatus.NONE),
+                healthReports.stream().map(NodeHealthReport::getStatus).collect(Collectors.toSet()),
+                "Expect all nodes to be none");
         assertTrue(healthReports.stream().map(NodeHealthReport::getMessages).allMatch(Predicate.isEqual(set(
                 IndexHealthStatus.EXCEPTION.formatReason(searchEndpoint)
         ))), "Expect all nodes to have a message");
