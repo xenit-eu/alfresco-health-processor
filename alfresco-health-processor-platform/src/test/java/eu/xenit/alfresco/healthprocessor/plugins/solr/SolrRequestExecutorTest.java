@@ -247,7 +247,7 @@ class SolrRequestExecutorTest {
                         + "}"
                         + "}");
 
-        assertTrue(solrRequestExecutor.executeNodeCommand(endpoint, nodeRefStatus, SolrNodeCommand.REINDEX));
+        assertTrue(solrRequestExecutor.executeAsyncNodeCommand(endpoint, nodeRefStatus, SolrNodeCommand.REINDEX));
     }
 
     @Test
@@ -263,7 +263,7 @@ class SolrRequestExecutorTest {
                         + "}"
                         + "}");
 
-        assertTrue(solrRequestExecutor.executeNodeCommand(endpoint, nodeRefStatus, SolrNodeCommand.PURGE));
+        assertTrue(solrRequestExecutor.executeAsyncNodeCommand(endpoint, nodeRefStatus, SolrNodeCommand.PURGE));
     }
 
     @Test
@@ -279,6 +279,6 @@ class SolrRequestExecutorTest {
                         + "}"
                         + "}");
 
-        assertFalse(solrRequestExecutor.executeNodeCommand(endpoint, nodeRefStatus, SolrNodeCommand.PURGE));
+        assertFalse(solrRequestExecutor.executeAsyncNodeCommand(endpoint, nodeRefStatus, SolrNodeCommand.PURGE));
     }
 }

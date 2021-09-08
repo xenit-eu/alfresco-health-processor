@@ -5,13 +5,11 @@ import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
 import eu.xenit.alfresco.healthprocessor.fixer.api.ToggleableHealthFixerPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrIndexValidationHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrNodeCommand;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +47,7 @@ abstract class AbstractSolrNodeFixerPlugin extends ToggleableHealthFixerPlugin {
                     command,
                     endpointHealthReport.getNodeRefStatus().getNodeRef(),
                     endpointHealthReport.getEndpoint());
-            boolean isSuccessful = solrRequestExecutor.executeNodeCommand(endpointHealthReport.getEndpoint(),
+            boolean isSuccessful = solrRequestExecutor.executeAsyncNodeCommand(endpointHealthReport.getEndpoint(),
                     endpointHealthReport.getNodeRefStatus(), command);
             if (isSuccessful) {
                 return new NodeFixReport(NodeFixStatus.SUCCEEDED, unhealthyReport,

@@ -53,7 +53,7 @@ class SolrMissingNodeFixerPluginTest {
         healthReport.data(NodeIndexHealthReport.class)
                 .add(nodeIndexHealthReport);
 
-        when(executor.executeNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.REINDEX))
+        when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.REINDEX))
                 .thenReturn(true);
 
         Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
@@ -63,7 +63,7 @@ class SolrMissingNodeFixerPluginTest {
                 nodeFixReports.stream().map(NodeFixReport::getFixStatus)
                         .collect(Collectors.toList()));
 
-        verify(executor).executeNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(),
+        verify(executor).executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(),
                 SolrNodeCommand.REINDEX);
         verifyNoMoreInteractions(executor);
     }
@@ -87,7 +87,7 @@ class SolrMissingNodeFixerPluginTest {
         healthReport.data(NodeIndexHealthReport.class)
                 .addAll(Arrays.asList(nodeIndexHealthReport1, nodeIndexHealthReport2));
 
-        when(executor.executeNodeCommand(endpoint1, nodeRefStatus, SolrNodeCommand.REINDEX))
+        when(executor.executeAsyncNodeCommand(endpoint1, nodeRefStatus, SolrNodeCommand.REINDEX))
                 .thenReturn(true);
 
         Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
@@ -97,7 +97,7 @@ class SolrMissingNodeFixerPluginTest {
                 nodeFixReports.stream().map(NodeFixReport::getFixStatus)
                         .collect(Collectors.toList()));
 
-        verify(executor).executeNodeCommand(endpoint1, nodeRefStatus, SolrNodeCommand.REINDEX);
+        verify(executor).executeAsyncNodeCommand(endpoint1, nodeRefStatus, SolrNodeCommand.REINDEX);
         verifyNoMoreInteractions(executor);
     }
 
@@ -121,7 +121,7 @@ class SolrMissingNodeFixerPluginTest {
         healthReport1.data(NodeIndexHealthReport.class).add(nodeIndexHealthReport1);
         healthReport2.data(NodeIndexHealthReport.class).add(nodeIndexHealthReport2);
 
-        when(executor.executeNodeCommand(eq(endpoint1), any(), eq(SolrNodeCommand.REINDEX)))
+        when(executor.executeAsyncNodeCommand(eq(endpoint1), any(), eq(SolrNodeCommand.REINDEX)))
                 .thenReturn(true);
 
         Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
@@ -149,7 +149,7 @@ class SolrMissingNodeFixerPluginTest {
         healthReport.data(NodeIndexHealthReport.class)
                 .add(nodeIndexHealthReport);
 
-        when(executor.executeNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(),
+        when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(),
                 SolrNodeCommand.REINDEX))
                 .thenReturn(false);
 
@@ -173,7 +173,7 @@ class SolrMissingNodeFixerPluginTest {
         healthReport.data(NodeIndexHealthReport.class)
                 .add(nodeIndexHealthReport);
 
-        when(executor.executeNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(),
+        when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(),
                 SolrNodeCommand.REINDEX))
                 .thenThrow(new IOException("Something very bad happened"));
 

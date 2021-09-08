@@ -118,7 +118,7 @@ public class SolrRequestExecutor {
         return httpClient.execute(searchRequest, new JSONResponseHandler());
     }
 
-    public boolean executeNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
+    public boolean executeAsyncNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
             throws IOException {
         String coreName = endpoint.getCoreName();
         HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve(
