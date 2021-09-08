@@ -1,6 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.fixer.solr;
 
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
+import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor;
@@ -29,8 +30,11 @@ public class SolrDuplicateNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
         // Purge has to be done before reindex, else we end up with a broken index which will only be fixed
         // by a subsequent health processor cycle, which would be unacceptable.
         Set<NodeFixReport> fixReports = new HashSet<>();
-        fixReports.add(trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.PURGE));
-        fixReports.add(trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.REINDEX));
+        NodeFixReport purgeStatus = trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.PURGE);
+        fixReports.add(purgeStatus);
+        if(purgeStatus.getFixStatus() == NodeFixStatus.SUCCEEDED) {
+            fixReports.add(trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.REINDEX));
+        }
 
         return fixReports;
     }
