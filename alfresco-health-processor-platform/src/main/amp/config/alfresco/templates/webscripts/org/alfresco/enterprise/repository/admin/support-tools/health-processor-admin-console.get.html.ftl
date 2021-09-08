@@ -87,6 +87,8 @@
 
     <@extensions_list "Plugin", healthprocessor.plugins.extensions />
 
+    <@extensions_list "Fixer", healthprocessor.fixers.extensions />
+
     <@extensions_list "Reporter", healthprocessor.reporters.extensions />
 
 </@page>

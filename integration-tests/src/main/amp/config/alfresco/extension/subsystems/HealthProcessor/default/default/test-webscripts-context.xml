@@ -10,4 +10,27 @@
         <constructor-arg name="plugin" ref="eu.xenit.alfresco.healthprocessor.example.ExampleHealthProcessorPlugin"/>
     </bean>
 
+    <bean id="nodeFinder"
+            class="eu.xenit.alfresco.healthprocessor.solr.NodeFinder">
+        <constructor-arg name="nodeService" ref="NodeService" />
+        <constructor-arg name="searchService" ref="SearchService" />
+        <constructor-arg name="namespaceService" ref="NamespaceService" />
+    </bean>
+
+    <bean id="solr.PurgeWebScript"
+        class="eu.xenit.alfresco.healthprocessor.solr.SolrPurgeNodeWebScript"
+        parent="webscript">
+        <constructor-arg name="nodeFinder" ref="nodeFinder" />
+        <constructor-arg name="endpointSelector" ref="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector" />
+    </bean>
+    <bean id="solr.CheckWebScript"
+            class="eu.xenit.alfresco.healthprocessor.solr.SolrCheckNodeWebScript"
+            parent="webscript">
+        <constructor-arg name="nodeFinder" ref="nodeFinder" />
+    </bean>
+
+    <bean id="solr.ConfigureWebScript"
+            class="eu.xenit.alfresco.healthprocessor.solr.SolrConfigureIndexNodeFixerPlugin"
+            parent="webscript" autowire="constructor">
+    </bean>
 </beans>

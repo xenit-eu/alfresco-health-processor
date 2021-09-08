@@ -1,9 +1,15 @@
 package eu.xenit.alfresco.healthprocessor.reporter;
 
+import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
+import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ToggleableHealthReporter;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +33,8 @@ public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
         
         log.info("Health-Processor done in {}", printDuration());
         logSummary(overviews);
-        logUnhealthyNodes(overviews);
+        Arrays.stream(NodeHealthStatus.values())
+                .forEachOrdered(status -> logNodesWithStatus(status, overviews));
     }
 
     @Override
@@ -52,23 +59,40 @@ public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
         log.info(" --- ");
     }
 
-    private void logUnhealthyNodes(List<ProcessorPluginOverview> overviews) {
+    private void logNodesWithStatus(NodeHealthStatus status, List<ProcessorPluginOverview> overviews) {
         if (!log.isWarnEnabled()) {
             return;
         }
 
-        log.warn("UNHEALTHY NODES ---");
+        boolean loggedStart = false;
 
         for (ProcessorPluginOverview overview : overviews) {
-            List<NodeHealthReport> reports = overview.getReports();
-            if (reports == null || reports.isEmpty()) {
+            List<NodeHealthReport> reports = overview.getReports().stream()
+                    .filter(healthReport -> healthReport.getStatus() == status).collect(
+                            Collectors.toList());
+            if (reports.isEmpty()) {
                 continue;
             }
+            if (!loggedStart) {
+                log.warn(status + " NODES ---");
+                loggedStart = true;
+            }
             log.warn("Plugin[{}] (#{}): ", overview.getPluginClass().getSimpleName(), reports.size());
-            reports.forEach(r -> log.warn("\t{}: {}", r.getNodeRef(), r.getMessages()));
+            reports.forEach(this::logReport);
+        }
+        if (loggedStart) {
+            log.warn(" --- ");
         }
 
-        log.warn(" --- ");
+    }
 
+    private void logReport(NodeHealthReport healthReport) {
+        log.warn("\t{}: {}", healthReport.getNodeRef(), healthReport.getMessages());
+        Set<NodeFixReport> fixReports = healthReport.data(NodeFixReport.class);
+        for (NodeFixReport fixReport : fixReports) {
+            if (fixReport.getFixStatus() != NodeFixStatus.SKIPPED) {
+                log.info("\t\tFix {}: {}", fixReport.getFixStatus(), fixReport.getMessages());
+            }
+        }
     }
 }

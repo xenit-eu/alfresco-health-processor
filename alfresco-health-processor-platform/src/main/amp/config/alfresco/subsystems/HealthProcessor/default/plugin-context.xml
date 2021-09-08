@@ -30,12 +30,12 @@
         <constructor-arg name="nodeService" ref="NodeService" />
         <constructor-arg name="solrServerSelector"
                 ref="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector" />
-        <constructor-arg name="solrSearchExecutor"
-                ref="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
+        <constructor-arg name="solrRequestExecutor"
+                ref="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor" />
     </bean>
 
-    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor"
-            class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrSearchExecutor" />
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor"
+            class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor" />
 
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector"
             class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.FilteringSearchEndpointSelector"
@@ -61,4 +61,17 @@
     </bean>
 
     <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.filter.DeletedNodeFilter" />
+
+    <bean id="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrMissingNodeFixerPlugin"
+        class="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrMissingNodeFixerPlugin">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled}" />
+        <constructor-arg name="solrRequestExecutor"
+                ref="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor" />
+    </bean>
+    <bean id="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrDuplicateNodeFixerPlugin"
+            class="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrDuplicateNodeFixerPlugin">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled}" />
+        <constructor-arg name="solrRequestExecutor"
+                ref="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor" />
+    </bean>
 </beans>

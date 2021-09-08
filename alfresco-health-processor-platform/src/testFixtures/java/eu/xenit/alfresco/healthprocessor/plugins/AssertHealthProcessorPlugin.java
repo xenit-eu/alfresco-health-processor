@@ -9,9 +9,9 @@ import static org.hamcrest.Matchers.nullValue;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -26,7 +26,7 @@ public class AssertHealthProcessorPlugin implements HealthProcessorPlugin {
         this.enabled = enabled;
     }
 
-    private final Queue<Set<NodeRef>> invocations = new LinkedBlockingQueue<>();
+    private final Queue<Set<NodeRef>> invocations = new LinkedList<>();
 
     @Override
     public Set<NodeHealthReport> process(Set<NodeRef> nodeRefs) {

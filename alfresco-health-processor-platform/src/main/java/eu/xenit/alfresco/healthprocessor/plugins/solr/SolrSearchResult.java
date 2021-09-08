@@ -2,6 +2,7 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
 import java.util.HashSet;
 import java.util.Set;
+import lombok.AllArgsConstructor;
 import lombok.Value;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -9,18 +10,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * Search result from a solr search operation
  */
 @Value
+@AllArgsConstructor
 public class SolrSearchResult {
 
     public SolrSearchResult() {
-        found = new HashSet<>();
-        missing = new HashSet<>();
-        notIndexed = new HashSet<>();
-    }
-
-    public SolrSearchResult(Set<NodeRef.Status> found, Set<NodeRef.Status> missing, Set<NodeRef.Status> notIndexed) {
-        this.found = found;
-        this.missing = missing;
-        this.notIndexed = notIndexed;
+        this(new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
     }
 
     /**
@@ -35,5 +29,8 @@ public class SolrSearchResult {
      * Nodes that, according to their transaction number, are not yet indexed when the search operation was executed
      */
     Set<NodeRef.Status> notIndexed;
-
+    /**
+     * Nodes that are returned by the search operation multiple times
+     */
+    Set<NodeRef.Status> duplicate;
 }

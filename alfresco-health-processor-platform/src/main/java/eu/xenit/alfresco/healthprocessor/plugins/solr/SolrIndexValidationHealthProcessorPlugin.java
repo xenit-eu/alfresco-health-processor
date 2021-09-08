@@ -1,14 +1,23 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
+import static eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus.DUPLICATE;
+import static eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus.EXCEPTION;
+import static eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus.FOUND;
+import static eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus.NOT_FOUND;
+import static eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus.NOT_INDEXED;
+
 import eu.xenit.alfresco.healthprocessor.plugins.api.ToggleableHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -27,13 +36,9 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
 
     private final NodeService nodeService;
     private final SearchEndpointSelector solrServerSelector;
-    private final SolrSearchExecutor solrSearchExecutor;
+    private final SolrRequestExecutor solrRequestExecutor;
 
     static final String MSG_NO_SEARCH_ENDPOINTS = "Node is not expected in any search index.";
-    static final String FMT_FOUND_INDEX = "Node is present in search index %s.";
-    static final String FMT_NOT_FOUND_INDEX = "Node is missing in search index %s.";
-    static final String FMT_NOT_INDEXED_TX = "Node is not yet indexed in search index %s (TX not yet processed).";
-    static final String FMT_EXCEPTION = "Exception occurred while checking node in search index %s.";
 
     @Override
     protected Logger getLogger() {
@@ -43,7 +48,9 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
     @Nonnull
     @Override
     protected Set<NodeHealthReport> doProcess(Set<NodeRef> nodeRefs) {
-        Map<NodeRef.Status, MutableHealthReport> healthReports = new HashMap<>(nodeRefs.size());
+
+        Set<NodeHealthReport> healthReports = new HashSet<>(nodeRefs.size());
+        Map<NodeRef.Status, Set<NodeIndexHealthReport>> indexHealthReports = new HashMap<>(nodeRefs.size());
 
         // Collect node statuses
         Set<NodeRef.Status> nodeRefStatuses = nodeRefs.stream()
@@ -60,17 +67,12 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
             }
             if (searchEndpoints.isEmpty()) {
                 getLogger().debug("Node {} has no search endpoints", nodeRefStatus.getNodeRef());
-                healthReports.put(
-                        nodeRefStatus,
-                        new MutableHealthReport(NodeHealthStatus.NONE, nodeRefStatus.getNodeRef(),
+                healthReports.add(
+                        new NodeHealthReport(NodeHealthStatus.NONE, nodeRefStatus.getNodeRef(),
                                 MSG_NO_SEARCH_ENDPOINTS)
                 );
             } else {
-                // Pre-allocate reports for other nodes (will be overwritten as appropriate)
-                healthReports.put(
-                        nodeRefStatus,
-                        new MutableHealthReport(nodeRefStatus.getNodeRef())
-                );
+                indexHealthReports.put(nodeRefStatus, new HashSet<>());
             }
         }
 
@@ -79,7 +81,7 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
             SearchEndpoint searchEndpoint = entry.getKey();
             Set<NodeRef.Status> expectedNodeRefStatuses = new HashSet<>(entry.getValue());
             try {
-                SolrSearchResult searchResult = solrSearchExecutor.checkNodeIndexed(searchEndpoint,
+                SolrSearchResult searchResult = solrRequestExecutor.checkNodeIndexed(searchEndpoint,
                         expectedNodeRefStatuses);
 
                 getLogger().trace("Search endpoint {}: expected nodes {}, result {}", searchEndpoint,
@@ -87,27 +89,51 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
                         searchResult);
 
                 for (Status status : searchResult.getFound()) {
-                    healthReports.get(status).markHealthy(String.format(FMT_FOUND_INDEX, searchEndpoint));
+                    indexHealthReports.get(status).add(new NodeIndexHealthReport(FOUND, status, searchEndpoint));
                 }
 
                 for (Status status : searchResult.getMissing()) {
-                    healthReports.get(status).markUnhealthy(String.format(FMT_NOT_FOUND_INDEX, searchEndpoint));
+                    indexHealthReports.get(status).add(new NodeIndexHealthReport(NOT_FOUND, status, searchEndpoint));
                 }
 
                 for (Status status : searchResult.getNotIndexed()) {
-                    healthReports.get(status).markUnknown(String.format(FMT_NOT_INDEXED_TX, searchEndpoint));
+                    indexHealthReports.get(status).add(new NodeIndexHealthReport(NOT_INDEXED, status, searchEndpoint));
+                }
+
+                for (Status status : searchResult.getDuplicate()) {
+                    indexHealthReports.get(status).add(new NodeIndexHealthReport(DUPLICATE, status, searchEndpoint));
                 }
             } catch (IOException exception) {
                 getLogger().error("Exception during healthcheck on search endpoint {}", searchEndpoint, exception);
                 for (Status nodeRefStatus : expectedNodeRefStatuses) {
-                    healthReports.get(nodeRefStatus).markUnknownForced(String.format(FMT_EXCEPTION, searchEndpoint));
+                    indexHealthReports.get(nodeRefStatus)
+                            .add(new NodeIndexHealthReport(EXCEPTION, nodeRefStatus, searchEndpoint));
                 }
             }
         }
 
-        return healthReports.values().stream()
-                .map(MutableHealthReport::getHealthReport)
-                .collect(Collectors.toSet());
+        indexHealthReports.entrySet()
+                .stream()
+                .map(entry -> {
+                    Optional<IndexHealthStatus> highestHealthStatus = entry.getValue()
+                            .stream()
+                            .map(NodeIndexHealthReport::getHealthStatus)
+                            .min(Comparator.comparingInt(IndexHealthStatus::ordinal));
+                    Set<String> messages = entry.getValue()
+                            .stream()
+                            .map(NodeIndexHealthReport::getMessage)
+                            .collect(Collectors.toSet());
+                    NodeHealthReport healthReport = new NodeHealthReport(
+                            highestHealthStatus.get().getNodeHealthStatus(),
+                            entry.getKey().getNodeRef(),
+                            messages
+                    );
+                    healthReport.data(NodeIndexHealthReport.class).addAll(entry.getValue());
+                    return healthReport;
+                })
+                .forEach(healthReports::add);
+
+        return healthReports;
     }
 
     @Override

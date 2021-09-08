@@ -10,9 +10,14 @@
                 ref="eu.xenit.alfresco.healthprocessor.reporter.AttributeHealthReportsStore"/>
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.NodeHealthReportClassifier"
+            class="eu.xenit.alfresco.healthprocessor.reporter.NodeHealthReportClassifier" />
+
     <bean id="eu.xenit.alfresco.healthprocessor.reporter.AttributeHealthReportsStore"
             class="eu.xenit.alfresco.healthprocessor.reporter.AttributeHealthReportsStore">
-        <constructor-arg name="attributeStore" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore"/>
+        <constructor-arg name="attributeStore" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore" />
+        <constructor-arg name="healthReportClassifier"
+                ref="eu.xenit.alfresco.healthprocessor.reporter.NodeHealthReportClassifier" />
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter"

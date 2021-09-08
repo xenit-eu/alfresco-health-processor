@@ -11,16 +11,10 @@ public interface HealthReportsStore {
 
     default void processReports(Class<? extends HealthProcessorPlugin> pluginClass, Set<NodeHealthReport> reports) {
         recordReportStats(pluginClass, reports);
-        reports.forEach(report -> this.storeReport(pluginClass, report));
+        reports.forEach(report -> storeReport(pluginClass, report.withoutUnpersistableData()));
     }
 
-    default void storeReport(Class<? extends HealthProcessorPlugin> pluginClass, NodeHealthReport report) {
-        if (NodeHealthStatus.UNHEALTHY.equals(report.getStatus())) {
-            this.storeUnhealthyReport(pluginClass, report);
-        }
-    }
-
-    void storeUnhealthyReport(Class<? extends HealthProcessorPlugin> pluginClass, NodeHealthReport report);
+    void storeReport(Class<? extends HealthProcessorPlugin> pluginClass, NodeHealthReport report);
 
     void recordReportStats(Class<? extends HealthProcessorPlugin> pluginClass, Set<NodeHealthReport> reports);
 

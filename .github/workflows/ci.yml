@@ -16,6 +16,12 @@ jobs:
           java-version: 11
       - name: Test
         run: ./gradlew test
+      - name: Upload reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: reports-test
+          path: alfresco-health-processor-platform/build/reports
       - name: Upload analysis to sonarcloud
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -37,6 +43,12 @@ jobs:
           java-version: 11
       - name: Test
         run: ./gradlew :integration-tests:alfresco-${{ matrix.flavour }}-${{ matrix.version }}:integrationTest -Prandom_ports=true
+      - name: Upload reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: reports-integration-test-${{ matrix.flavour }}-${{ matrix.version }}
+          path: integration-tests/alfresco-${{ matrix.flavour }}-${{ matrix.version }}/build/reports
   publish:
     needs: [test, integration-test]
     runs-on: ubuntu-latest

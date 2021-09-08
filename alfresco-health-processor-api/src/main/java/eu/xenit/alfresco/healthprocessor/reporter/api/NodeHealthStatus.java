@@ -4,5 +4,6 @@ public enum NodeHealthStatus {
     HEALTHY,
     UNHEALTHY,
     NONE,
-    UNREPORTED
+    UNREPORTED,
+    FIXED;
 }

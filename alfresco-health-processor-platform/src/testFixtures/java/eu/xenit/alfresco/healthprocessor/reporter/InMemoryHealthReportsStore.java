@@ -14,8 +14,13 @@ public class InMemoryHealthReportsStore implements HealthReportsStore {
     private final Map<Class<? extends HealthProcessorPlugin>, Map<NodeHealthStatus, Long>> stats = new HashMap<>();
     private final Map<Class<? extends HealthProcessorPlugin>, List<NodeHealthReport>> unhealthyReports = new HashMap<>();
 
+    private final NodeHealthReportClassifier healthReportClassifier = new NodeHealthReportClassifier();
+
     @Override
-    public void storeUnhealthyReport(Class<? extends HealthProcessorPlugin> pluginClass, NodeHealthReport report) {
+    public void storeReport(Class<? extends HealthProcessorPlugin> pluginClass, NodeHealthReport report) {
+        if(!healthReportClassifier.shouldBeSentToReportersInFull(report)) {
+            return;
+        }
         unhealthyReports.putIfAbsent(pluginClass, new ArrayList<>());
         unhealthyReports.get(pluginClass).add(report);
     }

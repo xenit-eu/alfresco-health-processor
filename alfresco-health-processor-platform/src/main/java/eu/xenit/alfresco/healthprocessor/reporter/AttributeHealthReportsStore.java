@@ -31,9 +31,14 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
     public static final String ATTR_KEY_REPORT_STATS = "report-stats";
 
     private final AttributeStore attributeStore;
+    private final NodeHealthReportClassifier healthReportClassifier;
 
     @Override
-    public void storeUnhealthyReport(Class<? extends HealthProcessorPlugin> pluginClass, NodeHealthReport report) {
+    public void storeReport(Class<? extends HealthProcessorPlugin> pluginClass, NodeHealthReport report) {
+        // There is no need to store the report if it does not have to be sent to the reporters
+        if (!healthReportClassifier.shouldBeSentToReportersInFull(report)) {
+            return;
+        }
         Pair<Class<? extends HealthProcessorPlugin>, NodeHealthReport> pluginClassWithReport =
                 new Pair<>(pluginClass, report);
         attributeStore.setAttribute(pluginClassWithReport, ATTR_KEY_REPORTS, UUID.randomUUID().toString());

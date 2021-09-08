@@ -22,6 +22,10 @@ services:
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:content
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled=true
+      # Disable this loud logger which sends errors in Alfresco 7.0.
+      - LOG4J_logger.org.alfresco.repo.content.transform.LocalTransformServiceRegistry=OFF
     depends_on:
       - postgresql
   solr:
@@ -29,6 +33,7 @@ services:
     environment:
       - ALFRESCO_HOST=alfresco
       - ALFRESCO_SSL=none
+      - GLOBAL_ALL_alfresco.index.transformContent=false
 
   postgresql:
     image: docker.io/xenit/postgres
