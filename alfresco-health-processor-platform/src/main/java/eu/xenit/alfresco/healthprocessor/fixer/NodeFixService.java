@@ -3,6 +3,8 @@ package eu.xenit.alfresco.healthprocessor.fixer;
 import eu.xenit.alfresco.healthprocessor.fixer.api.HealthFixerPlugin;
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
+import eu.xenit.alfresco.healthprocessor.metrics.MetricFactory;
+import eu.xenit.alfresco.healthprocessor.metrics.TimerMetric;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
@@ -23,6 +25,7 @@ public class NodeFixService {
 
     private final List<HealthFixerPlugin> fixers;
     private final TransactionHelper transactionHelper;
+    private final MetricFactory metricFactory;
 
     public Set<NodeHealthReport> fixUnhealthyNodes(Class<? extends HealthProcessorPlugin> pluginClass,
             Set<NodeHealthReport> nodeHealthReports) {
@@ -36,33 +39,37 @@ public class NodeFixService {
 
         Set<NodeFixReport> fixReports = fixNodes(pluginClass, unhealthyReports);
 
+        final TimerMetric revisingTimer = metricFactory.createTimer("health-processor.fixer.revise-reports");
         Set<NodeHealthReport> revisedHealthReports = new HashSet<>(nodeHealthReports);
 
-        Map<NodeHealthReport, Set<NodeFixReport>> fixReportsByHealthReport = fixReports.stream()
-                .collect(Collectors.groupingBy(NodeFixReport::getHealthReport, Collectors.toSet()));
+        revisingTimer.measure(() -> {
+            Map<NodeHealthReport, Set<NodeFixReport>> fixReportsByHealthReport = fixReports.stream()
+                    .collect(Collectors.groupingBy(NodeFixReport::getHealthReport, Collectors.toSet()));
 
-        for (Entry<NodeHealthReport, Set<NodeFixReport>> entry : fixReportsByHealthReport.entrySet()) {
-            NodeHealthReport revisedReport = revisedHealthReport(entry.getKey(), entry.getValue());
-            if (revisedReport != entry.getKey()) {
-                log.debug("Health report {} was revised to {} thanks to fixes", entry.getKey(), revisedReport);
-                revisedHealthReports.remove(entry.getKey());
-                revisedHealthReports.add(revisedReport);
+            for (Entry<NodeHealthReport, Set<NodeFixReport>> entry : fixReportsByHealthReport.entrySet()) {
+                NodeHealthReport revisedReport = revisedHealthReport(entry.getKey(), entry.getValue());
+                if (revisedReport != entry.getKey()) {
+                    log.debug("Health report {} was revised to {} thanks to fixes", entry.getKey(), revisedReport);
+                    revisedHealthReports.remove(entry.getKey());
+                    revisedHealthReports.add(revisedReport);
+                }
             }
-        }
+        });
 
         return revisedHealthReports;
     }
 
     private Set<NodeFixReport> fixNodes(Class<? extends HealthProcessorPlugin> pluginClass,
             Set<NodeHealthReport> unhealthyNodes) {
-        log.debug("Processing #{} unhealthy reports from plugin '{}'", unhealthyNodes.size(), pluginClass);
+        log.debug("Processing #{} unhealthy reports from plugin '{}'", unhealthyNodes.size(), pluginClass.getName());
         log.trace("{}", unhealthyNodes);
         Set<NodeFixReport> allFixReports = new HashSet<>();
         for (HealthFixerPlugin fixer : fixers) {
             if (fixer.isEnabled()) {
-                log.debug("Fixer '{}' will process #{} unhealthy reports", fixer.getClass(), unhealthyNodes.size());
-                Set<NodeFixReport> fixReports = transactionHelper.inNewTransaction(
-                        () -> fixer.fix(pluginClass, unhealthyNodes), false);
+                log.debug("Fixer '{}' will process #{} unhealthy reports", fixer.getClass().getName(), unhealthyNodes.size());
+                final TimerMetric fixerTimer = metricFactory.createTimer("health-processor.fixer.fix", "plugin",
+                        pluginClass.getName(), "fixer", fixer.getClass().getName());
+                Set<NodeFixReport> fixReports = fixerTimer.measure(() -> transactionHelper.inNewTransaction(() -> fixer.fix(pluginClass, unhealthyNodes), false));
                 allFixReports.addAll(fixReports);
             }
         }

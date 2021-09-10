@@ -41,4 +41,7 @@
             class="eu.xenit.alfresco.healthprocessor.fixer.NodeFixService"
             autowire="constructor">
     </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.metrics.MetricFactory"
+        class="eu.xenit.alfresco.healthprocessor.metrics.MetricFactoryFactoryBean" />
 </beans>

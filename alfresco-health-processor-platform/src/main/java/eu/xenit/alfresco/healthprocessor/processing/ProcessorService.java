@@ -3,6 +3,8 @@ package eu.xenit.alfresco.healthprocessor.processing;
 import com.google.common.util.concurrent.RateLimiter;
 import eu.xenit.alfresco.healthprocessor.fixer.NodeFixService;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.metrics.MetricFactory;
+import eu.xenit.alfresco.healthprocessor.metrics.TimerMetric;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.ReportsService;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
@@ -32,6 +34,7 @@ public class ProcessorService {
     private final ReportsService reportsService;
     private final StateCache stateCache;
     private final NodeFixService fixService;
+    private final MetricFactory metricFactory;
 
     @SuppressWarnings("UnstableApiUsage")
     @Nullable
@@ -89,8 +92,9 @@ public class ProcessorService {
     }
 
     private Set<NodeRef> getNextNodesInTransaction() {
-        return transactionHelper.inNewTransaction(
-                () -> indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize()), false);
+        TimerMetric timer = metricFactory.createTimer("health-processor.processor.fetch-nodes", "strategy", indexingStrategy.getClass().getSimpleName());
+        return timer.measure(() -> transactionHelper.inNewTransaction(
+                () -> indexingStrategy.getNextNodeIds(configuration.getNodeBatchSize()), false));
     }
 
     private void processNodeBatch(Set<NodeRef> nodesToProcess) {
@@ -103,10 +107,11 @@ public class ProcessorService {
     }
 
     private void processNodeBatchRateLimited(Set<NodeRef> nodesToProcessCopy, HealthProcessorPlugin plugin) {
+        TimerMetric timer = metricFactory.createTimer("health-processor.processor.ratelimiter");
         if (rateLimiter != null) {
             log.debug("Trying to acquire rateLimiter...");
             // noinspection UnstableApiUsage
-            rateLimiter.acquire();
+            timer.measure(() -> rateLimiter.acquire());
         }
         this.processNodeBatchInTransaction(nodesToProcessCopy, plugin);
     }
@@ -120,10 +125,13 @@ public class ProcessorService {
         log.debug("Plugin '{}' will process #{} nodes", plugin.getClass().getCanonicalName(),
                 nodesToProcess.size());
 
-        Set<NodeHealthReport> pluginReports = transactionHelper
-                .inNewTransaction(() -> Collections.unmodifiableSet(plugin.process(nodesToProcess)), configuration.isReadOnly());
+        TimerMetric pluginTimer = metricFactory.createTimer("health-processor.processor.process-batch", "plugin", plugin.getClass().getName());
 
-        Set<NodeHealthReport> reports = validateNodeReports(nodesToProcess, pluginReports, plugin);
+        Set<NodeHealthReport> pluginReports = pluginTimer.measure(() -> transactionHelper
+                .inNewTransaction(() -> Collections.unmodifiableSet(plugin.process(nodesToProcess)), configuration.isReadOnly()));
+
+        TimerMetric validateTimer = metricFactory.createTimer("health-processor.processor.validate-nodes", "plugin", plugin.getClass().getName());
+        Set<NodeHealthReport> reports = validateTimer.measure(() -> validateNodeReports(nodesToProcess, pluginReports, plugin));
 
         Set<NodeHealthReport> healthAfterFixing = fixService.fixUnhealthyNodes(plugin.getClass(), reports);
 
