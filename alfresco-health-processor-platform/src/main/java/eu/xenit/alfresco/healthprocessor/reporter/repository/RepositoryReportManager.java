@@ -4,13 +4,18 @@ import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -28,10 +33,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.springframework.util.StreamUtils;
 
@@ -39,67 +43,77 @@ import org.springframework.util.StreamUtils;
 @Slf4j
 public class RepositoryReportManager {
 
-    private final DescriptorService descriptorService;
     private final NodeService nodeService;
     private final FileFolderService fileFolderService;
     private final PermissionService permissionService;
-    private static final QName HEALTH_PROCESSOR_FOLDER = QName.createQName(HealthProcessorModel.HP_NAMESPACE,
-            "HealthProcessor");
-    private static final QName REPORTS_FOLDER = QName.createQName(HealthProcessorModel.HP_NAMESPACE, "reports");
+    private final DirectoryService directoryService;
+    private final NamespaceService namespaceService;
+
     private static final QName LATEST_REPORT = QName.createQName(HealthProcessorModel.HP_NAMESPACE, "latest");
     private static final QName CURRENT_REPORT = QName.createQName(HealthProcessorModel.HP_NAMESPACE, "current");
+    private static final QName PROP_REMOVE_AFTER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+            "removeAfter");
 
     @Getter
     @Setter
     private int maxChunks;
 
+    private QName[] reportsPath;
 
-    public Map<String, String> getConfiguration() {
-        return Collections.singletonMap("max-chunks", Integer.toString(maxChunks));
+    @Getter
+    @Setter
+    private Duration keepReports;
+
+    public void setReportsPath(String path) {
+        if (!path.startsWith("/")) {
+            throw new IllegalArgumentException("Reports path must start with /");
+        }
+        reportsPath = Arrays.stream(path.substring(1).split("/"))
+                .map(pathPart -> QName.createQName(pathPart, namespaceService))
+                .toArray(QName[]::new);
     }
 
-    public NodeRef getOrCreateHealthProcessorRoot() {
-        NodeRef storeRoot = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        NodeRef systemSpace = findChild(storeRoot, ContentModel.ASSOC_CHILDREN,
-                QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system"));
-        return getOrCreateChild(systemSpace, ContentModel.ASSOC_CHILDREN, HEALTH_PROCESSOR_FOLDER,
-                ContentModel.TYPE_CONTAINER);
+    public String getReportsPath() {
+        return "/" + Arrays.stream(reportsPath)
+                .map(pathPart -> pathPart.toPrefixString(namespaceService))
+                .collect(Collectors.joining("/"));
+    }
+
+
+    public Map<String, String> getConfiguration() {
+        Map<String, String> configuration = new HashMap<>();
+        configuration.put("max-chunks", Integer.toString(maxChunks));
+        configuration.put("reports-path", Objects.toString(getReportsPath()));
+        configuration.put("keep-reports", Objects.toString(keepReports));
+        return configuration;
     }
 
     public NodeRef getOrCreateReportsRoot() {
-        NodeRef healthProcessorRoot = getOrCreateHealthProcessorRoot();
+        NodeRef storeRoot = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
 
         try {
-            return findChild(healthProcessorRoot, ContentModel.ASSOC_CHILDREN, REPORTS_FOLDER);
+            return directoryService.findChild(storeRoot, reportsPath);
         } catch (NoSuchNodeException e) {
-            NodeRef newReportsFolder = getOrCreateChild(healthProcessorRoot, ContentModel.ASSOC_CHILDREN,
-                    REPORTS_FOLDER,
+            NodeRef newReportsFolder = directoryService.getOrCreateChild(storeRoot, reportsPath,
                     ContentModel.TYPE_FOLDER);
             nodeService.setProperty(newReportsFolder, ContentModel.PROP_NAME, "HealthProcessor reports");
-            // Disable inheriting permissions
+
+            // Disable inheriting permissions when creating the folder for the first time
             permissionService.setInheritParentPermissions(newReportsFolder, false);
-
-            // Create folder that links to this reports folder, but only on first creation (so admin can delete the folder
-            // from the company home
-            NodeRef storeRoot = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-            NodeRef companyHome = findChild(storeRoot, ContentModel.ASSOC_CHILDREN,
-                    QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "company_home"));
-
-            nodeService.addChild(companyHome, newReportsFolder, ContentModel.ASSOC_CONTAINS, REPORTS_FOLDER);
-
             return newReportsFolder;
         }
     }
 
-    public FileInfo getReportLink(QName pathName) {
+    public FileInfo findReportLink(QName pathName) {
         NodeRef reportsRoot = getOrCreateReportsRoot();
-        return fileFolderService.getFileInfo(findChild(reportsRoot, ContentModel.ASSOC_CONTAINS, pathName));
+        return fileFolderService.getFileInfo(
+                directoryService.findChild(reportsRoot, ContentModel.ASSOC_CONTAINS, pathName));
     }
 
     public FileInfo getOrCreateReportLink(String name, QName pathName) {
         NodeRef reportsRoot = getOrCreateReportsRoot();
         try {
-            return getReportLink(pathName);
+            return findReportLink(pathName);
         } catch (NoSuchNodeException e) {
             log.info("Creating " + pathName + " link");
             return fileFolderService.create(reportsRoot, name, ContentModel.TYPE_LINK, pathName);
@@ -114,8 +128,7 @@ public class RepositoryReportManager {
         nodeService.setProperty(newReportFolder, ContentModel.PROP_DESCRIPTION, "Report created at " + creationTime);
         nodeService.setProperty(newReportFolder, HealthProcessorModel.PROP_COMPLETION_PERCENTAGE, 0);
         nodeService.setProperty(newReportFolder, HealthProcessorModel.PROP_CYCLE_ID, cycleId);
-        nodeService.setProperty(newReportFolder, HealthProcessorModel.PROP_REPOSITORY_ID,
-                descriptorService.getCurrentRepositoryDescriptor().getId());
+        resetReportExpiration(newReportFolder);
 
         FileInfo currentReportLink = getOrCreateReportLink("In-Progress Report", CURRENT_REPORT);
 
@@ -163,7 +176,14 @@ public class RepositoryReportManager {
     }
 
     public void updateProgress(NodeRef reportFolder, float progress) {
-        nodeService.setProperty(reportFolder, HealthProcessorModel.PROP_COMPLETION_PERCENTAGE, progress);
+        float storedProgress = DefaultTypeConverter.INSTANCE.floatValue(
+                nodeService.getProperty(reportFolder, HealthProcessorModel.PROP_COMPLETION_PERCENTAGE));
+        // Only update progress if a significant progress is made, to avoid continuously writing updates
+        if (progress > storedProgress + 0.0001) {
+            nodeService.setProperty(reportFolder, HealthProcessorModel.PROP_COMPLETION_PERCENTAGE, progress);
+        }
+        // If the report is almost expired, reset expiration timer
+        resetReportExpirationIfAlmostExpired(reportFolder);
     }
 
     public NodeRef createNewReportAggregate(NodeRef reportFolder, Class<? extends HealthProcessorPlugin> plugin) {
@@ -209,6 +229,9 @@ public class RepositoryReportManager {
         // Remove incomplete report marker
         nodeService.removeAspect(reportFolder, HealthProcessorModel.ASPECT_INCOMPLETE_REPORT);
 
+        // Reset expiration time, as report is now completed
+        resetReportExpiration(reportFolder);
+
         // Calculate totals rollup for report folder
         log.debug("Calculating totals for report folder");
         List<ChildAssociationRef> finalReportChildren = nodeService.getChildAssocs(reportFolder,
@@ -228,31 +251,37 @@ public class RepositoryReportManager {
         log.debug("Finished calculating totals for report folder");
 
         // Remove current report link
-        FileInfo currentReportLink = getReportLink(CURRENT_REPORT);
+        FileInfo currentReportLink = findReportLink(CURRENT_REPORT);
         if (reportFolder.equals(currentReportLink.getLinkNodeRef())) {
             nodeService.setProperty(currentReportLink.getNodeRef(), ContentModel.PROP_LINK_DESTINATION, null);
         }
     }
 
-    private NodeRef findChild(NodeRef parent, QNamePattern assocType, QNamePattern assocName) {
-        List<ChildAssociationRef> children = nodeService.getChildAssocs(parent, assocType, assocName);
-        switch (children.size()) {
-            case 0:
-                throw new NoSuchNodeException(parent, assocType, assocName);
-            case 1:
-                return children.get(0).getChildRef();
-            default:
-                throw new DuplicateNodeException(parent, assocType, assocName);
+    public void removeExpiredReports() {
+        NodeRef reportsRoot = getOrCreateReportsRoot();
+        List<ChildAssociationRef> childAssociationRefs = nodeService.getChildAssocs(reportsRoot,
+                ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+        for (ChildAssociationRef childAssociationRef : childAssociationRefs) {
+            Date removeAfter = DefaultTypeConverter.INSTANCE.convert(Date.class,
+                    nodeService.getProperty(childAssociationRef.getChildRef(), PROP_REMOVE_AFTER));
+            if (removeAfter != null && (new Date()).after(removeAfter)) {
+                log.debug("Removing expired report {}", childAssociationRef.getChildRef());
+                nodeService.removeChildAssociation(childAssociationRef);
+            }
         }
     }
 
-    private NodeRef getOrCreateChild(NodeRef parent, QName assocType, QName assocName, QName newType) {
-        try {
-            return findChild(parent, assocType, assocName);
-        } catch (NoSuchNodeException e) {
-            log.info("Creating " + assocName + " folder because it does not exist.", e);
-            return nodeService.createNode(parent, assocType, assocName, newType).getChildRef();
+    private void resetReportExpirationIfAlmostExpired(NodeRef reportFolder) {
+        Date expirationDate = DefaultTypeConverter.INSTANCE.convert(Date.class,
+                nodeService.getProperty(reportFolder, PROP_REMOVE_AFTER));
+        Duration timeLeftTillExpire = Duration.between(Instant.now(), expirationDate.toInstant());
+        // Has already expired or is over half of the total expiration time, reset expiration
+        if (timeLeftTillExpire.isNegative() || timeLeftTillExpire.compareTo(keepReports.dividedBy(2)) < 0) {
+            resetReportExpiration(reportFolder);
         }
     }
 
+    private void resetReportExpiration(NodeRef reportFolder) {
+        nodeService.setProperty(reportFolder, PROP_REMOVE_AFTER, Date.from(Instant.now().plus(keepReports)));
+    }
 }

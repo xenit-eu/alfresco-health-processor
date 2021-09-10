@@ -43,9 +43,21 @@
             <bean class="eu.xenit.alfresco.healthprocessor.reporter.repository.RepositoryReportManager">
                 <constructor-arg ref="NodeService" />
                 <constructor-arg ref="FileFolderService" />
-                <constructor-arg ref="DescriptorService" />
                 <constructor-arg ref="PermissionService" />
+                <constructor-arg ref="NamespaceService" />
+                <constructor-arg>
+                    <bean class="eu.xenit.alfresco.healthprocessor.reporter.repository.DirectoryService">
+                        <constructor-arg ref="NodeService" />
+                        <constructor-arg ref="DictionaryService" />
+                    </bean>
+                </constructor-arg>
                 <property name="maxChunks" value="${eu.xenit.alfresco.healthprocessor.reporter.repository.file.max-chunks}" />
+                <property name="reportsPath" value="${eu.xenit.alfresco.healthprocessor.reporter.repository.file.reports-path}" />
+                <property name="keepReports">
+                    <bean class="java.time.Duration" factory-method="parse">
+                        <constructor-arg value="${eu.xenit.alfresco.healthprocessor.reporter.repository.file.keep-reports}" />
+                    </bean>
+                </property>
             </bean>
         </constructor-arg>
     </bean>

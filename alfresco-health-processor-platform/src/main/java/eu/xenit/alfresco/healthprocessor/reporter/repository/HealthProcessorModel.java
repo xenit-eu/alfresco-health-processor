@@ -9,7 +9,6 @@ interface HealthProcessorModel {
 
     QName TYPE_REPORTS = QName.createQName(HP_NAMESPACE, "reports");
     QName PROP_CYCLE_ID = QName.createQName(HP_NAMESPACE, "cycleId");
-    QName PROP_REPOSITORY_ID = QName.createQName(HP_NAMESPACE, "repositoryId");
 
     QName TYPE_REPORT = QName.createQName(HP_NAMESPACE, "report");
     QName PROP_PLUGIN = QName.createQName(HP_NAMESPACE, "plugin");

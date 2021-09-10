@@ -42,6 +42,7 @@ public class RepositoryFileHealthReporter extends ToggleableHealthReporter {
         reportFolder = reportManager.createNewReport(UUID.randomUUID().toString());
         log.info("Created new report folder at {}", reportFolder);
         sequenceNumber = new HashMap<>();
+        reportManager.removeExpiredReports();
     }
 
     @Override

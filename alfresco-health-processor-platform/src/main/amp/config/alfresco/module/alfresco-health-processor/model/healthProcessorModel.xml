@@ -19,12 +19,6 @@
                     <multiple>false</multiple>
                     <index enabled="false" />
                 </property>
-                <property name="xenit-healthprocessor:repositoryId">
-                    <type>d:text</type>
-                    <mandatory enforced="true">true</mandatory>
-                    <multiple>false</multiple>
-                    <index enabled="false" />
-                </property>
             </properties>
         </type>
         <type name="xenit-healthprocessor:report">
