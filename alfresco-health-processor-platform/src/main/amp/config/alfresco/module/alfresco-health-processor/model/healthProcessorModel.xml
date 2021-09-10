@@ -1,0 +1,93 @@
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="xenit-healthprocessor:model">
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://www.xenit.eu/model/HealthProcessor" prefix="xenit-healthprocessor" />
+    </namespaces>
+
+    <types>
+        <type name="xenit-healthprocessor:reports">
+            <parent>cm:folder</parent>
+            <properties>
+                <property name="xenit-healthprocessor:cycleId">
+                    <type>d:text</type>
+                    <mandatory enforced="true">true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="false" />
+                </property>
+                <property name="xenit-healthprocessor:repositoryId">
+                    <type>d:text</type>
+                    <mandatory enforced="true">true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="false" />
+                </property>
+            </properties>
+        </type>
+        <type name="xenit-healthprocessor:report">
+            <parent>cm:content</parent>
+            <properties>
+                <property name="xenit-healthprocessor:plugin">
+                    <type>d:text</type>
+                    <mandatory enforced="true">true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="false" />
+                </property>
+            </properties>
+        </type>
+    </types>
+
+    <aspects>
+        <aspect name="xenit-healthprocessor:chunk">
+            <archive>false</archive>
+            <properties>
+                <property name="xenit-healthprocessor:chunkSequence">
+                    <type>d:int</type>
+                    <mandatory enforced="true">true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="false" />
+                </property>
+            </properties>
+        </aspect>
+        <aspect name="xenit-healthprocessor:incompleteReport">
+            <archive>false</archive>
+            <properties>
+                <property name="xenit-healthprocessor:completionPercentage">
+                    <type>d:float</type>
+                    <mandatory enforced="true">true</mandatory>
+                    <multiple>false</multiple>
+                    <index enabled="false" />
+                </property>
+            </properties>
+        </aspect>
+        <aspect name="xenit-healthprocessor:statistics">
+            <properties>
+                <property name="xenit-healthprocessor:unhealthyNodeCount">
+                    <type>d:long</type>
+                    <mandatory enforced="true">true</mandatory>
+                    <multiple>false</multiple>
+                </property>
+                <property name="xenit-healthprocessor:fixedNodeCount">
+                    <type>d:long</type>
+                    <mandatory enforced="true">true</mandatory>
+                    <multiple>false</multiple>
+                </property>
+            </properties>
+        </aspect>
+        <aspect name="xenit-healthprocessor:details">
+            <properties>
+                <property name="xenit-healthprocessor:unhealthyNodes">
+                    <type>d:noderef</type>
+                    <multiple>true</multiple>
+                </property>
+                <property name="xenit-healthprocessor:fixedNodes">
+                    <type>d:noderef</type>
+                    <multiple>true</multiple>
+                </property>
+            </properties>
+        </aspect>
+    </aspects>
+</model>

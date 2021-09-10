@@ -35,4 +35,19 @@
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.alfred-telemetry.enabled}"/>
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.repository.RepositoryFileHealthReporter"
+        class="eu.xenit.alfresco.healthprocessor.reporter.repository.RepositoryFileHealthReporter">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.repository.file.enabled}"/>
+        <constructor-arg ref="NodeService" />
+        <constructor-arg name="reportManager">
+            <bean class="eu.xenit.alfresco.healthprocessor.reporter.repository.RepositoryReportManager">
+                <constructor-arg ref="NodeService" />
+                <constructor-arg ref="FileFolderService" />
+                <constructor-arg ref="DescriptorService" />
+                <constructor-arg ref="PermissionService" />
+                <property name="maxChunks" value="${eu.xenit.alfresco.healthprocessor.reporter.repository.file.max-chunks}" />
+            </bean>
+        </constructor-arg>
+    </bean>
+
 </beans>
