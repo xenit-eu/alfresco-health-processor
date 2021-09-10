@@ -266,6 +266,9 @@ public class RepositoryReportManager {
                     nodeService.getProperty(childAssociationRef.getChildRef(), PROP_REMOVE_AFTER));
             if (removeAfter != null && (new Date()).after(removeAfter)) {
                 log.debug("Removing expired report {}", childAssociationRef.getChildRef());
+                // Mark report as sys:temporary, so it is deleted immediately without passing by the archive store
+                // We don't want expired reports staying around in the archive store
+                nodeService.addAspect(childAssociationRef.getChildRef(), ContentModel.ASPECT_TEMPORARY, Collections.emptyMap());
                 nodeService.removeChildAssociation(childAssociationRef);
             }
         }
