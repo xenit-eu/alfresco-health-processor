@@ -118,7 +118,7 @@ public class SolrRequestExecutor {
         return httpClient.execute(searchRequest, new JSONResponseHandler());
     }
 
-    public boolean executeAsyncNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
+    public SolrActionResponse executeAsyncNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
             throws IOException {
         String coreName = endpoint.getCoreName();
         HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve(
@@ -128,8 +128,24 @@ public class SolrRequestExecutor {
         log.trace("Executing HTTP request {}", indexRequest);
         JsonNode response = httpClient.execute(indexRequest, new JSONResponseHandler());
         log.trace("Response: {}", response.asText());
+        return new SolrActionResponse(response, coreName);
+    }
 
-        return response.path("action").path(coreName).path("status").asText().equals("scheduled");
+    public class SolrActionResponse {
+        @Getter
+        private final boolean successFull;
+        @Getter
+        private final String message;
+
+        public SolrActionResponse(JsonNode response, String coreName) {
+            successFull = response.path("responseHeader").path("status").asInt() == 0;
+            if (!successFull) {
+                message = response.path("error").path("msg").asText();
+            } else {
+                message = (response.has("action") == true) ?
+                        response.path("action").path(coreName).path("status").asText() : "scheduled";
+            }
+        }
     }
 
 
