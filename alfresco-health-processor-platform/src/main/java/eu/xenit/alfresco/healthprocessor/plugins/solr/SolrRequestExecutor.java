@@ -130,22 +130,25 @@ public class SolrRequestExecutor {
         log.trace("Response: {}", response.asText());
         return new SolrActionResponse(response, coreName);
     }
-
-    public class SolrActionResponse {
+    @AllArgsConstructor
+    public static class SolrActionResponse {
         @Getter
         private final boolean successFull;
         @Getter
         private final String message;
 
         public SolrActionResponse(JsonNode response, String coreName) {
-            successFull = response.path("responseHeader").path("status").asInt() == 0;
-            if (!successFull) {
+            boolean isStatusSuccess = response.path("responseHeader").path("status").asInt() == 0;
+            if (!isStatusSuccess) {
+                successFull = false;
                 message = response.path("error").path("msg").asText();
             } else {
                 message = (response.has("action") == true) ?
                         response.path("action").path(coreName).path("status").asText() : "scheduled";
+                successFull = (message.equals("scheduled")) ? true : false;
             }
         }
+
     }
 
 
