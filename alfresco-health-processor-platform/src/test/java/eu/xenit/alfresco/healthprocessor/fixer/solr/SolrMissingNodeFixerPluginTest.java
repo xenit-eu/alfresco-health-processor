@@ -16,6 +16,7 @@ import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.Inde
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrIndexValidationHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrNodeCommand;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrActionResponse;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.util.TestReports;
@@ -54,7 +55,7 @@ class SolrMissingNodeFixerPluginTest {
                 .add(nodeIndexHealthReport);
 
         when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.REINDEX))
-                .thenReturn(true);
+                .thenReturn(new SolrActionResponse(true ,"scheduled"));
 
         Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 Collections.singleton(healthReport));
@@ -88,7 +89,7 @@ class SolrMissingNodeFixerPluginTest {
                 .addAll(Arrays.asList(nodeIndexHealthReport1, nodeIndexHealthReport2));
 
         when(executor.executeAsyncNodeCommand(endpoint1, nodeRefStatus, SolrNodeCommand.REINDEX))
-                .thenReturn(true);
+                .thenReturn(new SolrActionResponse(true ,"scheduled"));
 
         Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 Collections.singleton(healthReport));
@@ -122,7 +123,7 @@ class SolrMissingNodeFixerPluginTest {
         healthReport2.data(NodeIndexHealthReport.class).add(nodeIndexHealthReport2);
 
         when(executor.executeAsyncNodeCommand(eq(endpoint1), any(), eq(SolrNodeCommand.REINDEX)))
-                .thenReturn(true);
+                .thenReturn(new SolrActionResponse(true ,"scheduled"));
 
         Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 set(healthReport1, healthReport2));
@@ -151,7 +152,7 @@ class SolrMissingNodeFixerPluginTest {
 
         when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(),
                 SolrNodeCommand.REINDEX))
-                .thenReturn(false);
+                .thenReturn(new SolrActionResponse(false ,"error"));
 
         Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 Collections.singleton(healthReport));
