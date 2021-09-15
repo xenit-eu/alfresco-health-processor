@@ -253,7 +253,7 @@ class SolrRequestExecutorTest {
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
                 nodeRefStatus, SolrNodeCommand.REINDEX);
         assertTrue(response.isSuccessFull());
-        assertEquals(response.getMessage(), "scheduled");
+        assertEquals("scheduled", response.getMessage());
     }
 
     //Solr version prior to 2.0 do not include the action response statuses in their response
@@ -272,7 +272,7 @@ class SolrRequestExecutorTest {
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
                 nodeRefStatus, SolrNodeCommand.REINDEX);
         assertTrue(response.isSuccessFull());
-        assertEquals(response.getMessage(), "scheduled");
+        assertEquals("scheduled", response.getMessage());
     }
 
     @Test
@@ -294,7 +294,7 @@ class SolrRequestExecutorTest {
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
                 nodeRefStatus, SolrNodeCommand.PURGE);
         assertTrue(response.isSuccessFull());
-        assertEquals(response.getMessage(), "scheduled");
+        assertEquals("scheduled", response.getMessage());
     }
 
     @Test
@@ -334,6 +334,6 @@ class SolrRequestExecutorTest {
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
                 nodeRefStatus, SolrNodeCommand.PURGE);
         assertFalse(response.isSuccessFull());
-        assertEquals(response.getMessage(), "failed");
+        assertEquals("failed", response.getMessage());
     }
 }

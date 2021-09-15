@@ -143,9 +143,9 @@ public class SolrRequestExecutor {
                 successFull = false;
                 message = response.path("error").path("msg").asText();
             } else {
-                message = (response.has("action") == true) ?
+                message = (response.has("action")) ?
                         response.path("action").path(coreName).path("status").asText() : "scheduled";
-                successFull = (message.equals("scheduled")) ? true : false;
+                successFull = message.equals("scheduled");
             }
         }
 
