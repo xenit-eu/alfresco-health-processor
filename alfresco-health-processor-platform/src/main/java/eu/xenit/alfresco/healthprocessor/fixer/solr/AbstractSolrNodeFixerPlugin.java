@@ -7,6 +7,7 @@ import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrNodeCommand;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrActionResponse;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import java.util.HashSet;
 import java.util.Set;
@@ -47,14 +48,14 @@ abstract class AbstractSolrNodeFixerPlugin extends ToggleableHealthFixerPlugin {
                     command,
                     endpointHealthReport.getNodeRefStatus().getNodeRef(),
                     endpointHealthReport.getEndpoint());
-            boolean isSuccessful = solrRequestExecutor.executeAsyncNodeCommand(endpointHealthReport.getEndpoint(),
-                    endpointHealthReport.getNodeRefStatus(), command);
-            if (isSuccessful) {
-                return new NodeFixReport(NodeFixStatus.SUCCEEDED, unhealthyReport,
-                        command + " scheduled on " + endpointHealthReport.getEndpoint());
+            SolrActionResponse solrActionResponse = solrRequestExecutor.executeAsyncNodeCommand(endpointHealthReport.getEndpoint(),
+                            endpointHealthReport.getNodeRefStatus(), command);
+            if (solrActionResponse.isSuccessFull()) {
+                return new NodeFixReport(NodeFixStatus.SUCCEEDED, unhealthyReport, command + " on " +
+                        endpointHealthReport.getEndpoint() + " : " + solrActionResponse.getMessage());
             } else {
-                return new NodeFixReport(NodeFixStatus.FAILED, unhealthyReport,
-                        command + " failed to schedule on " + endpointHealthReport.getEndpoint());
+                return new NodeFixReport(NodeFixStatus.FAILED, unhealthyReport, command + " failed to schedule on " +
+                        endpointHealthReport.getEndpoint() + " : " + solrActionResponse.getMessage());
             }
 
         } catch (Exception e) {

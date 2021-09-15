@@ -56,9 +56,9 @@ class SolrDuplicateNodeFixerPluginTest {
                 .add(nodeIndexHealthReport);
 
         when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.PURGE))
-                .thenReturn(true);
+                .thenReturn(new SolrRequestExecutor.SolrActionResponse(true ,"scheduled"));
         when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.REINDEX))
-                .thenReturn(true);
+                .thenReturn(new SolrRequestExecutor.SolrActionResponse(true ,"scheduled"));
 
         Set<NodeFixReport> nodeFixReports = duplicateNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 Collections.singleton(healthReport));
@@ -95,9 +95,9 @@ class SolrDuplicateNodeFixerPluginTest {
                 .addAll(Arrays.asList(nodeIndexHealthReport1, nodeIndexHealthReport2));
 
         when(executor.executeAsyncNodeCommand(endpoint1, nodeRefStatus, SolrNodeCommand.PURGE))
-                .thenReturn(true);
+                .thenReturn(new SolrRequestExecutor.SolrActionResponse(true ,"scheduled"));
         when(executor.executeAsyncNodeCommand(endpoint1, nodeRefStatus, SolrNodeCommand.REINDEX))
-                .thenReturn(true);
+                .thenReturn(new SolrRequestExecutor.SolrActionResponse(true ,"scheduled"));
 
         Set<NodeFixReport> nodeFixReports = duplicateNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 Collections.singleton(healthReport));
@@ -133,9 +133,9 @@ class SolrDuplicateNodeFixerPluginTest {
         healthReport2.data(NodeIndexHealthReport.class).add(nodeIndexHealthReport2);
 
         when(executor.executeAsyncNodeCommand(eq(endpoint1), any(), eq(SolrNodeCommand.PURGE)))
-                .thenReturn(true);
+                .thenReturn(new SolrRequestExecutor.SolrActionResponse(true ,"scheduled"));
         when(executor.executeAsyncNodeCommand(eq(endpoint1), any(), eq(SolrNodeCommand.REINDEX)))
-                .thenReturn(true);
+                .thenReturn(new SolrRequestExecutor.SolrActionResponse(true ,"scheduled"));
 
         Set<NodeFixReport> nodeFixReports = duplicateNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 set(healthReport1, healthReport2));
@@ -163,7 +163,7 @@ class SolrDuplicateNodeFixerPluginTest {
                 .add(nodeIndexHealthReport);
 
         when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.PURGE))
-                .thenReturn(false);
+                .thenReturn(new SolrRequestExecutor.SolrActionResponse(false ,"failed"));
 
         Set<NodeFixReport> nodeFixReports = duplicateNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 Collections.singleton(healthReport));
@@ -190,9 +190,9 @@ class SolrDuplicateNodeFixerPluginTest {
                 .add(nodeIndexHealthReport);
 
         when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.PURGE))
-                .thenReturn(true);
+                .thenReturn(new SolrRequestExecutor.SolrActionResponse(true ,"scheduled"));
         when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.REINDEX))
-                .thenReturn(false);
+                .thenReturn(new SolrRequestExecutor.SolrActionResponse(false ,"failed"));
 
         Set<NodeFixReport> nodeFixReports = duplicateNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 Collections.singleton(healthReport));
@@ -248,7 +248,7 @@ class SolrDuplicateNodeFixerPluginTest {
                 .add(nodeIndexHealthReport);
 
         when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.PURGE))
-                .thenReturn(true);
+                .thenReturn(new SolrRequestExecutor.SolrActionResponse(true ,"scheduled"));
         when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.REINDEX))
                 .thenThrow(new IOException("Something very bad happened"));
 

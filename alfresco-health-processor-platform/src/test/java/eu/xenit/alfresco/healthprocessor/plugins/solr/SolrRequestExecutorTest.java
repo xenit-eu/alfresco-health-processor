@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.paweladamski.httpclientmock.HttpClientMock;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrNodeCommand;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrActionResponse;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.util.SetUtil;
 import java.io.IOException;
@@ -242,12 +243,36 @@ class SolrRequestExecutorTest {
 
         httpClientMock.onGet("http://nowhere/solr/admin/cores?action=reindex&nodeid=25&wt=json&coreName=index")
                 .doReturnJSON("{"
+                        + "\"responseHeader\":{"
+                        + "\"status\":0,"
+                        + "\"QTime\":0 },"
                         + "\"action\": {"
                         + "\"index\": { \"status\": \"scheduled\" }"
                         + "}"
                         + "}");
+        SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
+                nodeRefStatus, SolrNodeCommand.REINDEX);
+        assertTrue(response.isSuccessFull());
+        assertEquals("scheduled", response.getMessage());
+    }
 
-        assertTrue(solrRequestExecutor.executeAsyncNodeCommand(endpoint, nodeRefStatus, SolrNodeCommand.REINDEX));
+    //Solr version prior to 2.0 do not include the action response statuses in their response
+    @Test
+    void performNodeCommandReindexSolrv1x() throws IOException {
+        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+
+        NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
+
+        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=reindex&nodeid=25&wt=json&coreName=index")
+                .doReturnJSON("{"
+                        + "\"responseHeader\":{"
+                        + "\"status\":0,"
+                        + "\"QTime\":0 }"
+                        + "}");
+        SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
+                nodeRefStatus, SolrNodeCommand.REINDEX);
+        assertTrue(response.isSuccessFull());
+        assertEquals("scheduled", response.getMessage());
     }
 
     @Test
@@ -258,12 +283,36 @@ class SolrRequestExecutorTest {
 
         httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&nodeid=25&wt=json&coreName=some-index")
                 .doReturnJSON("{"
+                        + "\"responseHeader\":{"
+                        + "\"status\":0,"
+                        + "\"QTime\":0 },"
                         + "\"action\": {"
                         + "\"some-index\": { \"status\": \"scheduled\" }"
                         + "}"
                         + "}");
 
-        assertTrue(solrRequestExecutor.executeAsyncNodeCommand(endpoint, nodeRefStatus, SolrNodeCommand.PURGE));
+        SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
+                nodeRefStatus, SolrNodeCommand.PURGE);
+        assertTrue(response.isSuccessFull());
+        assertEquals("scheduled", response.getMessage());
+    }
+
+    @Test
+    void performNodeCommandStatusCode500() throws IOException {
+        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+
+        NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
+
+        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&nodeid=25&wt=json&coreName=index")
+                .doReturnJSON("{"
+                        + "\"responseHeader\":{"
+                        + "\"status\":500,"
+                        + "\"QTime\":0 }"
+                        + "}");
+
+        SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
+                nodeRefStatus, SolrNodeCommand.PURGE);
+        assertFalse(response.isSuccessFull());
     }
 
     @Test
@@ -274,11 +323,17 @@ class SolrRequestExecutorTest {
 
         httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&nodeid=25&wt=json&coreName=index")
                 .doReturnJSON("{"
+                        + "\"responseHeader\":{"
+                        + "\"status\":0,"
+                        + "\"QTime\":0 },"
                         + "\"action\": {"
                         + "\"index\": { \"status\": \"failed\" }"
                         + "}"
                         + "}");
 
-        assertFalse(solrRequestExecutor.executeAsyncNodeCommand(endpoint, nodeRefStatus, SolrNodeCommand.PURGE));
+        SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
+                nodeRefStatus, SolrNodeCommand.PURGE);
+        assertFalse(response.isSuccessFull());
+        assertEquals("failed", response.getMessage());
     }
 }

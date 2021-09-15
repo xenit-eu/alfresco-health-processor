@@ -11,6 +11,7 @@ import java.util.stream.StreamSupport;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.apache.http.client.HttpClient;
@@ -118,7 +119,7 @@ public class SolrRequestExecutor {
         return httpClient.execute(searchRequest, new JSONResponseHandler());
     }
 
-    public boolean executeAsyncNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
+    public SolrActionResponse executeAsyncNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
             throws IOException {
         String coreName = endpoint.getCoreName();
         HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve(
@@ -128,8 +129,26 @@ public class SolrRequestExecutor {
         log.trace("Executing HTTP request {}", indexRequest);
         JsonNode response = httpClient.execute(indexRequest, new JSONResponseHandler());
         log.trace("Response: {}", response.asText());
+        return parseActionWebResponse(response, coreName);
+    }
 
-        return response.path("action").path(coreName).path("status").asText().equals("scheduled");
+    private SolrActionResponse parseActionWebResponse(JsonNode response, String coreName) {
+        String message;
+        boolean successFull = response.path("responseHeader").path("status").asInt() == 0;
+        if (!successFull) {
+            message = response.path("error").path("msg").asText();
+        } else {
+            message = (response.has("action")) ?
+                    response.path("action").path(coreName).path("status").asText() : "scheduled";
+            successFull = message.equals("scheduled");
+        }
+        return new SolrActionResponse(successFull, message);
+    }
+
+    @Value
+    public static class SolrActionResponse {
+        private final boolean successFull;
+        private final String message;
     }
 
 
