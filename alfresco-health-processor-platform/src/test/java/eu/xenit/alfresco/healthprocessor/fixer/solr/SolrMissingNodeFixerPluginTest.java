@@ -43,7 +43,7 @@ class SolrMissingNodeFixerPluginTest {
     }
 
     @Test
-    void fix_missing_nodes() throws IOException {
+    void fix_missing_node() throws IOException {
         NodeHealthReport healthReport = TestReports.unhealthy();
         SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://empty/solr/core1/"));
         NodeIndexHealthReport nodeIndexHealthReport = new NodeIndexHealthReport(
@@ -54,7 +54,8 @@ class SolrMissingNodeFixerPluginTest {
         healthReport.data(NodeIndexHealthReport.class)
                 .add(nodeIndexHealthReport);
 
-        when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.REINDEX_TRANSACTION)).thenReturn(new SolrActionResponse(true ,"scheduled"));
+        when(executor.executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(),
+                SolrNodeCommand.REINDEX_TRANSACTION)).thenReturn(new SolrActionResponse(true ,"scheduled"));
 
         Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 Collections.singleton(healthReport));
