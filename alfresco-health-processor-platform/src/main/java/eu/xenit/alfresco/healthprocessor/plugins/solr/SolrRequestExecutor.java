@@ -123,7 +123,7 @@ public class SolrRequestExecutor {
             throws IOException {
         String coreName = endpoint.getCoreName();
         HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve(
-                "cores?action=" + command.getCommand() + "&nodeid=" + nodeStatus.getDbId() + "&wt=json&coreName="
+                "cores?action=" + command.getCommand() + "&txid=" + nodeStatus.getDbTxnId() + "&wt=json&coreName="
                         + coreName));
 
         log.trace("Executing HTTP request {}", indexRequest);
