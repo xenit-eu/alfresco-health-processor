@@ -251,7 +251,7 @@ class SolrRequestExecutorTest {
                         + "}"
                         + "}");
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.REINDEX, true);
+                nodeRefStatus, SolrNodeCommand.REINDEX, false);
         assertTrue(response.isSuccessFull());
         assertEquals("scheduled", response.getMessage());
     }
@@ -270,7 +270,7 @@ class SolrRequestExecutorTest {
                         + "\"QTime\":0 }"
                         + "}");
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.REINDEX, true);
+                nodeRefStatus, SolrNodeCommand.REINDEX, false);
         assertTrue(response.isSuccessFull());
         assertEquals("scheduled", response.getMessage());
     }
@@ -321,7 +321,7 @@ class SolrRequestExecutorTest {
 
         NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
 
-        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&txid=25&wt=json&coreName=index")
+        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&txid=8&wt=json&coreName=index")
                 .doReturnJSON("{"
                         + "\"responseHeader\":{"
                         + "\"status\":0,"
@@ -335,5 +335,26 @@ class SolrRequestExecutorTest {
                 nodeRefStatus, SolrNodeCommand.PURGE, true);
         assertFalse(response.isSuccessFull());
         assertEquals("failed", response.getMessage());
+    }
+
+    @Test
+    void targetTransactionCommand() throws IOException {
+        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/some-index/"));
+        NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 10L);
+
+        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&txid=10&wt=json&coreName=some-index")
+                .doReturnJSON("{"
+                        + "\"responseHeader\":{"
+                        + "\"status\":0,"
+                        + "\"QTime\":0 },"
+                        + "\"action\": {"
+                        + "\"some-index\": { \"status\": \"scheduled\" }"
+                        + "}"
+                        + "}");
+
+        SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
+                nodeRefStatus, SolrNodeCommand.PURGE, true);
+        assertTrue(response.isSuccessFull());
+        assertEquals("scheduled", response.getMessage());
     }
 }
