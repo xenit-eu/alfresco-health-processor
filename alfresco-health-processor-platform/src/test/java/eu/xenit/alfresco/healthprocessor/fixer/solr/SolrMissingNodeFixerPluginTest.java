@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class SolrMissingNodeFixerPluginTest {
 
@@ -128,6 +129,10 @@ class SolrMissingNodeFixerPluginTest {
         Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 set(healthReport1, healthReport2));
 
+        // Only one REINDEX_TRANSACTION should have been sent
+        verify(executor, Mockito.atMostOnce()).executeAsyncNodeCommand(eq(endpoint1), any(NodeRef.Status.class), eq(SolrNodeCommand.REINDEX_TRANSACTION));
+        verifyNoMoreInteractions(executor);
+
         assertEquals(Collections.singletonList(NodeFixStatus.SUCCEEDED),
                 nodeFixReports.stream().filter(fixReport -> fixReport.getHealthReport().equals(healthReport1))
                         .map(NodeFixReport::getFixStatus).collect(
@@ -183,6 +188,131 @@ class SolrMissingNodeFixerPluginTest {
 
         assertEquals(set(NodeFixStatus.FAILED), nodeFixReports.stream().map(NodeFixReport::getFixStatus)
                 .collect(Collectors.toSet()));
+    }
+
+    @Test
+    void fix_multiple_missing_nodes_multiple_transactions() throws IOException {
+        NodeHealthReport healthReport1 = TestReports.unhealthy();
+        NodeHealthReport healthReport2 = TestReports.unhealthy();
+        NodeHealthReport healthReport3 = TestReports.unhealthy();
+        SearchEndpoint endpoint1 = new SearchEndpoint(URI.create("http://empty/solr/core1/"));
+        NodeRef.Status nodeRefStatus1 = new Status(123L, healthReport1.getNodeRef(), "1", 1L, false);
+        NodeRef.Status nodeRefStatus2 = new Status(1234L, healthReport2.getNodeRef(), "1", 1L, false);
+        NodeRef.Status nodeRefStatus3 = new Status(1234L, healthReport3.getNodeRef(), "1", 2L, false);
+
+        NodeIndexHealthReport nodeIndexHealthReport1 = new NodeIndexHealthReport(
+                IndexHealthStatus.NOT_FOUND,
+                nodeRefStatus1,
+                endpoint1
+        );
+        NodeIndexHealthReport nodeIndexHealthReport2 = new NodeIndexHealthReport(
+                IndexHealthStatus.NOT_FOUND,
+                nodeRefStatus2,
+                endpoint1
+        );
+        NodeIndexHealthReport nodeIndexHealthReport3 = new NodeIndexHealthReport(
+                IndexHealthStatus.NOT_FOUND,
+                nodeRefStatus3,
+                endpoint1
+        );
+
+        healthReport1.data(NodeIndexHealthReport.class).add(nodeIndexHealthReport1);
+        healthReport2.data(NodeIndexHealthReport.class).add(nodeIndexHealthReport2);
+        healthReport3.data(NodeIndexHealthReport.class).add(nodeIndexHealthReport3);
+
+        when(executor.executeAsyncNodeCommand(eq(endpoint1), any(), eq(SolrNodeCommand.REINDEX_TRANSACTION)))
+                .thenReturn(new SolrActionResponse(true ,"scheduled"));
+
+        Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
+                set(healthReport1, healthReport2, healthReport3));
+
+        // Only one REINDEX_TRANSACTION should have been sent for healthreport1 and healthreport2
+        verify(executor, Mockito.atMost(2)).executeAsyncNodeCommand(eq(endpoint1), any(NodeRef.Status.class), eq(SolrNodeCommand.REINDEX_TRANSACTION));
+        verifyNoMoreInteractions(executor);
+
+        assertEquals(Collections.singletonList(NodeFixStatus.SUCCEEDED),
+                nodeFixReports.stream().filter(fixReport -> fixReport.getHealthReport().equals(healthReport1))
+                        .map(NodeFixReport::getFixStatus).collect(
+                                Collectors.toList()));
+        assertEquals(Collections.singletonList(NodeFixStatus.SUCCEEDED),
+                nodeFixReports.stream().filter(fixReport -> fixReport.getHealthReport().equals(healthReport2))
+                        .map(NodeFixReport::getFixStatus).collect(
+                                Collectors.toList()));
+    }
+
+    @Test
+    void reindex_retried_after_fail() throws IOException{
+        NodeHealthReport healthReport1 = TestReports.unhealthy();
+        NodeHealthReport healthReport2 = TestReports.unhealthy();
+        SearchEndpoint endpoint1 = new SearchEndpoint(URI.create("http://empty/solr/core1/"));
+        NodeRef.Status nodeRefStatus1 = new Status(123L, healthReport1.getNodeRef(), "1", 1L, false);
+        NodeRef.Status nodeRefStatus2 = new Status(1234L, healthReport2.getNodeRef(), "1", 1L, false);
+        NodeIndexHealthReport nodeIndexHealthReport1 = new NodeIndexHealthReport(
+                IndexHealthStatus.NOT_FOUND,
+                nodeRefStatus1,
+                endpoint1
+        );
+        NodeIndexHealthReport nodeIndexHealthReport2 = new NodeIndexHealthReport(
+                IndexHealthStatus.NOT_FOUND,
+                nodeRefStatus2,
+                endpoint1
+        );
+        healthReport1.data(NodeIndexHealthReport.class).add(nodeIndexHealthReport1);
+        healthReport2.data(NodeIndexHealthReport.class).add(nodeIndexHealthReport2);
+
+        when(executor.executeAsyncNodeCommand(eq(endpoint1), any(), eq(SolrNodeCommand.REINDEX_TRANSACTION)))
+                .thenReturn(new SolrActionResponse(false ,"failure"));
+
+        Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
+                set(healthReport1, healthReport2));
+
+        // Only one REINDEX_TRANSACTION should have been sent
+        verify(executor, Mockito.atLeast(2)).executeAsyncNodeCommand(eq(endpoint1), any(NodeRef.Status.class), eq(SolrNodeCommand.REINDEX_TRANSACTION));
+        verifyNoMoreInteractions(executor);
+
+        assertEquals(Collections.singletonList(NodeFixStatus.FAILED),
+                nodeFixReports.stream().filter(fixReport -> fixReport.getHealthReport().equals(healthReport1))
+                        .map(NodeFixReport::getFixStatus).collect(
+                                Collectors.toList()));
+        assertEquals(Collections.singletonList(NodeFixStatus.FAILED),
+                nodeFixReports.stream().filter(fixReport -> fixReport.getHealthReport().equals(healthReport2))
+                        .map(NodeFixReport::getFixStatus).collect(
+                                Collectors.toList()));
+    }
+
+    @Test
+    void fix_same_transaction_multiple_endpoints() throws IOException {
+        NodeHealthReport healthReport = TestReports.unhealthy();
+        SearchEndpoint endpoint1 = new SearchEndpoint(URI.create("http://empty/solr/core1/"));
+        SearchEndpoint endpoint2 = new SearchEndpoint(URI.create("http://empty/solr/core2/"));
+        NodeRef.Status nodeRefStatus = new Status(123L, healthReport.getNodeRef(), "1", 1L, false);
+        NodeIndexHealthReport nodeIndexHealthReport1 = new NodeIndexHealthReport(
+                IndexHealthStatus.NOT_FOUND,
+                nodeRefStatus,
+                endpoint1
+        );
+        NodeIndexHealthReport nodeIndexHealthReport2 = new NodeIndexHealthReport(
+                IndexHealthStatus.NOT_FOUND,
+                nodeRefStatus,
+                endpoint2
+        );
+        healthReport.data(NodeIndexHealthReport.class)
+                .addAll(Arrays.asList(nodeIndexHealthReport1, nodeIndexHealthReport2));
+
+        when(executor.executeAsyncNodeCommand(endpoint1, nodeRefStatus, SolrNodeCommand.REINDEX_TRANSACTION))
+                .thenReturn(new SolrActionResponse(true ,"scheduled"));
+        when(executor.executeAsyncNodeCommand(endpoint2, nodeRefStatus, SolrNodeCommand.REINDEX_TRANSACTION))
+                .thenReturn(new SolrActionResponse(true ,"scheduled"));
+
+        Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
+                Collections.singleton(healthReport));
+
+        assertEquals(set(NodeFixStatus.SUCCEEDED), nodeFixReports.stream().map(NodeFixReport::getFixStatus)
+                .collect(Collectors.toSet()));
+
+        verify(executor).executeAsyncNodeCommand(endpoint1, nodeRefStatus, SolrNodeCommand.REINDEX_TRANSACTION);
+        verify(executor).executeAsyncNodeCommand(endpoint2, nodeRefStatus, SolrNodeCommand.REINDEX_TRANSACTION);
+        verifyNoMoreInteractions(executor);
     }
 
 }
