@@ -42,14 +42,14 @@ abstract class AbstractSolrNodeFixerPlugin extends ToggleableHealthFixerPlugin {
             NodeIndexHealthReport endpointHealthReport);
 
     protected NodeFixReport trySendSolrCommand(NodeHealthReport unhealthyReport,
-            NodeIndexHealthReport endpointHealthReport, SolrNodeCommand command) {
+            NodeIndexHealthReport endpointHealthReport, SolrNodeCommand command, boolean targetTransaction) {
         try {
             log.debug("Requesting {} for node {} on {}",
                     command,
                     endpointHealthReport.getNodeRefStatus().getNodeRef(),
                     endpointHealthReport.getEndpoint());
             SolrActionResponse solrActionResponse = solrRequestExecutor.executeAsyncNodeCommand(endpointHealthReport.getEndpoint(),
-                            endpointHealthReport.getNodeRefStatus(), command);
+                            endpointHealthReport.getNodeRefStatus(), command, targetTransaction);
             if (solrActionResponse.isSuccessFull()) {
                 return new NodeFixReport(NodeFixStatus.SUCCEEDED, unhealthyReport, command + " on " +
                         endpointHealthReport.getEndpoint() + " : " + solrActionResponse.getMessage());

@@ -22,7 +22,7 @@ public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
             return Collections.emptySet();
         }
         return Collections.singleton(
-                trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.REINDEX));
+                trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.REINDEX, true));
     }
 
 }

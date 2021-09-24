@@ -251,7 +251,7 @@ class SolrRequestExecutorTest {
                         + "}"
                         + "}");
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.REINDEX);
+                nodeRefStatus, SolrNodeCommand.REINDEX, true);
         assertTrue(response.isSuccessFull());
         assertEquals("scheduled", response.getMessage());
     }
@@ -270,7 +270,7 @@ class SolrRequestExecutorTest {
                         + "\"QTime\":0 }"
                         + "}");
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.REINDEX);
+                nodeRefStatus, SolrNodeCommand.REINDEX, true);
         assertTrue(response.isSuccessFull());
         assertEquals("scheduled", response.getMessage());
     }
@@ -292,7 +292,7 @@ class SolrRequestExecutorTest {
                         + "}");
 
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.PURGE);
+                nodeRefStatus, SolrNodeCommand.PURGE, false);
         assertTrue(response.isSuccessFull());
         assertEquals("scheduled", response.getMessage());
     }
@@ -311,7 +311,7 @@ class SolrRequestExecutorTest {
                         + "}");
 
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.PURGE);
+                nodeRefStatus, SolrNodeCommand.PURGE, false);
         assertFalse(response.isSuccessFull());
     }
 
@@ -321,7 +321,7 @@ class SolrRequestExecutorTest {
 
         NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
 
-        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&nodeid=25&wt=json&coreName=index")
+        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&txid=25&wt=json&coreName=index")
                 .doReturnJSON("{"
                         + "\"responseHeader\":{"
                         + "\"status\":0,"
@@ -332,7 +332,7 @@ class SolrRequestExecutorTest {
                         + "}");
 
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.PURGE);
+                nodeRefStatus, SolrNodeCommand.PURGE, true);
         assertFalse(response.isSuccessFull());
         assertEquals("failed", response.getMessage());
     }

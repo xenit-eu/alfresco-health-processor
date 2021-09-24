@@ -119,12 +119,27 @@ public class SolrRequestExecutor {
         return httpClient.execute(searchRequest, new JSONResponseHandler());
     }
 
-    public SolrActionResponse executeAsyncNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
+    /**
+     * Schedules an async SolrNodeCommand for a node on a search endpoint.
+     * This action/command is scheduled for execution by solr or a failure is returned.
+     * The boolean targetTransaction indicates if the action should be sent for the transaction the node was contained in.
+     * If true, the action will be scheduled for the complete transaction of this node.
+     * If false, the action is scheduled for this single node contained in the nodestatus.
+     * @param endpoint the search endpoint
+     * @param nodeStatus node status containing information about the dbIDs and transactionIds
+     * @param command Solr action that will be executed
+     * @param targetTransaction indicates of the action should target the complete transaction or a single node
+     * @return SolrActionResponse [boolean successfull , String message]
+     * @throws IOException
+     */
+    public SolrActionResponse executeAsyncNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command, boolean targetTransaction)
             throws IOException {
         String coreName = endpoint.getCoreName();
-        HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve(
-                "cores?action=" + command.getCommand() + "&txid=" + nodeStatus.getDbTxnId() + "&wt=json&coreName="
-                        + coreName));
+
+        String solrEndpoint = "cores?action=" + command.getCommand() + "&wt=json&coreName=" + coreName;
+        solrEndpoint += (targetTransaction)? "&txid=" + nodeStatus.getDbTxnId() : "&nodeid=" + nodeStatus.getDbId();
+
+        HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve(solrEndpoint));
 
         log.trace("Executing HTTP request {}", indexRequest);
         JsonNode response = httpClient.execute(indexRequest, new JSONResponseHandler());
@@ -150,7 +165,6 @@ public class SolrRequestExecutor {
         private final boolean successFull;
         private final String message;
     }
-
 
     @AllArgsConstructor
     public enum SolrNodeCommand {
