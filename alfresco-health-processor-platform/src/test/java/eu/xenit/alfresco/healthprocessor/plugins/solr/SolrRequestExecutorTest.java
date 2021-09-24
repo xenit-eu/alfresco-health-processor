@@ -251,7 +251,7 @@ class SolrRequestExecutorTest {
                         + "}"
                         + "}");
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.REINDEX, false);
+                nodeRefStatus, SolrNodeCommand.REINDEX);
         assertTrue(response.isSuccessFull());
         assertEquals("scheduled", response.getMessage());
     }
@@ -270,7 +270,7 @@ class SolrRequestExecutorTest {
                         + "\"QTime\":0 }"
                         + "}");
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.REINDEX, false);
+                nodeRefStatus, SolrNodeCommand.REINDEX);
         assertTrue(response.isSuccessFull());
         assertEquals("scheduled", response.getMessage());
     }
@@ -292,7 +292,7 @@ class SolrRequestExecutorTest {
                         + "}");
 
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.PURGE, false);
+                nodeRefStatus, SolrNodeCommand.PURGE);
         assertTrue(response.isSuccessFull());
         assertEquals("scheduled", response.getMessage());
     }
@@ -311,7 +311,7 @@ class SolrRequestExecutorTest {
                         + "}");
 
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.PURGE, false);
+                nodeRefStatus, SolrNodeCommand.PURGE);
         assertFalse(response.isSuccessFull());
     }
 
@@ -332,7 +332,7 @@ class SolrRequestExecutorTest {
                         + "}");
 
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.PURGE, true);
+                nodeRefStatus, SolrNodeCommand.PURGE_TRANSACTION);
         assertFalse(response.isSuccessFull());
         assertEquals("failed", response.getMessage());
     }
@@ -342,7 +342,7 @@ class SolrRequestExecutorTest {
         SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/some-index/"));
         NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 10L);
 
-        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&txid=10&wt=json&coreName=some-index")
+        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=reindex&txid=10&wt=json&coreName=some-index")
                 .doReturnJSON("{"
                         + "\"responseHeader\":{"
                         + "\"status\":0,"
@@ -353,7 +353,7 @@ class SolrRequestExecutorTest {
                         + "}");
 
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.PURGE, true);
+                nodeRefStatus, SolrNodeCommand.REINDEX_TRANSACTION);
         assertTrue(response.isSuccessFull());
         assertEquals("scheduled", response.getMessage());
     }

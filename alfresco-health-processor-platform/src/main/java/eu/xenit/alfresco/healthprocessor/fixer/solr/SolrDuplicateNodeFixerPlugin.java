@@ -30,10 +30,10 @@ public class SolrDuplicateNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
         // Purge has to be done before reindex, else we end up with a broken index which will only be fixed
         // by a subsequent health processor cycle, which would be unacceptable.
         Set<NodeFixReport> fixReports = new HashSet<>();
-        NodeFixReport purgeStatus = trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.PURGE, false);
+        NodeFixReport purgeStatus = trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.PURGE);
         fixReports.add(purgeStatus);
         if(purgeStatus.getFixStatus() == NodeFixStatus.SUCCEEDED) {
-            fixReports.add(trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.REINDEX, false));
+            fixReports.add(trySendSolrCommand(unhealthyReport, endpointHealthReport, SolrNodeCommand.REINDEX));
         }
 
         return fixReports;

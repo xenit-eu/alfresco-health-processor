@@ -35,7 +35,7 @@ public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
                     cachedNodeFixReport.getMessages()));
         } else {
             NodeFixReport nodeFixReport = trySendSolrCommand(unhealthyReport, endpointHealthReport,
-                    SolrNodeCommand.REINDEX, true);
+                    SolrNodeCommand.REINDEX_TRANSACTION);
             reindexedTxMap.put(nodeStatus.getDbTxnId(), nodeFixReport);
             return Collections.singleton(nodeFixReport);
         }
