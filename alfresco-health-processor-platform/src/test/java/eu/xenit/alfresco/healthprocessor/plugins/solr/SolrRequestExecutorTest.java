@@ -321,7 +321,7 @@ class SolrRequestExecutorTest {
 
         NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
 
-        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&txid=8&wt=json&coreName=index")
+        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=purge&nodeid=25&wt=json&coreName=index")
                 .doReturnJSON("{"
                         + "\"responseHeader\":{"
                         + "\"status\":0,"

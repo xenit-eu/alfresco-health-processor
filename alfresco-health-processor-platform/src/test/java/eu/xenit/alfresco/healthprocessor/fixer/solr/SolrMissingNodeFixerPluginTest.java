@@ -269,7 +269,7 @@ class SolrMissingNodeFixerPluginTest {
 
         // Normally only one reindex transaction node command should be sent. But since the response on the call failed for the first node.
         // The reindex command will be retried for the second node.
-        verify(executor, Mockito.calls(2)).executeAsyncNodeCommand(eq(endpoint1), any(NodeRef.Status.class), eq(SolrNodeCommand.REINDEX_TRANSACTION));
+        verify(executor, Mockito.atLeast(2)).executeAsyncNodeCommand(eq(endpoint1), any(NodeRef.Status.class), eq(SolrNodeCommand.REINDEX_TRANSACTION));
         verifyNoMoreInteractions(executor);
 
         assertEquals(Collections.singletonList(NodeFixStatus.FAILED),
