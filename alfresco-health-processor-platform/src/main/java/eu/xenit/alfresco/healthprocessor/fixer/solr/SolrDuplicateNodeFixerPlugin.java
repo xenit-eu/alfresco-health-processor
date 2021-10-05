@@ -39,7 +39,4 @@ public class SolrDuplicateNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
         return fixReports;
     }
 
-    @Override
-    protected void clearCache() {}
-
 }

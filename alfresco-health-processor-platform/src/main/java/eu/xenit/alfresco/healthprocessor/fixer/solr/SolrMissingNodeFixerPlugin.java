@@ -2,6 +2,7 @@ package eu.xenit.alfresco.healthprocessor.fixer.solr;
 
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
+import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor;
@@ -19,6 +20,13 @@ public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
 
     public SolrMissingNodeFixerPlugin(SolrRequestExecutor solrRequestExecutor) {
         super(solrRequestExecutor);
+    }
+
+    @Override
+    public Set<NodeFixReport> fix(Class<? extends HealthProcessorPlugin> pluginClass,
+                                  Set<NodeHealthReport> unhealthyReports) {
+        clearCache();
+        return super.fix(pluginClass, unhealthyReports);
     }
 
     @Override
@@ -50,7 +58,6 @@ public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
         return Collections.singleton(nodeFixReport);
     }
 
-    @Override
     protected void clearCache() {
         searchEndpointTxCache.clear();
     }
