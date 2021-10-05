@@ -18,6 +18,7 @@
         <constructor-arg name="attributeStore" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore" />
         <constructor-arg name="healthReportClassifier"
                 ref="eu.xenit.alfresco.healthprocessor.reporter.NodeHealthReportClassifier" />
+        <constructor-arg name="maxStoredReports" value="${eu.xenit.alfresco.healthprocessor.reporter.store.max-stored-reports}" />
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter"

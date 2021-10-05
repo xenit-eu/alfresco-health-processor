@@ -84,6 +84,10 @@ try to automatically resolve the problem. The resulting reports will be offered 
 * `eu.xenit.alfresco.healthprocessor.processing.run-as-user=System`  
   Since the Alfresco Health Processor is basically a scheduled job, it needs to run as a certain user. The default
   is `System` but it is possible to assign a dedicated user.
+* `eu.xenit.alfresco.healthprocessor.reports.store.max-stored-reports=3000`
+  Maximum number of node reports that are stored and reported at the end of a cycle.
+  Additional reports above this number will be dropped, and a warning will be logged when that happens.
+  This setting protects you from crashing Alfresco in case a large number of reports is generated during a Health Processor cycle, for example due to an intermittent issue resulting in a large number of nodes being reported unhealthy.
 
 ## Admin Console dashboard
 

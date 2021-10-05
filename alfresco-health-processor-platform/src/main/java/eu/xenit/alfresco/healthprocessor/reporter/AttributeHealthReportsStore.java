@@ -3,16 +3,22 @@ package eu.xenit.alfresco.healthprocessor.reporter;
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
+import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.alfresco.util.Pair;
 
 /**
@@ -25,13 +31,30 @@ import org.alfresco.util.Pair;
  * </ul>
  */
 @RequiredArgsConstructor
+@Slf4j
 public class AttributeHealthReportsStore implements HealthReportsStore {
 
     public static final String ATTR_KEY_REPORTS = "reports";
     public static final String ATTR_KEY_REPORT_STATS = "report-stats";
+    public static final String ATTR_KEY_STORED_REPORTS_COUNT = "stored-reports-count";
 
     private final AttributeStore attributeStore;
     private final NodeHealthReportClassifier healthReportClassifier;
+    private final long maxStoredReports;
+    private AtomicLong storedReportsCounter;
+
+    @Override
+    public void onStart() {
+        Long storedReportsCount = attributeStore.getAttributeOrDefault(ATTR_KEY_STORED_REPORTS_COUNT, 0L);
+        storedReportsCounter = new AtomicLong(storedReportsCount);
+    }
+
+    @Override
+    public void processReports(@Nonnull Class<? extends HealthProcessorPlugin> pluginClass,
+            @Nonnull Set<NodeHealthReport> reports) {
+        HealthReportsStore.super.processReports(pluginClass, reports);
+        attributeStore.setAttribute(storedReportsCounter.longValue(), ATTR_KEY_STORED_REPORTS_COUNT);
+    }
 
     @Override
     public void storeReport(Class<? extends HealthProcessorPlugin> pluginClass, NodeHealthReport report) {
@@ -39,9 +62,17 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
         if (!healthReportClassifier.shouldBeSentToReportersInFull(report)) {
             return;
         }
-        Pair<Class<? extends HealthProcessorPlugin>, NodeHealthReport> pluginClassWithReport =
-                new Pair<>(pluginClass, report);
-        attributeStore.setAttribute(pluginClassWithReport, ATTR_KEY_REPORTS, UUID.randomUUID().toString());
+        long storedReportsCount = storedReportsCounter.getAndIncrement();
+        if(storedReportsCount < maxStoredReports) {
+            Pair<Class<? extends HealthProcessorPlugin>, NodeHealthReport> pluginClassWithReport =
+                    new Pair<>(pluginClass, report);
+            attributeStore.setAttribute(pluginClassWithReport, ATTR_KEY_REPORTS, UUID.randomUUID().toString());
+        } else if(storedReportsCount == maxStoredReports) {
+            // Only warn when we just go over the limit
+            // So we don't trigger the next warning for all future report stores
+            log.warn("Received too many reports to store (max={}). All future reports in this cycle will be dropped.",
+                    storedReportsCount);
+        }
     }
 
     @Override
@@ -87,8 +118,21 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
     }
 
     @Override
-    public void clear() {
+    public void onCycleDone(@Nonnull List<ProcessorPluginOverview> overviews) {
         attributeStore.removeAttributes(ATTR_KEY_REPORTS);
         attributeStore.removeAttributes(ATTR_KEY_REPORT_STATS);
+        attributeStore.removeAttributes(ATTR_KEY_STORED_REPORTS_COUNT);
+    }
+
+    @Override
+    public Map<String, String> getConfiguration() {
+        return Collections.singletonMap("max-stored-reports", Objects.toString(maxStoredReports));
+    }
+
+    @Override
+    public Map<String, String> getState() {
+        Map<String, String> state = new HashMap<>();
+        state.put("storedReportsCounter", Objects.toString(storedReportsCounter.longValue()));
+        return state;
     }
 }
