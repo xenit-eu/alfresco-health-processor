@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.reporter;
+package eu.xenit.alfresco.healthprocessor.reporter.store;
 
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
@@ -59,7 +59,7 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
     @Override
     public void storeReport(Class<? extends HealthProcessorPlugin> pluginClass, NodeHealthReport report) {
         // There is no need to store the report if it does not have to be sent to the reporters
-        if (!healthReportClassifier.shouldBeSentToReportersInFull(report)) {
+        if (!healthReportClassifier.shouldBeStored(report)) {
             return;
         }
         long storedReportsCount = storedReportsCounter.getAndIncrement();

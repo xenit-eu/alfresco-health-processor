@@ -279,7 +279,7 @@ Activation property: `eu.xenit.alfresco.healthprocessor.reporter.log.summary.ena
 A simple implementation that writes, once a Health Processor cycle is completed, a summary and unhealthy nodes to the
 Alfresco logs.
 
-Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter=INFO`
+Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.log.SummaryLoggingHealthReporter=INFO`
 
 Example output:
 
@@ -297,7 +297,7 @@ Activation property: `eu.xenit.alfresco.healthprocessor.reporter.log.progress.en
 
 A simple implementation that writes progress of a Health Processor cycle to the Alfresco logs.
 
-Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.ProgressLoggingHealthReporter=INFO`
+Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.log.ProgressLoggingHealthReporter=INFO`
 
 Example output:
 ```text

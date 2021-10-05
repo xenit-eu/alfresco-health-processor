@@ -6,6 +6,7 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
+import eu.xenit.alfresco.healthprocessor.reporter.store.HealthReportsStore;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;

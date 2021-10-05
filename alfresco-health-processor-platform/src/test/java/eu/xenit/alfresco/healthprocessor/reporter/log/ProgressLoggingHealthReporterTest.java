@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.reporter;
+package eu.xenit.alfresco.healthprocessor.reporter.log;
 
 import eu.xenit.alfresco.healthprocessor.indexing.NullCycleProgress;
 import org.junit.jupiter.api.Test;
