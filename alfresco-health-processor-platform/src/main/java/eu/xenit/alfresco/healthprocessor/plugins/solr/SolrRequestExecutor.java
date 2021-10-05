@@ -169,8 +169,7 @@ public class SolrRequestExecutor {
     public enum SolrNodeCommand {
         REINDEX("reindex", false),
         PURGE("purge", false),
-        REINDEX_TRANSACTION("reindex", true),
-        PURGE_TRANSACTION("purge", true);
+        REINDEX_TRANSACTION("reindex", true);
 
         @Getter
         private final String command;

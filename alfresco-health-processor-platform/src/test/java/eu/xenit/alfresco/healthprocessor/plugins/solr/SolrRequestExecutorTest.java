@@ -332,7 +332,7 @@ class SolrRequestExecutorTest {
                         + "}");
 
         SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
-                nodeRefStatus, SolrNodeCommand.PURGE_TRANSACTION);
+                nodeRefStatus, SolrNodeCommand.PURGE);
         assertFalse(response.isSuccessFull());
         assertEquals("failed", response.getMessage());
     }

@@ -226,7 +226,8 @@ class SolrMissingNodeFixerPluginTest {
         Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 set(healthReport1, healthReport2, healthReport3));
 
-        // Only one REINDEX_TRANSACTION should have been sent for healthreport1 and healthreport2
+        // First reindex command is sent for dbtxid=1 handling both healthreport1 & healthreport2
+        // The second reindex command is sent for dbtxid=2 handling healthreport3
         verify(executor, Mockito.atMost(2)).executeAsyncNodeCommand(eq(endpoint1), any(NodeRef.Status.class), eq(SolrNodeCommand.REINDEX_TRANSACTION));
         verifyNoMoreInteractions(executor);
 
@@ -266,8 +267,9 @@ class SolrMissingNodeFixerPluginTest {
         Set<NodeFixReport> nodeFixReports = missingNodeFixerPlugin.fix(SolrIndexValidationHealthProcessorPlugin.class,
                 set(healthReport1, healthReport2));
 
-        // Only one REINDEX_TRANSACTION should have been sent
-        verify(executor, Mockito.atLeast(2)).executeAsyncNodeCommand(eq(endpoint1), any(NodeRef.Status.class), eq(SolrNodeCommand.REINDEX_TRANSACTION));
+        // Normally only one reindex transaction node command should be sent. But since the response on the call failed for the first node.
+        // The reindex command will be retried for the second node.
+        verify(executor, Mockito.calls(2)).executeAsyncNodeCommand(eq(endpoint1), any(NodeRef.Status.class), eq(SolrNodeCommand.REINDEX_TRANSACTION));
         verifyNoMoreInteractions(executor);
 
         assertEquals(Collections.singletonList(NodeFixStatus.FAILED),
