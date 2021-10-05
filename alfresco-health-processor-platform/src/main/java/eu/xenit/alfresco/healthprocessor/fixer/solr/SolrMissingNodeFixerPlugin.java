@@ -9,14 +9,16 @@ import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrNodeCommand;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import lombok.Value;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
-    private HashMap<SearchEndpoint, HashMap<Long, NodeFixReport>> searchEndpointTxCache = new HashMap<>();
+    private Map<SearchEndpointTxId, NodeFixReport> searchEndpointTxCache = new HashMap<>();
 
     public SolrMissingNodeFixerPlugin(SolrRequestExecutor solrRequestExecutor) {
         super(solrRequestExecutor);
@@ -37,25 +39,28 @@ public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
         }
 
         NodeRef.Status nodeStatus = endpointHealthReport.getNodeRefStatus();
-        if (searchEndpointTxCache.containsKey(endpointHealthReport.getEndpoint())) {
-            HashMap<Long, NodeFixReport> reindexTxCache = searchEndpointTxCache.get(endpointHealthReport.getEndpoint());
-            if (reindexTxCache.containsKey(nodeStatus.getDbTxnId()) &&
-                    reindexTxCache.get(nodeStatus.getDbTxnId()).getFixStatus() == NodeFixStatus.SUCCEEDED) {
-                //If a successful reindex action was already sent for this tx to this endpoint, do not schedule another one
-                NodeFixReport cachedNodeFixReport = reindexTxCache.get(nodeStatus.getDbTxnId());
+        SearchEndpointTxId searchEndpointTxId = new SearchEndpointTxId(endpointHealthReport.getEndpoint(), nodeStatus.getDbTxnId());
+        if (searchEndpointTxCache.containsKey(searchEndpointTxId)) {
+            NodeFixReport cachedNodeFixReport = searchEndpointTxCache.get(searchEndpointTxId);
+            //If a successful reindex action was already sent for this tx to this endpoint, do not schedule another one
+            if (cachedNodeFixReport.getFixStatus() == NodeFixStatus.SUCCEEDED) {
                 return Collections.singleton(new NodeFixReport(cachedNodeFixReport.getFixStatus(), unhealthyReport,
                         cachedNodeFixReport.getMessages()));
             }
-        } else {
-            searchEndpointTxCache.put(endpointHealthReport.getEndpoint(), new HashMap<>());
         }
 
-        // Action not yet successfully send
+        // Action not yet (successfully) send
         NodeFixReport nodeFixReport = trySendSolrCommand(unhealthyReport, endpointHealthReport,
                 SolrNodeCommand.REINDEX_TRANSACTION);
 
-        searchEndpointTxCache.get(endpointHealthReport.getEndpoint()).put(nodeStatus.getDbTxnId(), nodeFixReport);
+        searchEndpointTxCache.put(searchEndpointTxId, nodeFixReport);
         return Collections.singleton(nodeFixReport);
+    }
+
+    @Value
+    public static class SearchEndpointTxId {
+        private final SearchEndpoint searchEndpoint;
+        private final Long txId;
     }
 
     protected void clearCache() {
