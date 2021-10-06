@@ -35,6 +35,8 @@ Version template:
 ### Fixed
 
 * [[#37]](https://github.com/xenit-eu/alfresco-health-processor/pull/37)]  Export all node health statuses in micrometer
+* [[#42](https://github.com/xenit-eu/alfresco-health-processor/pull/42)] Change response check of SolrIndexValidationHealthProcessorPlugin to work with ASS versions < 2.0
+* [[#43](https://github.com/xenit-eu/alfresco-health-processor/pull/43)] Reindex complete transaction when a missing node is found
 
 ### Changed
 
