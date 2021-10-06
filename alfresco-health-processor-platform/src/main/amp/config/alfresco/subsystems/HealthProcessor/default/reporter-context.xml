@@ -26,6 +26,12 @@
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled}"/>
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.log.StreamingLoggingHealthReporter"
+            class="eu.xenit.alfresco.healthprocessor.reporter.log.StreamingLoggingHealthReporter">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.log.streaming.enabled}"/>
+        <constructor-arg name="healthReportClassifier" ref="eu.xenit.alfresco.healthprocessor.reporter.store.NodeHealthReportClassifier" />
+    </bean>
+
     <bean id="eu.xenit.alfresco.healthprocessor.reporter.log.ProgressLoggingHealthReporter"
             class="eu.xenit.alfresco.healthprocessor.reporter.log.ProgressLoggingHealthReporter">
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.log.progress.enabled}"/>

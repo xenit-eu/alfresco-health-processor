@@ -274,6 +274,8 @@ Exposed metrics:
 
 #### Logging
 
+##### Summary
+
 Activation property: `eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled=true`
 
 A simple implementation that writes, once a Health Processor cycle is completed, a summary and unhealthy nodes to the
@@ -292,6 +294,24 @@ Example output:
  2021-03-03 12:40:40,275  WARN  [healthprocessor.reporter.SummaryLoggingHealthReporter] [DefaultScheduler_Worker-2] 	workspace://SpacesStore/86796712-4dc6-4b8d-973f-a943ef7f23ed: [Property: '{http://www.alfresco.org/model/content/1.0}content', contentUrl: 'store://2021/3/3/12/27/cb664208-abae-4da9-b7ee-81167a43041a.bin']
  2021-03-03 12:40:40,275  WARN  [healthprocessor.reporter.SummaryLoggingHealthReporter] [DefaultScheduler_Worker-2]  --- 
 ```
+
+##### Streaming
+
+Activation property: `eu.xenit.alfresco.healthprocessor.reporter.log.streaming.enabled=true`
+
+A simple implementation that writes unhealthy nodes to the Alfresco logs when they are reported.
+
+Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.log.StreamingLoggingHealthReporter=INFO`
+
+Example output:
+
+```text
+2021-10-06 08:08:05,965  WARN  [reporter.log.StreamingLoggingHealthReporter] [DefaultScheduler_Worker-2] Plugin[SolrIndexValidationHealthProcessorPlugin]	FIXED archive://SpacesStore/1ae6f9af-26e4-41ec-8836-29e52210a247: [Node is missing in search index SearchEndpoint(baseUri=http://solr:8080/solr/archive/).]
+2021-10-06 08:08:05,965  INFO  [reporter.log.StreamingLoggingHealthReporter] [DefaultScheduler_Worker-2] 		Fix SUCCEEDED: [REINDEX on SearchEndpoint(baseUri=http://solr:8080/solr/archive/) : scheduled]
+2021-10-06 08:15:40,655  WARN  [reporter.log.StreamingLoggingHealthReporter] [DefaultScheduler_Worker-1] Plugin[ContentValidationHealthProcessorPlugin]	UNHEALTHY workspace://SpacesStore/960e0488-71e1-4894-8cc4-208a13df9f3d: [Property: '{http://www.alfresco.org/model/content/1.0}content', contentUrl: 'store://2021/10/6/8/7/e0fd5335-ba70-47d1-a452-9d00a23933f7.bin']
+```
+
+##### Progress
 
 Activation property: `eu.xenit.alfresco.healthprocessor.reporter.log.progress.enabled=true`
 
