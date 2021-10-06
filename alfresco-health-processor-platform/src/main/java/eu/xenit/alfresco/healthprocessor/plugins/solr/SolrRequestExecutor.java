@@ -119,12 +119,23 @@ public class SolrRequestExecutor {
         return httpClient.execute(searchRequest, new JSONResponseHandler());
     }
 
+    /**
+     * Schedules an async SolrNodeCommand for a node on a search endpoint.
+     * This action/command is scheduled for execution by solr or a failure is returned.
+     * @param endpoint the search endpoint
+     * @param nodeStatus node status containing information about the dbIDs and transactionIds
+     * @param command Solr action that will be executed
+     * @return
+     * @throws IOException when the command can not be sent to solr
+     */
     public SolrActionResponse executeAsyncNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
             throws IOException {
         String coreName = endpoint.getCoreName();
-        HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve(
-                "cores?action=" + command.getCommand() + "&nodeid=" + nodeStatus.getDbId() + "&wt=json&coreName="
-                        + coreName));
+
+        String solrEndpoint = "cores?action=" + command.getCommand() + "&wt=json&coreName=" + coreName;
+        solrEndpoint += (command.isTargetsTransaction())? "&txid=" + nodeStatus.getDbTxnId() : "&nodeid=" + nodeStatus.getDbId();
+
+        HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve(solrEndpoint));
 
         log.trace("Executing HTTP request {}", indexRequest);
         JsonNode response = httpClient.execute(indexRequest, new JSONResponseHandler());
@@ -151,14 +162,21 @@ public class SolrRequestExecutor {
         private final String message;
     }
 
-
+    /**
+     * The boolean targetsTransaction indicates if the action should be sent for the transaction the node was contained in.
+     * If true, the nodeCommand will be scheduled for the complete transaction of this node.
+     * If false, the nodeCommand is scheduled for this single node contained in the nodestatus.
+     */
     @AllArgsConstructor
     public enum SolrNodeCommand {
-        REINDEX("reindex"),
-        PURGE("purge");
+        REINDEX("reindex", false),
+        PURGE("purge", false),
+        REINDEX_TRANSACTION("reindex", true);
 
         @Getter
         private final String command;
+        @Getter
+        private final boolean targetsTransaction;
     }
 
 }

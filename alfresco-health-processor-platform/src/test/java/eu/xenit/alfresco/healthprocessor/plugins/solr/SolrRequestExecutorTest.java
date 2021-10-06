@@ -336,4 +336,25 @@ class SolrRequestExecutorTest {
         assertFalse(response.isSuccessFull());
         assertEquals("failed", response.getMessage());
     }
+
+    @Test
+    void targetTransactionCommand() throws IOException {
+        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/some-index/"));
+        NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 10L);
+
+        httpClientMock.onGet("http://nowhere/solr/admin/cores?action=reindex&txid=10&wt=json&coreName=some-index")
+                .doReturnJSON("{"
+                        + "\"responseHeader\":{"
+                        + "\"status\":0,"
+                        + "\"QTime\":0 },"
+                        + "\"action\": {"
+                        + "\"some-index\": { \"status\": \"scheduled\" }"
+                        + "}"
+                        + "}");
+
+        SolrActionResponse response = solrRequestExecutor.executeAsyncNodeCommand(endpoint,
+                nodeRefStatus, SolrNodeCommand.REINDEX_TRANSACTION);
+        assertTrue(response.isSuccessFull());
+        assertEquals("scheduled", response.getMessage());
+    }
 }

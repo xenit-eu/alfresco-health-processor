@@ -26,7 +26,6 @@ abstract class AbstractSolrNodeFixerPlugin extends ToggleableHealthFixerPlugin {
     public Set<NodeFixReport> fix(Class<? extends HealthProcessorPlugin> pluginClass,
             Set<NodeHealthReport> unhealthyReports) {
         Set<NodeFixReport> fixReports = new HashSet<>();
-
         for (NodeHealthReport unhealthyReport : unhealthyReports) {
             Set<NodeIndexHealthReport> endpointHealthReports = unhealthyReport.data(NodeIndexHealthReport.class);
 

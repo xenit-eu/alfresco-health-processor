@@ -201,7 +201,8 @@ class SolrDuplicateNodeFixerPluginTest {
                 nodeFixReports.stream().map(NodeFixReport::getFixStatus)
                         .collect(Collectors.toSet()));
 
-        verify(executor).executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.PURGE);
+        verify(executor).executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(),
+                SolrNodeCommand.PURGE);
         verify(executor).executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(),
                 SolrNodeCommand.REINDEX);
         verifyNoMoreInteractions(executor);
@@ -260,8 +261,7 @@ class SolrDuplicateNodeFixerPluginTest {
                         .collect(Collectors.toSet()));
 
         verify(executor).executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.PURGE);
-        verify(executor).executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(),
-                SolrNodeCommand.REINDEX);
+        verify(executor).executeAsyncNodeCommand(endpoint, nodeIndexHealthReport.getNodeRefStatus(), SolrNodeCommand.REINDEX);
         verifyNoMoreInteractions(executor);
     }
 }

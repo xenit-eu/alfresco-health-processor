@@ -38,4 +38,5 @@ public class SolrDuplicateNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
 
         return fixReports;
     }
+
 }
