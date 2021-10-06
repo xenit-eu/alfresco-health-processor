@@ -52,8 +52,14 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
     @Override
     public void processReports(@Nonnull Class<? extends HealthProcessorPlugin> pluginClass,
             @Nonnull Set<NodeHealthReport> reports) {
+        long storedReportsBefore = storedReportsCounter.get();
         HealthReportsStore.super.processReports(pluginClass, reports);
-        attributeStore.setAttribute(storedReportsCounter.longValue(), ATTR_KEY_STORED_REPORTS_COUNT);
+        long storedReportsAfter = storedReportsCounter.get();
+        if (storedReportsBefore != storedReportsAfter) {
+            // Only perform a write when the stored reports counter has changed
+            // We try to avoid writing to the attributestore when we don't have any change
+            attributeStore.setAttribute(storedReportsCounter.longValue(), ATTR_KEY_STORED_REPORTS_COUNT);
+        }
     }
 
     @Override
@@ -63,15 +69,10 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
             return;
         }
         long storedReportsCount = storedReportsCounter.getAndIncrement();
-        if(storedReportsCount < maxStoredReports) {
+        if (storedReportsCount < maxStoredReports) {
             Pair<Class<? extends HealthProcessorPlugin>, NodeHealthReport> pluginClassWithReport =
                     new Pair<>(pluginClass, report);
             attributeStore.setAttribute(pluginClassWithReport, ATTR_KEY_REPORTS, UUID.randomUUID().toString());
-        } else if(storedReportsCount == maxStoredReports) {
-            // Only warn when we just go over the limit
-            // So we don't trigger the next warning for all future report stores
-            log.warn("Received too many reports to store (max={}). All future reports in this cycle will be dropped.",
-                    storedReportsCount);
         }
     }
 
@@ -119,6 +120,12 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
 
     @Override
     public void onCycleDone(@Nonnull List<ProcessorPluginOverview> overviews) {
+        long receivedReportsCount = storedReportsCounter.longValue();
+        if (receivedReportsCount > maxStoredReports) {
+            long droppedReportsCount = receivedReportsCount - maxStoredReports;
+            log.warn("Received too many reports to store (max={}; received={}). {} reports have been dropped.",
+                    maxStoredReports, receivedReportsCount, droppedReportsCount);
+        }
         attributeStore.removeAttributes(ATTR_KEY_REPORTS);
         attributeStore.removeAttributes(ATTR_KEY_REPORT_STATS);
         attributeStore.removeAttributes(ATTR_KEY_STORED_REPORTS_COUNT);
