@@ -49,7 +49,7 @@ public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
             }
         }
 
-        // Action not yet (successfully) send
+        // Action not yet (successfully) sent
         NodeFixReport nodeFixReport = trySendSolrCommand(unhealthyReport, endpointHealthReport,
                 SolrNodeCommand.REINDEX_TRANSACTION);
 
@@ -63,7 +63,7 @@ public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
         private final Long txId;
     }
 
-    protected void clearCache() {
+    private void clearCache() {
         searchEndpointTxCache.clear();
     }
 

@@ -122,14 +122,11 @@ public class SolrRequestExecutor {
     /**
      * Schedules an async SolrNodeCommand for a node on a search endpoint.
      * This action/command is scheduled for execution by solr or a failure is returned.
-     * The boolean targetsTransaction from the SolrNodeCommand indicates if the action should be sent for the transaction the node was contained in.
-     * If true, the action will be scheduled for the complete transaction of this node.
-     * If false, the action is scheduled for this single node contained in the nodestatus.
      * @param endpoint the search endpoint
      * @param nodeStatus node status containing information about the dbIDs and transactionIds
      * @param command Solr action that will be executed
-     * @return SolrActionResponse [boolean successfull , String message]
-     * @throws IOException
+     * @return
+     * @throws IOException when the command can not be sent to solr
      */
     public SolrActionResponse executeAsyncNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
             throws IOException {
@@ -165,6 +162,11 @@ public class SolrRequestExecutor {
         private final String message;
     }
 
+    /**
+     * The boolean targetsTransaction indicates if the action should be sent for the transaction the node was contained in.
+     * If true, the nodeCommand will be scheduled for the complete transaction of this node.
+     * If false, the nodeCommand is scheduled for this single node contained in the nodestatus.
+     */
     @AllArgsConstructor
     public enum SolrNodeCommand {
         REINDEX("reindex", false),
