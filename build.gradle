@@ -23,6 +23,10 @@ ext {
 }
 
 subprojects {
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
     plugins.withType(JavaBasePlugin) {
         java {
             toolchain {
@@ -30,9 +34,8 @@ subprojects {
             }
         }
     }
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
-    }
+
+    check.dependsOn(tasks.withType(Javadoc))
 
     ext {
         junitJupiterVersion = '5.6.2'
