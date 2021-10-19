@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.reporter;
+package eu.xenit.alfresco.healthprocessor.reporter.store;
 
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
@@ -12,7 +12,7 @@ public class NodeHealthReportClassifier {
     private static final Set<NodeHealthStatus> INTERESTING_STATUSES = Collections.unmodifiableSet(new HashSet<>(
             Arrays.asList(NodeHealthStatus.UNREPORTED, NodeHealthStatus.UNHEALTHY, NodeHealthStatus.FIXED)));
 
-    public boolean shouldBeSentToReportersInFull(NodeHealthReport healthReport) {
+    public boolean shouldBeStored(NodeHealthReport healthReport) {
         return INTERESTING_STATUSES.contains(healthReport.getStatus());
     }
 

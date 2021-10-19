@@ -5,10 +5,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import eu.xenit.alfresco.healthprocessor.indexing.SimpleCycleProgress;
@@ -18,7 +16,9 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
+import eu.xenit.alfresco.healthprocessor.reporter.store.HealthReportsStore;
 import eu.xenit.alfresco.healthprocessor.util.TestReports;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,8 +28,10 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +47,7 @@ class ReportsServiceTest {
 
     private ReportsService service;
 
-    @Mock
+    @Mock(answer = Answers.CALLS_REAL_METHODS)
     private HealthReportsStore reportsStore;
     @Mock
     private HealthReporter healthReporter;
@@ -54,7 +56,7 @@ class ReportsServiceTest {
     void setup() {
         when(healthReporter.isEnabled()).thenReturn(true);
 
-        service = new ReportsService(reportsStore, Collections.singletonList(healthReporter));
+        service = new ReportsService(reportsStore, Arrays.asList(reportsStore, healthReporter));
     }
 
     @Test
@@ -62,7 +64,7 @@ class ReportsServiceTest {
         service.onStart();
 
         verify(healthReporter).onStart();
-        verifyNoInteractions(reportsStore);
+        verify(reportsStore).onStart();
     }
 
     @Test
@@ -121,7 +123,7 @@ class ReportsServiceTest {
         assertThat(invocationArgument.get(0).getReports(), hasSize(1));
         assertThat(invocationArgument.get(0).getReports().get(0), is(equalTo(REPORT_2)));
 
-        verify(reportsStore).clear();
+        verify(reportsStore).onCycleDone(Mockito.any());
     }
 
     private static class VerySpecificException extends RuntimeException {

@@ -84,6 +84,10 @@ try to automatically resolve the problem. The resulting reports will be offered 
 * `eu.xenit.alfresco.healthprocessor.processing.run-as-user=System`  
   Since the Alfresco Health Processor is basically a scheduled job, it needs to run as a certain user. The default
   is `System` but it is possible to assign a dedicated user.
+* `eu.xenit.alfresco.healthprocessor.reports.store.max-stored-reports=3000`
+  Maximum number of node reports that are stored and reported at the end of a cycle.
+  Additional reports above this number will be dropped, and a warning will be logged when that happens.
+  This setting protects you from crashing Alfresco in case a large number of reports is generated during a Health Processor cycle, for example due to an intermittent issue resulting in a large number of nodes being reported unhealthy.
 
 ## Admin Console dashboard
 
@@ -270,12 +274,14 @@ Exposed metrics:
 
 #### Logging
 
+##### Summary
+
 Activation property: `eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled=true`
 
 A simple implementation that writes, once a Health Processor cycle is completed, a summary and unhealthy nodes to the
 Alfresco logs.
 
-Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter=INFO`
+Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.log.SummaryLoggingHealthReporter=INFO`
 
 Example output:
 
@@ -289,11 +295,29 @@ Example output:
  2021-03-03 12:40:40,275  WARN  [healthprocessor.reporter.SummaryLoggingHealthReporter] [DefaultScheduler_Worker-2]  --- 
 ```
 
+##### Streaming
+
+Activation property: `eu.xenit.alfresco.healthprocessor.reporter.log.streaming.enabled=true`
+
+A simple implementation that writes unhealthy nodes to the Alfresco logs when they are reported.
+
+Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.log.StreamingLoggingHealthReporter=INFO`
+
+Example output:
+
+```text
+2021-10-06 08:08:05,965  WARN  [reporter.log.StreamingLoggingHealthReporter] [DefaultScheduler_Worker-2] Plugin[SolrIndexValidationHealthProcessorPlugin]	FIXED archive://SpacesStore/1ae6f9af-26e4-41ec-8836-29e52210a247: [Node is missing in search index SearchEndpoint(baseUri=http://solr:8080/solr/archive/).]
+2021-10-06 08:08:05,965  INFO  [reporter.log.StreamingLoggingHealthReporter] [DefaultScheduler_Worker-2] 		Fix SUCCEEDED: [REINDEX on SearchEndpoint(baseUri=http://solr:8080/solr/archive/) : scheduled]
+2021-10-06 08:15:40,655  WARN  [reporter.log.StreamingLoggingHealthReporter] [DefaultScheduler_Worker-1] Plugin[ContentValidationHealthProcessorPlugin]	UNHEALTHY workspace://SpacesStore/960e0488-71e1-4894-8cc4-208a13df9f3d: [Property: '{http://www.alfresco.org/model/content/1.0}content', contentUrl: 'store://2021/10/6/8/7/e0fd5335-ba70-47d1-a452-9d00a23933f7.bin']
+```
+
+##### Progress
+
 Activation property: `eu.xenit.alfresco.healthprocessor.reporter.log.progress.enabled=true`
 
 A simple implementation that writes progress of a Health Processor cycle to the Alfresco logs.
 
-Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.ProgressLoggingHealthReporter=INFO`
+Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.log.ProgressLoggingHealthReporter=INFO`
 
 Example output:
 ```text

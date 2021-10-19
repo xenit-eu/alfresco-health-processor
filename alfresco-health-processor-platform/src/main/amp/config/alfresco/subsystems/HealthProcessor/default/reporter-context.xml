@@ -7,26 +7,33 @@
     <bean id="eu.xenit.alfresco.healthprocessor.reporter.ReportsService"
             class="eu.xenit.alfresco.healthprocessor.reporter.ReportsService" autowire="constructor">
         <constructor-arg name="reportsStore"
-                ref="eu.xenit.alfresco.healthprocessor.reporter.AttributeHealthReportsStore"/>
+                ref="eu.xenit.alfresco.healthprocessor.reporter.store.AttributeHealthReportsStore"/>
     </bean>
 
-    <bean id="eu.xenit.alfresco.healthprocessor.reporter.NodeHealthReportClassifier"
-            class="eu.xenit.alfresco.healthprocessor.reporter.NodeHealthReportClassifier" />
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.store.NodeHealthReportClassifier"
+            class="eu.xenit.alfresco.healthprocessor.reporter.store.NodeHealthReportClassifier" />
 
-    <bean id="eu.xenit.alfresco.healthprocessor.reporter.AttributeHealthReportsStore"
-            class="eu.xenit.alfresco.healthprocessor.reporter.AttributeHealthReportsStore">
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.store.AttributeHealthReportsStore"
+            class="eu.xenit.alfresco.healthprocessor.reporter.store.AttributeHealthReportsStore">
         <constructor-arg name="attributeStore" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore" />
         <constructor-arg name="healthReportClassifier"
-                ref="eu.xenit.alfresco.healthprocessor.reporter.NodeHealthReportClassifier" />
+                ref="eu.xenit.alfresco.healthprocessor.reporter.store.NodeHealthReportClassifier" />
+        <constructor-arg name="maxStoredReports" value="${eu.xenit.alfresco.healthprocessor.reporter.store.max-stored-reports}" />
     </bean>
 
-    <bean id="eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter"
-            class="eu.xenit.alfresco.healthprocessor.reporter.SummaryLoggingHealthReporter">
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.log.SummaryLoggingHealthReporter"
+            class="eu.xenit.alfresco.healthprocessor.reporter.log.SummaryLoggingHealthReporter">
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled}"/>
     </bean>
 
-    <bean id="eu.xenit.alfresco.healthprocessor.reporter.ProgressLoggingHealthReporter"
-            class="eu.xenit.alfresco.healthprocessor.reporter.ProgressLoggingHealthReporter">
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.log.StreamingLoggingHealthReporter"
+            class="eu.xenit.alfresco.healthprocessor.reporter.log.StreamingLoggingHealthReporter">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.log.streaming.enabled}"/>
+        <constructor-arg name="healthReportClassifier" ref="eu.xenit.alfresco.healthprocessor.reporter.store.NodeHealthReportClassifier" />
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.reporter.log.ProgressLoggingHealthReporter"
+            class="eu.xenit.alfresco.healthprocessor.reporter.log.ProgressLoggingHealthReporter">
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.reporter.log.progress.enabled}"/>
     </bean>
 

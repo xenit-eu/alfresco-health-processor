@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.reporter;
+package eu.xenit.alfresco.healthprocessor.reporter.log;
 
 import static eu.xenit.alfresco.healthprocessor.util.SetUtil.set;
 import static org.hamcrest.MatcherAssert.assertThat;

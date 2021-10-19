@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.reporter;
+package eu.xenit.alfresco.healthprocessor.reporter.store;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -15,10 +15,12 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeStore;
 import eu.xenit.alfresco.healthprocessor.util.TestReports;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,17 +28,23 @@ import org.junit.jupiter.api.Test;
 class AttributeHealthReportsStoreTest {
 
     InMemoryAttributeStore attributeStore;
-    AttributeHealthReportsStore reportsStore;
+    HealthReportsStore reportsStore;
 
     @BeforeEach
     void setup() {
         attributeStore = new InMemoryAttributeStore();
-        reportsStore = new AttributeHealthReportsStore(attributeStore, new NodeHealthReportClassifier());
+        reportsStore = createReportsStore();
+    }
+
+    private HealthReportsStore createReportsStore() {
+        return new AttributeHealthReportsStore(attributeStore, new NodeHealthReportClassifier(), 20);
     }
 
     @Test
     void processReports_and_clear() {
-        HashSet<NodeHealthReport> reports = new HashSet<>();
+        reportsStore.onStart();
+
+        Set<NodeHealthReport> reports = new HashSet<>();
         IntStream.range(0, 10).forEach(i -> reports.add(TestReports.healthy()));
         IntStream.range(0, 5).forEach(i -> reports.add(TestReports.unhealthy()));
 
@@ -62,7 +70,7 @@ class AttributeHealthReportsStoreTest {
                         hasEntry(equalTo(NodeHealthStatus.UNHEALTHY), equalTo(5L))
                 ));
 
-        reportsStore.clear();
+        reportsStore.onCycleDone(Collections.emptyList());
         assertThat(reportsStore.retrieveStoredReports(), is(notNullValue()));
         assertThat(reportsStore.retrieveStoredReports().keySet(), is(empty()));
         assertThat(reportsStore.retrieveRecordedStats(), is(notNullValue()));
@@ -72,6 +80,7 @@ class AttributeHealthReportsStoreTest {
 
     @Test
     void retrieveReportsAfterRestart() {
+        reportsStore.onStart();
         /*
         Issue observed when storing the 'report-stats' attribute with a value of type EnumMap. When retrieving the
         attribute from the DB (e.g. after an Alfresco restart while the cycle is still running), Alfresco returns
@@ -84,7 +93,7 @@ class AttributeHealthReportsStoreTest {
         attributeStore.setAttribute((Serializable) reportStats, AttributeHealthReportsStore.ATTR_KEY_REPORT_STATS,
                 AssertHealthProcessorPlugin.class);
 
-        HashSet<NodeHealthReport> newReports = new HashSet<>();
+        Set<NodeHealthReport> newReports = new HashSet<>();
         newReports.add(TestReports.healthy());
 
         reportsStore.processReports(AssertHealthProcessorPlugin.class, newReports);
@@ -102,6 +111,82 @@ class AttributeHealthReportsStoreTest {
                         hasEntry(equalTo(NodeHealthStatus.UNHEALTHY), equalTo(5L))
                 ));
 
+    }
+
+    @Test
+    void limitStoredReports() {
+        reportsStore.onStart();
+
+        Set<NodeHealthReport> reports = new HashSet<>();
+        IntStream.range(0, 40).forEach(i -> reports.add(TestReports.unhealthy()));
+
+        reportsStore.processReports(AssertHealthProcessorPlugin.class, reports);
+
+        Map<Class<? extends HealthProcessorPlugin>, Map<NodeHealthStatus, Long>> reportStats = reportsStore.retrieveRecordedStats();
+
+        assertThat(reportStats,
+                hasEntry(
+                        is(equalTo(AssertHealthProcessorPlugin.class)),
+                        hasEntry(equalTo(NodeHealthStatus.UNHEALTHY), equalTo(40L))
+                ));
+
+        List<NodeHealthReport> storedReports = reportsStore.retrieveStoredReports().get(AssertHealthProcessorPlugin.class);
+
+        assertThat(storedReports, hasSize(20));
+    }
+
+    @Test
+    void limitStoredReports_crash_during_processing() {
+        reportsStore.onStart();
+
+        Set<NodeHealthReport> reports = new HashSet<>();
+        IntStream.range(0, 15).forEach(i -> reports.add(TestReports.unhealthy()));
+
+        reportsStore.processReports(AssertHealthProcessorPlugin.class, reports);
+
+        // Imagine that Alfresco crashes here, we still don't want to store more data in the Attribute store than configured
+        // We create a new reports store instance here to simulate restart
+        reportsStore = createReportsStore();
+
+        reportsStore.onStart();
+
+        Set<NodeHealthReport> additionalReports = new HashSet<>();
+        IntStream.range(0, 15).forEach(i -> additionalReports.add(TestReports.unhealthy()));
+
+        reportsStore.processReports(AssertHealthProcessorPlugin.class, additionalReports);
+
+        List<NodeHealthReport> storedReports = reportsStore.retrieveStoredReports().get(AssertHealthProcessorPlugin.class);
+        assertThat(storedReports, hasSize(20));
+
+        reportsStore.onCycleDone(Collections.emptyList());
+    }
+
+    @Test
+    void limitStoredReports_crash_after_processing() {
+        reportsStore.onStart();
+
+        Set<NodeHealthReport> reports = new HashSet<>();
+        IntStream.range(0, 15).forEach(i -> reports.add(TestReports.unhealthy()));
+
+        reportsStore.processReports(AssertHealthProcessorPlugin.class, reports);
+
+        reportsStore.onCycleDone(Collections.emptyList());
+
+        // Imagine that Alfresco crashes here, we want to be able to store a new set of reports here without being limited
+        // We create a new reports store instance here to simulate restart
+        reportsStore = createReportsStore();
+
+        reportsStore.onStart();
+
+        Set<NodeHealthReport> additionalReports = new HashSet<>();
+        IntStream.range(0, 15).forEach(i -> additionalReports.add(TestReports.unhealthy()));
+
+        reportsStore.processReports(AssertHealthProcessorPlugin.class, additionalReports);
+
+        List<NodeHealthReport> storedReports = reportsStore.retrieveStoredReports().get(AssertHealthProcessorPlugin.class);
+        assertThat(storedReports, hasSize(15));
+
+        reportsStore.onCycleDone(Collections.emptyList());
     }
 
 }

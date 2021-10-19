@@ -6,6 +6,7 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
+import eu.xenit.alfresco.healthprocessor.reporter.store.HealthReportsStore;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,7 +28,6 @@ public class ReportsService {
 
     public void processReports(Class<? extends HealthProcessorPlugin> pluginClass, Set<NodeHealthReport> reports) {
         forEachEnabledReporter(reporter -> reporter.processReports(pluginClass, reports));
-        reportsStore.processReports(pluginClass, reports);
     }
 
     public void onException(Exception e) {
@@ -55,7 +55,6 @@ public class ReportsService {
             overviews.add(new ProcessorPluginOverview(clazz, stats, reports));
         });
         forEachEnabledReporter(reporter -> reporter.onCycleDone(overviews));
-        reportsStore.clear();
     }
 
     private void forEachEnabledReporter(Consumer<HealthReporter> consumer) {

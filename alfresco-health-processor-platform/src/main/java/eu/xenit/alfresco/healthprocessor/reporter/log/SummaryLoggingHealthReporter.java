@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.reporter;
+package eu.xenit.alfresco.healthprocessor.reporter.log;
 
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
@@ -30,7 +30,7 @@ public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
     @Override
     public void onCycleDone(@Nonnull List<ProcessorPluginOverview> overviews) {
         ParameterCheck.mandatory("overviews", overviews);
-        
+
         log.info("Health-Processor done in {}", printDuration());
         logSummary(overviews);
         Arrays.stream(NodeHealthStatus.values())
@@ -77,8 +77,13 @@ public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
                 log.warn(status + " NODES ---");
                 loggedStart = true;
             }
-            log.warn("Plugin[{}] (#{}): ", overview.getPluginClass().getSimpleName(), reports.size());
+            long countedReports = overview.getCountsByStatus().getOrDefault(status, 0L);
+            long receivedReports = reports.size();
+            log.warn("Plugin[{}] (#{}): ", overview.getPluginClass().getSimpleName(), receivedReports);
             reports.forEach(this::logReport);
+            if(countedReports > receivedReports) {
+                log.warn("\t... and {} additional reports that are not logged.", countedReports - receivedReports);
+            }
         }
         if (loggedStart) {
             log.warn(" --- ");

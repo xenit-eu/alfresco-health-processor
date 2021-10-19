@@ -1,13 +1,15 @@
-package eu.xenit.alfresco.healthprocessor.reporter;
+package eu.xenit.alfresco.healthprocessor.reporter.store;
 
 import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
+import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 public class InMemoryHealthReportsStore implements HealthReportsStore {
 
@@ -18,7 +20,7 @@ public class InMemoryHealthReportsStore implements HealthReportsStore {
 
     @Override
     public void storeReport(Class<? extends HealthProcessorPlugin> pluginClass, NodeHealthReport report) {
-        if(!healthReportClassifier.shouldBeSentToReportersInFull(report)) {
+        if(!healthReportClassifier.shouldBeStored(report)) {
             return;
         }
         unhealthyReports.putIfAbsent(pluginClass, new ArrayList<>());
@@ -42,7 +44,7 @@ public class InMemoryHealthReportsStore implements HealthReportsStore {
     }
 
     @Override
-    public void clear() {
+    public void onCycleDone(@Nonnull List<ProcessorPluginOverview> overviews) {
         stats.clear();
         unhealthyReports.clear();
     }
