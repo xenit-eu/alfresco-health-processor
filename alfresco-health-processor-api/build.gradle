@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'io.freefair.lombok' version '6.2.0'
 }
 
 java {
@@ -12,9 +13,7 @@ apply from: "${rootDir}/gradle/publish.gradle"
 apply from: "${rootDir}/gradle/internalPlatform.gradle"
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
 
     internalPlatform platform("eu.xenit.alfresco:alfresco-community-bom:${alfrescoVersion}")

@@ -129,7 +129,9 @@ public class NodeHealthReport implements Serializable {
 
     /**
      * Classes that implement this interface and are added to a health report in the {@link #data(Class)} set are stored in the database
-     * and can be accessed in {@link HealthReporter#onCycleDone(List)}. Other stored data is dropped after {@link eu.xenit.alfresco.healthprocessor.reporter.HealthReportsStore#recordReportStats(Class, Set)} has created statistics.
+     * and can be accessed after a cycle has finished in {@link HealthReporter#onCycleDone(List)}
+     *
+     * Other stored data is only available in the {@link HealthReporter#processReports(Class, Set)} method during a cycle.
      */
     public interface PersistableData extends Serializable {
 
