@@ -37,7 +37,6 @@ java {
     jar {
         enabled = false
     }
-    sourceCompatibility = JavaVersion.VERSION_1_8
     withJavadocJar()
     withSourcesJar()
 }

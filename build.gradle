@@ -23,6 +23,13 @@ ext {
 }
 
 subprojects {
+    plugins.withType(JavaBasePlugin) {
+        java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(8)
+            }
+        }
+    }
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
     }
