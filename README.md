@@ -1,6 +1,7 @@
 # Alfresco Health Processor
 
 [![Maven Central](https://img.shields.io/maven-central/v/eu.xenit.alfresco/alfresco-health-processor-platform.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22eu.xenit.alfresco%22%20AND%20a%3A%22alfresco-health-processor-platform%22)
+[![javadoc](https://javadoc.io/badge2/eu.xenit.alfresco/alfresco-health-processor-api/javadoc.svg)](https://javadoc.io/doc/eu.xenit.alfresco/alfresco-health-processor-api)
 [![CI](https://github.com/xenit-eu/alfresco-health-processor/workflows/CI/badge.svg)](https://github.com/xenit-eu/alfresco-health-processor/actions?query=workflow%3ACI+branch%3Amaster)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 
@@ -327,7 +328,7 @@ Example output:
 
 ## Extension points
 
-Besides out of the box functionality, it is very easy to provide custom plugins and reporters. All the
+In addition to out of the box functionality, the HealthProcessor is designed to easily add custom plugins, fixers and reporters. All the
 `HealthProcessorPlugin`, `HealthFixerPlugin` and `HealthReporter` implementations available in the Spring context will be detected and used by
 the Health Processor platform.
 
@@ -347,18 +348,60 @@ implementation "eu.xenit.alfresco:alfresco-health-processor-api:${last_version}"
 </dependency>
 ```
 
-Please notice that the HealthProcessor is implemented as an Alfresco subsystem. Therefore you can choose to make your
-customizations available in the main Alfresco Spring context or as an extension of the HealthProcessor Spring context.
-For the former, configuration files (XML / properties) should be available in:
-`classpath:alfresco/extension/subsystems/HealthProcessor/default/default` (first default for subsystem type, second
-default for subsystem ID).
+The HealthProcessor is implemented as an Alfresco subsystem to allow configuration and restarts without restarting the whole Alfresco repository.
+
+Your custom extensions can be put in 2 places.  The following table documents both the locations of the required files and advantages/disadvantages of each approach.
+
+<table>
+<thead>
+  <tr><th></th><th>Main Alfresco context</th><th>HealthProcessor subsystem context</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td>Context XML</td><td>`classpath:alfresco/module/*/module-context.xml`</td><td>`classpath:alfresco/module/subsystems/HealthProcessor/default/*-context.xml`</td>
+</tr>
+<tr>
+  <td>Default configuration</td><td>`classpath:alfresco/module/*/alfresco-global.properties`</td><td>`classpath:alfresco/module/subsystems/HealthProcessor/default/*.properties`</td>
+</tr>
+<tr>
+  <td>Re-configuration</td><td>Can only be done with `alfresco-global.properties` and a restart of the repository</td><td>Can be done in `alfresco-global.properties` and restarting the repository AND without restart with the [OOTB Support Tools Command Console](https://github.com/OrderOfTheBee/ootbee-support-tools/wiki/Command-Console#subsystems-plugin-commands).</td>
+</tr>
+<tr>
+  <td>Naming conflicts</td><td>When following best practices when naming the module, no naming conflicts should occur.</td><td>Take care to use an unique name for context & properties files, as they are in a shared namespace.</td>
+</tr>
+<tr>
+<td>Deploying extension with a Simple Module</td><td>Possible</td><td>Not supported</td>
+</tr>
+</tbody>
+</table>
 
 ### HealthProcessorPlugin
+
+[`HealthProcessorPlugin` API](https://javadoc.io/doc/eu.xenit.alfresco/alfresco-health-processor-api/latest/eu/xenit/alfresco/healthprocessor/plugins/api/HealthProcessorPlugin.html)
+
+Main extension point for plugging in custom health checking logic into the Health-Processor.
+
+It creates a [`NodeHealthReport`](https://javadoc.io/doc/eu.xenit.alfresco/alfresco-health-processor-api/latest/eu/xenit/alfresco/healthprocessor/reporter/api/NodeHealthReport.html) for each Alfresco node that it has checked.
 
 An [example plugin](integration-tests/src/main/java/eu/xenit/alfresco/healthprocessor/example/ExampleHealthProcessorPlugin.java)
 is included as part of the integration tests of this project.
 
+### HealthFixerPlugin
+
+[`HealthFixerPlugin` API](https://javadoc.io/doc/eu.xenit.alfresco/alfresco-health-processor-api/latest/eu/xenit/alfresco/healthprocessor/fixer/api/HealthFixerPlugin.html)
+
+Extension point for plugging in logic into the Health-Processor to fix unhealthy nodes.
+
+It handles unhealthy `NodeHealthReport`s from a `HealthProcessorPlugin`, tries to fix the unhealthy nodes and emits a [`NodeFixReport`](https://javadoc.io/doc/eu.xenit.alfresco/alfresco-health-processor-api/latest/eu/xenit/alfresco/healthprocessor/fixer/api/NodeFixReport.html) with the results of the fix.
+
 ### HealthReporter
+
+[`HealthReporter` API](https://javadoc.io/doc/eu.xenit.alfresco/alfresco-health-processor-api/latest/eu/xenit/alfresco/healthprocessor/reporter/api/HealthReporter.html)
+
+Extension point for plugging in reporting logic into the Health-Processor.
+
+The methods of an HealthReporter are called at specific points in the Health-Processor lifecycle and can be used to
+handle the reporting of `NodeHealthReport`s.
 
 ## Configuration reference
 
