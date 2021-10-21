@@ -87,7 +87,7 @@ public class NodeHealthReport implements Serializable {
      * @return A mutable Set with all instances of T linked to this report.
      * @since 0.5.0
      */
-    @SuppressWarnings("All")
+    @SuppressWarnings("unchecked")
     public <T> Set<T> data(Class<T> clazz) {
         return (Set<T>) data.computeIfAbsent(clazz, e -> new HashSet<T>());
     }
@@ -116,6 +116,7 @@ public class NodeHealthReport implements Serializable {
      * @since 0.5.0
      */
     @NotForUseIn(ExtensionType.REPORTER)
+    @SuppressWarnings("unchecked")
     public void data(Map<Class<?>, Set<?>> data) {
         for (Entry<Class<?>, Set<?>> entry : data.entrySet()) {
             data((Class<Object>) entry.getKey()).addAll(entry.getValue());
