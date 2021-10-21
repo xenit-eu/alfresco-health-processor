@@ -38,8 +38,8 @@ public class SummaryLoggingHealthReporter extends ToggleableHealthReporter {
     }
 
     @Override
-    public void onException(@Nonnull Exception e) {
-        log.warn("Health-Processor failed. Duration: {}, exception: {}", printDuration(), e.getMessage());
+    public void onException(@Nonnull Exception exception) {
+        log.warn("Health-Processor failed. Duration: {}, exception: {}", printDuration(), exception.getMessage());
     }
 
     private String printDuration() {

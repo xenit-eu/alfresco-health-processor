@@ -11,9 +11,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * Spring context (of the Health-Processor subsystem) will be registered and, {@link #isEnabled() if enabled}, triggered
  * by the Health-Processor.
  *
- * @see ToggleableHealthProcessorPlugin abstract implementation that can easily be enabled / disabled via a property
- * @see SingleNodeHealthProcessorPlugin implementation dividing the batch in individual {@link
- * SingleNodeHealthProcessorPlugin#process(NodeRef)} calls.
+ * @see ToggleableHealthProcessorPlugin implementation that can be enabled via a property
+ * @see SingleNodeHealthProcessorPlugin implementation dividing the batch in individual calls
  */
 public interface HealthProcessorPlugin extends BaseExtension {
 

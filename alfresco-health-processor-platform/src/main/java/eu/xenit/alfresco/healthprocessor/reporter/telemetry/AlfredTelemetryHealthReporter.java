@@ -71,12 +71,12 @@ public class AlfredTelemetryHealthReporter extends SingleReportHealthReporter {
     }
 
     @Override
-    public void onException(@Nonnull Exception e) {
+    public void onException(@Nonnull Exception exception) {
         isActive.set(false);
     }
 
     @Override
-    protected void processReport(NodeHealthReport report, Class<? extends HealthProcessorPlugin> pluginClass) {
+    protected void processReport(@Nonnull NodeHealthReport report, @Nonnull Class<? extends HealthProcessorPlugin> pluginClass) {
         if (plugins.add(pluginClass)) {
             // First time that we see this plugin
             // Create counters for all possible statuses (metrics with tags that are only sometimes present mess with Prometheus)

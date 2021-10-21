@@ -12,6 +12,7 @@ import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import lombok.Value;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
         super(solrRequestExecutor);
     }
 
+    @Nonnull
     @Override
     public Set<NodeFixReport> fix(Class<? extends HealthProcessorPlugin> pluginClass,
                                   Set<NodeHealthReport> unhealthyReports) {

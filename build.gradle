@@ -38,7 +38,7 @@ subprojects {
 
     tasks.withType(Javadoc) {
         options {
-            tags("implNote:a:'Implementation note:'")
+            tags("implNote:a:Implementation note:")
         }
     }
 
