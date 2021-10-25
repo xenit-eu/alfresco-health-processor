@@ -69,14 +69,10 @@ subprojects { Project p ->
         alfrescoAmp "eu.xenit.alfred.telemetry:alfred-telemetry-platform:${alfredTelemetryVersion}@amp"
     }
 
-    dockerAlfresco {
-        baseImage = "${alfrescoBaseImage}"
-        leanImage = true
-
-        dockerBuild {
-            repository = "docker.io/xenit/alfresco-health-processor-${alfrescoVersion}"
-            tags = [version]
-            automaticTags = false
+    dockerBuild {
+        alfresco {
+            baseImage = "${alfrescoBaseImage}"
+            leanImage = true
         }
     }
 
