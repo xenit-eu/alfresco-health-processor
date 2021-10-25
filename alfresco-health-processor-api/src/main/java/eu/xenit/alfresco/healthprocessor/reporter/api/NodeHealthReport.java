@@ -1,5 +1,9 @@
 package eu.xenit.alfresco.healthprocessor.reporter.api;
 
+import eu.xenit.alfresco.healthprocessor.extensibility.annotations.ExtensionType;
+import eu.xenit.alfresco.healthprocessor.extensibility.annotations.InternalUseOnly;
+import eu.xenit.alfresco.healthprocessor.extensibility.annotations.NotForUseIn;
+import eu.xenit.alfresco.healthprocessor.extensibility.annotations.OnlyForUseIn;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,11 +27,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * A health report for an Alfresco node.
  *
- * A health report minimally consists of the {@link #getNodeRef()} that is assigned a certain healthyness-status {@link #getStatus()}.
+ * A health report minimally consists of the {@link #getNodeRef()} that is assigned a certain healthyness-status {@link
+ * #getStatus()}.
  *
  * It can optionally contain additional information about why it is in a certain health status:
- *  * in human-readable format with {@link #getMessages()}
- *  * in computer-readable format with {@link #data(Class)}, which can contain arbitrary objects with additional information.
+ * <ul>
+ *     <li>in human-readable format with {@link #getMessages()}.</li>
+ *     <li>in computer-readable format with {@link #data(Class)}, which can contain arbitrary objects with additional information.</li>
+ * </ul>
  *
  * {@link HealthReporter}s are allowed, but not are required to process information from {@link #data(Class)}
  */
@@ -42,25 +49,30 @@ public class NodeHealthReport implements Serializable {
     /**
      * Arbitrary computer-readable data storage.
      *
-     * For type-safety, data is stored by its {@link Class} and are always stored in a {@link Set}, allowing
-     * 0, 1 or more items of a class to be present and avoiding any null-pointer problems.
+     * For type-safety, data is stored by its {@link Class} and are always stored in a {@link Set}, allowing 0, 1 or
+     * more items of a class to be present and avoiding any null-pointer problems.
      *
-     * @implNote Because this field is not immutable, it is excluded from generated {@link #equals(Object)} and {@link #hashCode()} methods.
-     * Because it potentially contains a lot of data, it is also excluded from {@link #toString()}.
+     * @implNote Because this field is not immutable, it is excluded from generated {@link #equals(Object)} and {@link
+     * #hashCode()} methods. Because it potentially contains a lot of data, it is also excluded from {@link
+     * #toString()}.
+     * @since 0.5.0
      */
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     @Getter(AccessLevel.NONE)
     Map<Class<?>, Set<?>> data = new HashMap<>();
 
+    @OnlyForUseIn(ExtensionType.PROCESSOR)
     public NodeHealthReport(@Nonnull NodeHealthStatus status, @Nonnull NodeRef nodeRef) {
         this(status, nodeRef, Collections.emptySet());
     }
 
+    @OnlyForUseIn(ExtensionType.PROCESSOR)
     public NodeHealthReport(@Nonnull NodeHealthStatus status, @Nonnull NodeRef nodeRef, String... messages) {
         this(status, nodeRef, Arrays.asList(messages));
     }
 
+    @OnlyForUseIn(ExtensionType.PROCESSOR)
     public NodeHealthReport(@Nonnull NodeHealthStatus status, @Nonnull NodeRef nodeRef, Collection<String> messages) {
         this(status, nodeRef, Collections.unmodifiableSet(new HashSet<>(messages)));
     }
@@ -73,8 +85,9 @@ public class NodeHealthReport implements Serializable {
      * @param clazz The {@link Class} of the data-type to retrieve
      * @param <T> The data-type to retrieve
      * @return A mutable Set with all instances of T linked to this report.
+     * @since 0.5.0
      */
-    @SuppressWarnings("All")
+    @SuppressWarnings("unchecked")
     public <T> Set<T> data(Class<T> clazz) {
         return (Set<T>) data.computeIfAbsent(clazz, e -> new HashSet<T>());
     }
@@ -84,9 +97,9 @@ public class NodeHealthReport implements Serializable {
      *
      * You probably don't need to use this method, unless you need to create a copy of a health report.
      *
-     * @see #data(Class) for easier access to stored data.
-     *
      * @return Immutable map of all computer-readable data stored on this report.
+     * @see #data(Class) for easier access to stored data.
+     * @since 0.5.0
      */
     public Map<Class<?>, Set<?>> data() {
         return Collections.unmodifiableMap(data.entrySet().stream()
@@ -98,10 +111,12 @@ public class NodeHealthReport implements Serializable {
      *
      * You probably don't need to use this method, unless you are creating a copy of a health report.
      *
-     * @see #data(Class) for easier access to stored data.
-     *
      * @param data Map of data to add to this report.
+     * @see #data(Class) for easier access to stored data.
+     * @since 0.5.0
      */
+    @NotForUseIn(ExtensionType.REPORTER)
+    @SuppressWarnings("unchecked")
     public void data(Map<Class<?>, Set<?>> data) {
         for (Entry<Class<?>, Set<?>> entry : data.entrySet()) {
             data((Class<Object>) entry.getKey()).addAll(entry.getValue());
@@ -109,12 +124,15 @@ public class NodeHealthReport implements Serializable {
     }
 
     /**
-     * Creates a copy of this healthreport without all {@link #data(Class)} stored on the health report that is not marked as {@link PersistableData}.
+     * Creates a copy of this healthreport without all {@link #data(Class)} stored on the health report that is not
+     * marked as {@link PersistableData}.
      *
      * This does not modify the health report, but creates a copy instead.
      *
      * @return A copy of this health report with only {@link PersistableData} {@link #data(Class)}.
+     * @since 0.5.0
      */
+    @InternalUseOnly
     public NodeHealthReport withoutUnpersistableData() {
         NodeHealthReport nodeHealthReport = new NodeHealthReport(status, nodeRef, messages);
         Map<Class<?>, Set<?>> newData = new HashMap<>(data.size());
@@ -128,8 +146,13 @@ public class NodeHealthReport implements Serializable {
     }
 
     /**
-     * Classes that implement this interface and are added to a health report in the {@link #data(Class)} set are stored in the database
-     * and can be accessed in {@link HealthReporter#onCycleDone(List)}. Other stored data is dropped after {@link eu.xenit.alfresco.healthprocessor.reporter.HealthReportsStore#recordReportStats(Class, Set)} has created statistics.
+     * Classes that implement this interface and are added to a health report in the {@link #data(Class)} set are stored
+     * in the database and can be accessed after a cycle has finished in {@link HealthReporter#onCycleDone(List)}
+     *
+     * Other stored data is only available in the {@link HealthReporter#processReports(Class, Set)} method during a
+     * cycle.
+     *
+     * @since 0.5.0
      */
     public interface PersistableData extends Serializable {
 

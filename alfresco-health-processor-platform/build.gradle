@@ -1,15 +1,13 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "6.1.0"
+    id "com.github.johnrengelman.shadow" version "7.1.0"
     id 'java-test-fixtures'
     id 'java-library'
+    id 'io.freefair.lombok' version '6.2.0'
+    id 'eu.xenit.alfresco'
+    id 'eu.xenit.amp'
 }
 
 description = "A background processor capable of performing various operations on the nodes in your Alfresco repository, in a batched and controlled manner"
-
-apply plugin: "idea"
-apply plugin: 'java'
-apply plugin: "eu.xenit.alfresco"
-apply plugin: "eu.xenit.amp"
 
 apply from: "${rootDir}/gradle/internalPlatform.gradle"
 
@@ -37,15 +35,11 @@ java {
     jar {
         enabled = false
     }
-    sourceCompatibility = JavaVersion.VERSION_1_8
     withJavadocJar()
     withSourcesJar()
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-
     internalPlatform platform("eu.xenit.alfresco:alfresco-community-bom:${alfrescoVersion}")
 
     alfrescoProvided("org.alfresco:alfresco-repository") {

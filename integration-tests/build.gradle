@@ -8,10 +8,6 @@ ext {
     slf4jVersion = '1.7.25'
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-}
-
 dependencies {
     alfrescoProvided project(":alfresco-health-processor-platform")
     alfrescoProvided(enforcedPlatform("eu.xenit.alfresco:alfresco-community-bom:${alfrescoVersion}"))

@@ -1,19 +1,20 @@
 plugins {
     id 'java'
     id 'eu.xenit.alfresco'
+    id 'io.freefair.lombok'
 }
 
 java {
     jar.archiveBaseName = "alfresco-health-processor-platform_alfresco7"
-    sourceCompatibility = JavaVersion.VERSION_1_8
     withJavadocJar()
     withSourcesJar()
+
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
 }
 
 dependencies {
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-
     alfrescoProvided(project(":alfresco-health-processor-platform"))
 
     alfrescoProvided(platform("eu.xenit.alfresco:alfresco-community-bom:7.0.0"))

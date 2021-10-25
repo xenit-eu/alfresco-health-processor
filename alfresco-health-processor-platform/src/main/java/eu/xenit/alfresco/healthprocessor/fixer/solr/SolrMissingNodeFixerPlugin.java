@@ -10,13 +10,16 @@ import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrNo
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
     private Map<SearchEndpointTxId, NodeFixReport> searchEndpointTxCache = new HashMap<>();
 
@@ -24,6 +27,7 @@ public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
         super(solrRequestExecutor);
     }
 
+    @Nonnull
     @Override
     public Set<NodeFixReport> fix(Class<? extends HealthProcessorPlugin> pluginClass,
                                   Set<NodeHealthReport> unhealthyReports) {
@@ -42,12 +46,16 @@ public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
         SearchEndpointTxId searchEndpointTxId = new SearchEndpointTxId(endpointHealthReport.getEndpoint(), nodeStatus.getDbTxnId());
         if (searchEndpointTxCache.containsKey(searchEndpointTxId)) {
             NodeFixReport cachedNodeFixReport = searchEndpointTxCache.get(searchEndpointTxId);
+            log.trace("We already have a fix report for {}: {}", searchEndpointTxId, cachedNodeFixReport);
             //If a successful reindex action was already sent for this tx to this endpoint, do not schedule another one
             if (cachedNodeFixReport.getFixStatus() == NodeFixStatus.SUCCEEDED) {
+                log.trace("Fix for TX of {} has already succeeded, sending existing fix report messages.", unhealthyReport);
                 return Collections.singleton(new NodeFixReport(cachedNodeFixReport.getFixStatus(), unhealthyReport,
                         cachedNodeFixReport.getMessages()));
             }
         }
+
+        log.trace("Performing reindex for {}", searchEndpointTxId);
 
         // Action not yet (successfully) sent
         NodeFixReport nodeFixReport = trySendSolrCommand(unhealthyReport, endpointHealthReport,

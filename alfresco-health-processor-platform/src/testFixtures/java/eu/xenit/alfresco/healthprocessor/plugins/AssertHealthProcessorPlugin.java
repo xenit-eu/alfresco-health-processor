@@ -15,6 +15,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import javax.annotation.Nonnull;
+
 public class AssertHealthProcessorPlugin implements HealthProcessorPlugin {
     private boolean enabled;
 
@@ -28,6 +30,7 @@ public class AssertHealthProcessorPlugin implements HealthProcessorPlugin {
 
     private final Queue<Set<NodeRef>> invocations = new LinkedList<>();
 
+    @Nonnull
     @Override
     public Set<NodeHealthReport> process(Set<NodeRef> nodeRefs) {
         invocations.offer(nodeRefs);

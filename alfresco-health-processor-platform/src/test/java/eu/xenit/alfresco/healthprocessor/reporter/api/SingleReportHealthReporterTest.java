@@ -70,7 +70,7 @@ class SingleReportHealthReporterTest {
         }
 
         @Override
-        protected void processReport(NodeHealthReport report, Class<? extends HealthProcessorPlugin> pluginClass) {
+        protected void processReport(@Nonnull NodeHealthReport report, @Nonnull Class<? extends HealthProcessorPlugin> pluginClass) {
             invocations.add(report);
         }
     }
