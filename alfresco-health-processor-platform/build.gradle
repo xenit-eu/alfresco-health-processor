@@ -7,7 +7,7 @@ plugins {
     id 'eu.xenit.amp'
 }
 
-description = "A background processor capable of performing various operations on the nodes in your Alfresco repository, in a batched and controlled manner"
+description = "Alfresco Repository module for ${rootProject.description}"
 
 apply from: "${rootDir}/gradle/internalPlatform.gradle"
 
