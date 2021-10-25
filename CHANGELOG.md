@@ -22,7 +22,9 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.5.0] - UNRELEASED
+## [0.5.1] - UNRELEASED
+
+## [0.5.0] - 2021-10-25
 
 ### Added
 
@@ -38,6 +40,7 @@ Version template:
 * [[#42](https://github.com/xenit-eu/alfresco-health-processor/pull/42)] Change response check of SolrIndexValidationHealthProcessorPlugin to work with ASS versions < 2.0
 * [[#43](https://github.com/xenit-eu/alfresco-health-processor/pull/43)] Reindex complete transaction when a missing node is found
 * [[#44](https://github.com/xenit-eu/alfresco-health-processor/issues/44)] Alfresco OOM condition when there are many unhealthy nodes
+* [[#47](https://github.com/xenit-eu/alfresco-health-processor/pull/47)] Document full alfresco-health-processor-api artifact
 
 ### Changed
 
