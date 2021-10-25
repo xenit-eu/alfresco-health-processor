@@ -22,9 +22,17 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.5.1] - UNRELEASED
+## [0.5.2] - UNRELEASED
+
+## [0.5.1] - 2021-10-25
+
+### Fixed
+
+* [[#49](https://github.com/xenit-eu/alfresco-health-processor/pull/49)] Fix release publishing procedure 
 
 ## [0.5.0] - 2021-10-25
+
+**This release was not published due to an error**
 
 ### Added
 
