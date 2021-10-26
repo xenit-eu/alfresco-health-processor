@@ -5,6 +5,8 @@ plugins {
     id 'io.freefair.javadocs' version '6.2.0'
 }
 
+description = "Java API for extensions for ${rootProject.description}"
+
 java {
     withJavadocJar()
     withSourcesJar()

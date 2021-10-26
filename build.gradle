@@ -6,6 +6,8 @@ plugins {
     id 'org.ajoberstar.reckon' version '0.13.0'
 }
 
+description = "Alfresco Health Processor: A background processor capable of performing various operations on the nodes in your Alfresco repository, in a batched and controlled manner"
+
 sonarqube {
     properties {
         property "sonar.projectKey", "xenit-eu_alfresco-health-processor"
