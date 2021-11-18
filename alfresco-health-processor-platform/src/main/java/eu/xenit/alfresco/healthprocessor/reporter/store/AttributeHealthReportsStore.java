@@ -36,29 +36,31 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
 
     public static final String ATTR_KEY_REPORTS = "reports";
     public static final String ATTR_KEY_REPORT_STATS = "report-stats";
-    public static final String ATTR_KEY_STORED_REPORTS_COUNT = "stored-reports-count";
+    // Note key is "stored-reports-count" for backwards compatibility.
+    // It stores the number of *received* reports, not only the number of reports that has been stored
+    public static final String ATTR_KEY_RECEIVED_REPORTS_COUNT = "stored-reports-count";
 
     private final AttributeStore attributeStore;
     private final NodeHealthReportClassifier healthReportClassifier;
     private final long maxStoredReports;
-    private AtomicLong storedReportsCounter;
+    private AtomicLong receivedReportsCount;
 
     @Override
     public void onStart() {
-        Long storedReportsCount = attributeStore.getAttributeOrDefault(ATTR_KEY_STORED_REPORTS_COUNT, 0L);
-        storedReportsCounter = new AtomicLong(storedReportsCount);
+        Long storedReportsCount = attributeStore.getAttributeOrDefault(ATTR_KEY_RECEIVED_REPORTS_COUNT, 0L);
+        receivedReportsCount = new AtomicLong(storedReportsCount);
     }
 
     @Override
     public void processReports(@Nonnull Class<? extends HealthProcessorPlugin> pluginClass,
             @Nonnull Set<NodeHealthReport> reports) {
-        long storedReportsBefore = storedReportsCounter.get();
+        long receivedReportsBefore = receivedReportsCount.get();
         HealthReportsStore.super.processReports(pluginClass, reports);
-        long storedReportsAfter = storedReportsCounter.get();
-        if (storedReportsBefore != storedReportsAfter) {
+        long receivedReportsAfter = receivedReportsCount.get();
+        if (receivedReportsBefore != receivedReportsAfter) {
             // Only perform a write when the stored reports counter has changed
             // We try to avoid writing to the attributestore when we don't have any change
-            attributeStore.setAttribute(storedReportsCounter.longValue(), ATTR_KEY_STORED_REPORTS_COUNT);
+            attributeStore.setAttribute(receivedReportsCount.longValue(), ATTR_KEY_RECEIVED_REPORTS_COUNT);
         }
     }
 
@@ -68,7 +70,7 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
         if (!healthReportClassifier.shouldBeStored(report)) {
             return;
         }
-        long storedReportsCount = storedReportsCounter.getAndIncrement();
+        long storedReportsCount = receivedReportsCount.getAndIncrement();
         if (storedReportsCount < maxStoredReports) {
             Pair<Class<? extends HealthProcessorPlugin>, NodeHealthReport> pluginClassWithReport =
                     new Pair<>(pluginClass, report);
@@ -120,7 +122,7 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
 
     @Override
     public void onCycleDone(@Nonnull List<ProcessorPluginOverview> overviews) {
-        long receivedReportsCount = storedReportsCounter.longValue();
+        long receivedReportsCount = this.receivedReportsCount.longValue();
         if (receivedReportsCount > maxStoredReports) {
             long droppedReportsCount = receivedReportsCount - maxStoredReports;
             log.warn("Received too many reports to store (max={}; received={}). {} reports have been dropped.",
@@ -128,7 +130,8 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
         }
         attributeStore.removeAttributes(ATTR_KEY_REPORTS);
         attributeStore.removeAttributes(ATTR_KEY_REPORT_STATS);
-        attributeStore.removeAttributes(ATTR_KEY_STORED_REPORTS_COUNT);
+        attributeStore.removeAttributes(ATTR_KEY_RECEIVED_REPORTS_COUNT);
+        this.receivedReportsCount = null;
     }
 
     @Override
@@ -139,7 +142,11 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
     @Override
     public Map<String, String> getState() {
         Map<String, String> state = new HashMap<>();
-        state.put("storedReportsCounter", Objects.toString(storedReportsCounter.longValue()));
+        if(receivedReportsCount != null) {
+            state.put("receivedReportsCount", Objects.toString(receivedReportsCount.longValue()));
+        } else {
+            state.put("receivedReportsCount", "?");
+        }
         return state;
     }
 }
