@@ -24,6 +24,10 @@ Version template:
 
 ## [0.5.3] - UNRELEASED
 
+### Fixed
+
+* [[#51](https://github.com/xenit-eu/alfresco-health-processor/pull/51)] Fix NPE in health-processor admin screen before HP is started
+
 ## [0.5.2] - 2021-10-26
 
 ### Fixed
