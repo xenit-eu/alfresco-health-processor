@@ -13,7 +13,7 @@
     <!--
     Proxy required to make Admin Console WebScript available in main Spring context
     -->
-    <bean id="webscript.org.alfresco.enterprise.repository.admin.support-tools.health-processor-admin-console.get"
+    <bean id="webscript.org.alfresco.enterprise.repository.admin.support-tools.health-processor.get"
             class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
         <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>
         <property name="sourceBeanName"
