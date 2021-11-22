@@ -4,10 +4,13 @@ import eu.xenit.alfresco.healthprocessor.extensibility.BaseExtension;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ExtensionsView {
     @Getter
     private final List<Extension> extensions;
@@ -26,7 +29,16 @@ public class ExtensionsView {
     }
 
     private static Extension toViewModel(BaseExtension extension) {
-        return new Extension(extension.getClass().getSimpleName(), extension.getConfiguration(), extension.getState());
+        return new Extension(extension.getClass().getSimpleName(), getDataOrException(extension, BaseExtension::getConfiguration), getDataOrException(extension, BaseExtension::getState));
+    }
+
+    private static Map<String, String> getDataOrException(BaseExtension extension, Function<BaseExtension, Map<String, String>> getter) {
+        try {
+            return getter.apply(extension);
+        } catch(Exception e) {
+            log.error("Failed to get data from extension {}", extension, e);
+            return Collections.singletonMap("?!", e.toString());
+        }
     }
 
     @Value
