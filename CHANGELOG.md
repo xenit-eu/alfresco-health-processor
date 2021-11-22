@@ -22,7 +22,9 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.5.3] - UNRELEASED
+## [0.5.4] - UNRELEASED
+
+## [0.5.3] - 2021-11-23
 
 ### Fixed
 
