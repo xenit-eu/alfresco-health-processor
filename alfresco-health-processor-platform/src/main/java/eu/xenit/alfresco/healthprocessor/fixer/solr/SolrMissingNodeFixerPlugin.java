@@ -59,7 +59,7 @@ public class SolrMissingNodeFixerPlugin extends AbstractSolrNodeFixerPlugin {
 
         // Action not yet (successfully) sent
         NodeFixReport nodeFixReport = trySendSolrCommand(unhealthyReport, endpointHealthReport,
-                SolrNodeCommand.REINDEX_TRANSACTION);
+                SolrNodeCommand.REINDEX);
 
         searchEndpointTxCache.put(searchEndpointTxId, nodeFixReport);
         return Collections.singleton(nodeFixReport);
