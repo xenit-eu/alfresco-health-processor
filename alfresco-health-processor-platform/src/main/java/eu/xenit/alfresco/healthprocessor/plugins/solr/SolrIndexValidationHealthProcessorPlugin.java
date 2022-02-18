@@ -142,7 +142,6 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
         Map<String, String> configuration = new HashMap<>();
         configuration.put("enabled", Boolean.toString(isEnabled()));
         configuration.put("solrServerSelector", solrServerSelector.toString());
-        configuration.put("check-transaction", String.valueOf(isCheckTransaction()));
         return configuration;
     }
 }

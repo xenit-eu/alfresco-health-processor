@@ -27,10 +27,9 @@ import javax.annotation.Nonnull;
 public class SolrRequestExecutor {
     private final HttpClient httpClient;
 
-    @Nonnull
     @Getter
     @Setter
-    private final boolean checkTransaction;
+    private boolean checkTransaction;
 
     public SolrRequestExecutor() {
         this(HttpClientBuilder.create().build());
