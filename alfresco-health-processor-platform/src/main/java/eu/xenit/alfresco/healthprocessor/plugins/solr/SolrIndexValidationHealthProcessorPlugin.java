@@ -22,7 +22,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
@@ -39,7 +41,6 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
     private final SolrRequestExecutor solrRequestExecutor;
 
     static final String MSG_NO_SEARCH_ENDPOINTS = "Node is not expected in any search index.";
-
     @Override
     protected Logger getLogger() {
         return log;
@@ -141,6 +142,7 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
         Map<String, String> configuration = new HashMap<>();
         configuration.put("enabled", Boolean.toString(isEnabled()));
         configuration.put("solrServerSelector", solrServerSelector.toString());
+        configuration.put("check-transaction", String.valueOf(isCheckTransaction()));
         return configuration;
     }
 }

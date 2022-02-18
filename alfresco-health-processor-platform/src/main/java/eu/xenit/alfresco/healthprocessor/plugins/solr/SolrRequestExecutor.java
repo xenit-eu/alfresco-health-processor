@@ -8,10 +8,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.apache.http.client.HttpClient;
@@ -19,14 +17,20 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import javax.annotation.Nonnull;
+
 /**
  * Performs HTTP requests on a {@link SearchEndpoint}
  */
 @Slf4j
 @RequiredArgsConstructor
 public class SolrRequestExecutor {
-
     private final HttpClient httpClient;
+
+    @Nonnull
+    @Getter
+    @Setter
+    private final boolean checkTransaction;
 
     public SolrRequestExecutor() {
         this(HttpClientBuilder.create().build());
@@ -46,7 +50,7 @@ public class SolrRequestExecutor {
         // Initially, try a fetch for double the size of the node statuses array
         // This is so we can immediately detect the case where all nodes are indexed twice.
         int fetchSize = nodeStatuses.size() * 2;
-        JsonNode response = executeSearchRequest(endpoint, nodeStatuses, fetchSize);
+        JsonNode response = executeSearchRequest(endpoint, nodeStatuses, fetchSize, checkTransaction);
 
         long numberOfFoundDocs = response.path("response").path("numFound").asLong();
         if (numberOfFoundDocs > fetchSize) {
@@ -55,7 +59,7 @@ public class SolrRequestExecutor {
             log.debug(
                     "Found number of docs #{} is larger than the requested number of rows #{}. Fetching again with larger number of rows.",
                     numberOfFoundDocs, fetchSize);
-            response = executeSearchRequest(endpoint, nodeStatuses, numberOfFoundDocs);
+            response = executeSearchRequest(endpoint, nodeStatuses, numberOfFoundDocs, checkTransaction);
         }
 
         Long lastIndexedTransaction = response.path("lastIndexedTx").asLong();
@@ -102,18 +106,28 @@ public class SolrRequestExecutor {
         return solrSearchResult;
     }
 
-    private JsonNode executeSearchRequest(SearchEndpoint endpoint, Collection<Status> nodeStatuses, long fetchSize)
+    private JsonNode executeSearchRequest(SearchEndpoint endpoint, Collection<Status> nodeStatuses, long fetchSize, boolean checkTransaction)
             throws IOException {
-        String dbIdsQuery = nodeStatuses.stream()
-                .map(Status::getDbId)
-                .map(dbId -> "DBID:" + dbId)
-                .collect(Collectors.joining("%20OR%20"));
+        String solrQuery;
+        if (!checkTransaction) {
+            solrQuery = nodeStatuses.stream()
+                    .map(Status::getDbId)
+                    .map(dbId -> "DBID:" + dbId)
+                    .collect(Collectors.joining("%20OR%20"));
+        } else {
+            // FROM SS 2.0 Documents in SOLR also contain their related transaction.
+            // Searching for both DBID and TX from Alfresco validates that the node is indexed
+            // and that it's related transaction is the latest. (making sure no later transaction was accidentally skipped)
+            solrQuery = nodeStatuses.stream()
+                    .map(status -> "(DBID:" + status.getDbId() + "%20AND%20INTXID:" + status.getDbTxnId() + ")" )
+                    .collect(Collectors.joining("%20OR%20"));
+        }
 
-        log.debug("Search query to endpoint {}: {}", endpoint, dbIdsQuery);
+        log.debug("Search query to endpoint {}: {}", endpoint, solrQuery);
 
         HttpUriRequest searchRequest = new HttpGet(
                 endpoint.getBaseUri()
-                        .resolve("select?q=" + dbIdsQuery + "&fl=DBID&wt=json&rows=" + fetchSize));
+                        .resolve("select?q=" + solrQuery + "&fl=DBID&wt=json&rows=" + fetchSize));
 
         log.trace("Executing HTTP request {}", searchRequest);
         return httpClient.execute(searchRequest, new JSONResponseHandler());
