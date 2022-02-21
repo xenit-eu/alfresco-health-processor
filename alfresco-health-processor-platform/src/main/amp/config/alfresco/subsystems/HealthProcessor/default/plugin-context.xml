@@ -36,7 +36,7 @@
 
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor"
             class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor" >
-           <property name="checkTransaction" value="${eu.xenit.alfresco.healthprocessor.plugins.solr.check-transaction}" />
+           <constructor-arg name="checkTransaction" value="${eu.xenit.alfresco.healthprocessor.plugins.solr.check-transaction}" />
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector"
