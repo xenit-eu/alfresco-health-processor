@@ -28,13 +28,15 @@ class SolrRequestExecutorTest {
 
     private HttpClientMock httpClientMock;
     private SolrRequestExecutor solrRequestExecutor;
+    private SolrRequestExecutor solrRequestExecutorTransactionChecker;
 
     private static final long LAST_INDEXED_TX = 1000L;
 
     @BeforeEach
     void setup() {
         httpClientMock = new HttpClientMock();
-        solrRequestExecutor = new SolrRequestExecutor(httpClientMock);
+        solrRequestExecutor = new SolrRequestExecutor(httpClientMock, false);
+        solrRequestExecutorTransactionChecker = new SolrRequestExecutor(httpClientMock, true);
     }
 
     private static NodeRef randomNodeRef() {
@@ -77,6 +79,37 @@ class SolrRequestExecutorTest {
         SolrSearchResult solrSearchResult = solrRequestExecutor.checkNodeIndexed(endpoint, nodeRefs);
 
         assertEquals(SetUtil.set(10L, 11L, 999L), toDbIds(solrSearchResult.getFound()));
+        assertEquals(SetUtil.set(100L), toDbIds(solrSearchResult.getMissing()));
+        assertEquals(SetUtil.set(1000L), toDbIds(solrSearchResult.getNotIndexed()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getDuplicate()));
+    }
+
+    @Test
+    void checkIndexedNodesAndTransactions() throws IOException {
+        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+
+        List<Status> nodeRefs = new ArrayList<>();
+
+        nodeRefs.add(randomNodeRefStatus(10L, 1L));
+        nodeRefs.add(randomNodeRefStatus(11L, 2L));
+        nodeRefs.add(randomNodeRefStatus(100L, 5L));
+        nodeRefs.add(randomNodeRefStatus(1000L, LAST_INDEXED_TX + 1));
+        String q = "(DBID:10 AND INTXID:1) OR (DBID:11 AND INTXID:2) OR (DBID:100 AND INTXID:5) OR (DBID:1000 AND INTXID:" + (LAST_INDEXED_TX + 1) + ")";
+        httpClientMock.onGet("http://nowhere/solr/index/select")
+                .withParameter("q", q)
+                .withParameter("fl", "DBID")
+                .withParameter("wt", "json")
+                .doReturnJSON("{"
+                        + "\"lastIndexedTx\":" + LAST_INDEXED_TX + ","
+                        + "\"response\": { \"numFound\": 2, \"docs\": ["
+                        + "{\"DBID\": 10 },"
+                        + "{\"DBID\": 11 }"
+                        + "]}"
+                        + "}");
+
+        SolrSearchResult solrSearchResult = solrRequestExecutorTransactionChecker.checkNodeIndexed(endpoint, nodeRefs);
+
+        assertEquals(SetUtil.set(10L, 11L), toDbIds(solrSearchResult.getFound()));
         assertEquals(SetUtil.set(100L), toDbIds(solrSearchResult.getMissing()));
         assertEquals(SetUtil.set(1000L), toDbIds(solrSearchResult.getNotIndexed()));
         assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getDuplicate()));
