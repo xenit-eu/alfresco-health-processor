@@ -90,6 +90,7 @@ try to automatically resolve the problem. The resulting reports will be offered 
   Additional reports above this number will be dropped, and a warning will be logged when that happens.
   This setting protects you from crashing Alfresco in case a large number of reports is generated during a Health Processor cycle, for example due to an intermittent issue resulting in a large number of nodes being reported unhealthy.
 
+
 ## Admin Console dashboard
 
 To get insight in the current state of the Health-Processor, the module includes a custom
@@ -190,7 +191,6 @@ Properties for a specific endpoint are configured under the `eu.xenit.alfresco.h
   * solr6: `http://solr-host:8080/solr/alfresco/`
 * `indexed-store`: The store ID from which this Solr core indexes. Usually `workspace://SpacesStore` or `archive://SpacesStore`.
 
-
 <details>
 
 <summary>Example configuration</summary>
@@ -215,6 +215,10 @@ eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard2.indexe
 ```
 
 </details>
+
+##### Solr 2.0
+When the health-processor is used for Solr index validation on Search Services 2.0 and upper it is advised to enable `eu.xenit.alfresco.healthprocessor.plugins.solr.check-transaction=true`.
+This property enables not only checking if the content is present in solr, but also if the content is fully up-to-date with the latest transaction.
 
 ### HealthFixerPlugin implementations
 
