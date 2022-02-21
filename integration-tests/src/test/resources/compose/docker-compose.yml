@@ -26,6 +26,7 @@ services:
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugins.solr.check-transaction=true
       # Disable this loud logger which sends errors in Alfresco 7.0.
       - LOG4J_logger.org.alfresco.repo.content.transform.LocalTransformServiceRegistry=OFF
     depends_on:

@@ -26,13 +26,10 @@ import javax.annotation.Nonnull;
 @RequiredArgsConstructor
 public class SolrRequestExecutor {
     private final HttpClient httpClient;
+    private final boolean checkTransaction;
 
-    @Getter
-    @Setter
-    private boolean checkTransaction;
-
-    public SolrRequestExecutor() {
-        this(HttpClientBuilder.create().build());
+    public SolrRequestExecutor(Boolean checkTransaction) {
+        this(HttpClientBuilder.create().build(), checkTransaction);
     }
 
     /**
@@ -114,7 +111,7 @@ public class SolrRequestExecutor {
                     .map(dbId -> "DBID:" + dbId)
                     .collect(Collectors.joining("%20OR%20"));
         } else {
-            // FROM SS 2.0 Documents in SOLR also contain their related transaction.
+            // FROM SS 2.0 Documents in SOLR also contain their related transaction (called INTXID).
             // Searching for both DBID and TX from Alfresco validates that the node is indexed
             // and that it's related transaction is the latest. (making sure no later transaction was accidentally skipped)
             solrQuery = nodeStatuses.stream()
