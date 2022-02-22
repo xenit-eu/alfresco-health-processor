@@ -47,7 +47,7 @@ public class SolrRequestExecutor {
         // Initially, try a fetch for double the size of the node statuses array
         // This is so we can immediately detect the case where all nodes are indexed twice.
         int fetchSize = nodeStatuses.size() * 2;
-        JsonNode response = executeSearchRequest(endpoint, nodeStatuses, fetchSize, checkTransaction);
+        JsonNode response = executeSearchRequest(endpoint, nodeStatuses, fetchSize);
 
         long numberOfFoundDocs = response.path("response").path("numFound").asLong();
         if (numberOfFoundDocs > fetchSize) {
@@ -56,7 +56,7 @@ public class SolrRequestExecutor {
             log.debug(
                     "Found number of docs #{} is larger than the requested number of rows #{}. Fetching again with larger number of rows.",
                     numberOfFoundDocs, fetchSize);
-            response = executeSearchRequest(endpoint, nodeStatuses, numberOfFoundDocs, checkTransaction);
+            response = executeSearchRequest(endpoint, nodeStatuses, numberOfFoundDocs);
         }
 
         Long lastIndexedTransaction = response.path("lastIndexedTx").asLong();
@@ -103,7 +103,7 @@ public class SolrRequestExecutor {
         return solrSearchResult;
     }
 
-    private JsonNode executeSearchRequest(SearchEndpoint endpoint, Collection<Status> nodeStatuses, long fetchSize, boolean checkTransaction)
+    private JsonNode executeSearchRequest(SearchEndpoint endpoint, Collection<Status> nodeStatuses, long fetchSize)
             throws IOException {
         String solrQuery;
         if (!checkTransaction) {

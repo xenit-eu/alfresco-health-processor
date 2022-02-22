@@ -86,15 +86,20 @@ class SolrRequestExecutorTest {
 
     @Test
     void checkIndexedNodesAndTransactions() throws IOException {
+        /*
+        * In this case two nodes are contained in tx (txId 2) but one of them failed to index. (however the transaction is still considered as indexed)
+        * */
+
         SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
 
         List<Status> nodeRefs = new ArrayList<>();
 
         nodeRefs.add(randomNodeRefStatus(10L, 1L));
         nodeRefs.add(randomNodeRefStatus(11L, 2L));
+        nodeRefs.add(randomNodeRefStatus(20L,2L));
         nodeRefs.add(randomNodeRefStatus(100L, 5L));
         nodeRefs.add(randomNodeRefStatus(1000L, LAST_INDEXED_TX + 1));
-        String q = "(DBID:10 AND INTXID:1) OR (DBID:11 AND INTXID:2) OR (DBID:100 AND INTXID:5) OR (DBID:1000 AND INTXID:" + (LAST_INDEXED_TX + 1) + ")";
+        String q = "(DBID:10 AND INTXID:1) OR (DBID:11 AND INTXID:2) OR (DBID:20 AND INTXID:2) OR (DBID:100 AND INTXID:5) OR (DBID:1000 AND INTXID:" + (LAST_INDEXED_TX + 1) + ")";
         httpClientMock.onGet("http://nowhere/solr/index/select")
                 .withParameter("q", q)
                 .withParameter("fl", "DBID")
@@ -110,9 +115,68 @@ class SolrRequestExecutorTest {
         SolrSearchResult solrSearchResult = solrRequestExecutorTransactionChecker.checkNodeIndexed(endpoint, nodeRefs);
 
         assertEquals(SetUtil.set(10L, 11L), toDbIds(solrSearchResult.getFound()));
-        assertEquals(SetUtil.set(100L), toDbIds(solrSearchResult.getMissing()));
+        assertEquals(SetUtil.set(100L, 20L), toDbIds(solrSearchResult.getMissing()));
         assertEquals(SetUtil.set(1000L), toDbIds(solrSearchResult.getNotIndexed()));
         assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getDuplicate()));
+    }
+
+    @Test
+    void checkAllTransactionsIndexed() throws IOException {
+        /*
+            This case show the purpose of the solrRequestExecutorTransactionChecker.
+            TRANSACTIONS:
+             - 1L : Node 10 is created
+             - 2L : Node 11 is created
+             - 3L : Node 10 is updated -> Missing in SOLR
+
+             Searching for DBID:10 indicates no problem with the solr index...
+             Searching for DBID:10 in conjuction with INTXID:3 indicates a problem and reindexes TX 3
+         */
+        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+
+        List<Status> nodeRefs = new ArrayList<>();
+
+        nodeRefs.add(randomNodeRefStatus(10L, 3L));
+        nodeRefs.add(randomNodeRefStatus(11L, 2L));
+
+        httpClientMock.onGet("http://nowhere/solr/index/select")
+                .withParameter("q", "DBID:10 OR DBID:11")
+                .withParameter("fl", "DBID")
+                .withParameter("wt", "json")
+                .doReturnJSON("{"
+                        + "\"lastIndexedTx\":" + LAST_INDEXED_TX + ","
+                        + "\"response\": { \"numFound\": 2, \"docs\": ["
+                        + "{\"DBID\": 10 },"
+                        + "{\"DBID\": 11 }"
+                        + "]}"
+                        + "}");
+
+        SolrSearchResult solrSearchResult = solrRequestExecutor.checkNodeIndexed(endpoint, nodeRefs);
+
+        assertEquals(SetUtil.set(10L, 11L), toDbIds(solrSearchResult.getFound()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getMissing()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getNotIndexed()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchResult.getDuplicate()));
+
+
+        httpClientMock.onGet("http://nowhere/solr/index/select")
+                .withParameter("q", "(DBID:10 AND INTXID:3) OR (DBID:11 AND INTXID:2)")
+                .withParameter("fl", "DBID")
+                .withParameter("wt", "json")
+                .doReturnJSON("{"
+                        + "\"lastIndexedTx\":" + LAST_INDEXED_TX + ","
+                        + "\"response\": { \"numFound\": 1, \"docs\": ["
+                        + "{\"DBID\": 11 }"
+                        + "]}"
+                        + "}");
+
+        SolrSearchResult solrSearchTransactionalResult = solrRequestExecutorTransactionChecker.checkNodeIndexed(endpoint, nodeRefs);
+
+        assertEquals(SetUtil.set(11L), toDbIds(solrSearchTransactionalResult.getFound()));
+        assertEquals(SetUtil.set(10L), toDbIds(solrSearchTransactionalResult.getMissing()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchTransactionalResult.getNotIndexed()));
+        assertEquals(SetUtil.set(), toDbIds(solrSearchTransactionalResult.getDuplicate()));
+
     }
 
     @Test
