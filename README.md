@@ -217,7 +217,7 @@ eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard2.indexe
 </details>
 
 ##### Solr 2.0
-When the health-processor is used for Solr index validation on Search Services 2.0 and upper it is advised to enable `eu.xenit.alfresco.healthprocessor.plugins.solr.check-transaction=true`.
+When the health-processor is used for Solr index validation on Search Services 2.0 and upper it is advised to enable `eu.xenit.alfresco.healthprocessor.plugins.solr-index.check-transaction=true`.
 This property enables not only checking if the content is present in solr, but also if the content is fully up-to-date with the latest transaction.
 
 ### HealthFixerPlugin implementations
