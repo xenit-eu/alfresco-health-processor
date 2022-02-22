@@ -25,7 +25,7 @@ Version template:
 ## [0.5.4] - UNRELEASED
 
 ## Added
-* [[#55](https://github.com/xenit-eu/alfresco-health-processor/pull/55)] Add option for SolrRequestExecutor to also check for transactions (healthprocessor.plugins.solr.check-transaction)
+* [[#55](https://github.com/xenit-eu/alfresco-health-processor/pull/55)] Add option for SolrRequestExecutor to also check for latest transaction
 
 ## [0.5.3] - 2021-11-23
 
