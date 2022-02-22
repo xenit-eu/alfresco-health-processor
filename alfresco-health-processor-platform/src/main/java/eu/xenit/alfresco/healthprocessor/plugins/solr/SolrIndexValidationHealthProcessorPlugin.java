@@ -39,7 +39,6 @@ public class SolrIndexValidationHealthProcessorPlugin extends ToggleableHealthPr
     private final SolrRequestExecutor solrRequestExecutor;
 
     static final String MSG_NO_SEARCH_ENDPOINTS = "Node is not expected in any search index.";
-
     @Override
     protected Logger getLogger() {
         return log;

@@ -19,17 +19,18 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+
 /**
  * Performs HTTP requests on a {@link SearchEndpoint}
  */
 @Slf4j
 @RequiredArgsConstructor
 public class SolrRequestExecutor {
-
     private final HttpClient httpClient;
+    private final boolean checkTransaction;
 
-    public SolrRequestExecutor() {
-        this(HttpClientBuilder.create().build());
+    public SolrRequestExecutor(Boolean checkTransaction) {
+        this(HttpClientBuilder.create().build(), checkTransaction);
     }
 
     /**
@@ -104,16 +105,26 @@ public class SolrRequestExecutor {
 
     private JsonNode executeSearchRequest(SearchEndpoint endpoint, Collection<Status> nodeStatuses, long fetchSize)
             throws IOException {
-        String dbIdsQuery = nodeStatuses.stream()
-                .map(Status::getDbId)
-                .map(dbId -> "DBID:" + dbId)
-                .collect(Collectors.joining("%20OR%20"));
+        String solrQuery;
+        if (!checkTransaction) {
+            solrQuery = nodeStatuses.stream()
+                    .map(Status::getDbId)
+                    .map(dbId -> "DBID:" + dbId)
+                    .collect(Collectors.joining("%20OR%20"));
+        } else {
+            // FROM SS 2.0 Documents in SOLR also contain their related transaction (called INTXID).
+            // Searching for both DBID and TX from Alfresco validates that the node is indexed
+            // and that it's related transaction is the latest. (making sure no later transaction was accidentally skipped)
+            solrQuery = nodeStatuses.stream()
+                    .map(status -> "(DBID:" + status.getDbId() + "%20AND%20INTXID:" + status.getDbTxnId() + ")" )
+                    .collect(Collectors.joining("%20OR%20"));
+        }
 
-        log.debug("Search query to endpoint {}: {}", endpoint, dbIdsQuery);
+        log.debug("Search query to endpoint {}: {}", endpoint, solrQuery);
 
         HttpUriRequest searchRequest = new HttpGet(
                 endpoint.getBaseUri()
-                        .resolve("select?q=" + dbIdsQuery + "&fl=DBID&wt=json&rows=" + fetchSize));
+                        .resolve("select?q=" + solrQuery + "&fl=DBID&wt=json&rows=" + fetchSize));
 
         log.trace("Executing HTTP request {}", searchRequest);
         return httpClient.execute(searchRequest, new JSONResponseHandler());
