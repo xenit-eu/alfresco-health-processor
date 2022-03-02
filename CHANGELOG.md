@@ -22,7 +22,10 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.5.4] - UNRELEASED
+## [0.5.5] - UNRELEASED
+
+
+## [0.5.4] - 2022-03-02
 
 ## Added
 * [[#55](https://github.com/xenit-eu/alfresco-health-processor/pull/55)] Add option for SolrRequestExecutor to also check for latest transaction
