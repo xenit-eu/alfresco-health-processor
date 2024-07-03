@@ -2,15 +2,21 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
@@ -18,19 +24,78 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContexts;
+import org.json.HTTP;
+import org.springframework.util.ResourceUtils;
+
+import javax.net.ssl.SSLContext;
 
 
 /**
  * Performs HTTP requests on a {@link SearchEndpoint}
  */
 @Slf4j
-@RequiredArgsConstructor
 public class SolrRequestExecutor {
+
+    private static final String GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX = "eu.xenit.alfresco.healthprocessor.plugin.solr-index.";
+    public static final String GLOBAL_PROPERTY_KEYSTORE_TYPE = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("keystore.type");
+    public static final String GLOBAL_PROPERTY_KEYSTORE_PASSWORD = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("keystore.password");
+    public static final String GLOBAL_PROPERTY_KEYSTORE_FILE_LOCATION = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("keystore.location");
+    public static final String GLOBAL_PROPERTY_TRUSTSTORE_TYPE = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("truststore.type");
+    public static final String GLOBAL_PROPERTY_TRUSTSTORE_PASSWORD = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("truststore.password");
+    public static final String GLOBAL_PROPERTY_TRUSTSTORE_FILE_LOCATION = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("truststore.location");
+    public static final String GLOBAL_PROPERTY_SOLRREQUESTEXECUTOR_USE_SSL = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("use-ssl");
+
+    private Properties globalProperties;
     private final HttpClient httpClient;
     private final boolean checkTransaction;
 
-    public SolrRequestExecutor(Boolean checkTransaction) {
-        this(HttpClientBuilder.create().build(), checkTransaction);
+    public SolrRequestExecutor(Boolean checkTransaction, Properties globalProperties) {
+        this.globalProperties = globalProperties;
+        this.httpClient = HttpClientBuilder.create().build();
+        this.checkTransaction = checkTransaction;
+    }
+
+    public SolrRequestExecutor(HttpClient httpClient, Boolean checkTransaction) {
+        this.httpClient = httpClient;
+        this.checkTransaction = checkTransaction;
+    }
+
+    private HttpClient buildHttpClient() {
+        if (Boolean.parseBoolean(globalProperties.getProperty(GLOBAL_PROPERTY_SOLRREQUESTEXECUTOR_USE_SSL))) {
+            return HttpClientBuilder
+                    .create()
+                    .setSSLContext(getAlfrescoSolrSslContext(
+                            globalProperties.getProperty(GLOBAL_PROPERTY_KEYSTORE_TYPE),
+                            globalProperties.getProperty(GLOBAL_PROPERTY_KEYSTORE_PASSWORD),
+                            globalProperties.getProperty(GLOBAL_PROPERTY_KEYSTORE_FILE_LOCATION),
+                            globalProperties.getProperty(GLOBAL_PROPERTY_TRUSTSTORE_TYPE),
+                            globalProperties.getProperty(GLOBAL_PROPERTY_TRUSTSTORE_PASSWORD),
+                            globalProperties.getProperty(GLOBAL_PROPERTY_TRUSTSTORE_FILE_LOCATION)
+                    ))
+                    .build();
+        }
+        return HttpClientBuilder.create().build();
+    }
+
+    private SSLContext getAlfrescoSolrSslContext(
+            String keystoreType,
+            String keystorePass,
+            String keystoreFileLocation,
+            String truststoreType,
+            String truststorePass,
+            String truststoreFileLocation
+    ) {
+        try {
+            KeyStore keystore = KeyStore.getInstance(keystoreType);
+            keystore.load(Files.newInputStream(ResourceUtils.getFile(keystoreFileLocation).toPath()), keystorePass.toCharArray());
+            KeyStore trustStore = KeyStore.getInstance(truststoreType);
+            trustStore.load(Files.newInputStream(ResourceUtils.getFile(truststoreFileLocation).toPath()), truststorePass.toCharArray());
+            return SSLContexts.custom().loadKeyMaterial(keystore, keystorePass.toCharArray()).loadTrustMaterial(trustStore, (((chain, authType) -> false))).build();
+        } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException |
+                 UnrecoverableKeyException | KeyManagementException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

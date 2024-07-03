@@ -51,6 +51,9 @@ dependencies {
 
     ampLib project(":alfresco-health-processor-platform:alfresco-7-upwards")
 
+    ampLib "commons-dbcp:commons-dbcp:1.4"
+    ampLib "org.apache.commons:commons-dbcp2:2.9.0"
+
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
