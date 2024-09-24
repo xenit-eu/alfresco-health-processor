@@ -3,6 +3,7 @@ plugins {
     id 'eu.xenit.docker-alfresco' version '5.5.0' apply(false)
     id "org.sonarqube" version "3.3"
     id "org.kordamp.gradle.jacoco" version "0.54.0"
+    id "be.vbgn.ci-detect" version "0.5.0"
 }
 
 description = "Alfresco Health Processor: A background processor capable of performing various operations on the nodes in your Alfresco repository, in a batched and controlled manner"
@@ -13,6 +14,14 @@ sonarqube {
         property "sonar.organization", "xenit-eu"
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.coverage.exclusions", "**/eu/xenit/alfresco/healthprocessor/example/*"
+        if (ci.isPullRequest()) {
+            property "sonar.pullrequest.key", ci.pullRequest
+            property "sonar.pullrequest.branch", ci.branch
+            property "sonar.pullrequest.base", ci.pullRequestTargetBranch
+        } else {
+            // GIT_BRANCH allows to push from local development directly to SonarCloud
+            property "sonar.branch.name", ci.reference != null ? ci.reference : "$System.env.GIT_BRANCH"
+        }
     }
 }
 

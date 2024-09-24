@@ -24,6 +24,7 @@ services:
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:content
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.use-ssl=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.check-transaction=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled=true
