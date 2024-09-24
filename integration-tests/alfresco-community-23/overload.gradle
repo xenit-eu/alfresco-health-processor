@@ -1,0 +1,8 @@
+ext {
+    alfrescoVersion = '23.2.0'
+    alfrescoBaseWarBom = "org.alfresco:acs-community-packaging:${alfrescoVersion}"
+    alfrescoBaseWar = 'org.alfresco:content-services-community@war'
+    alfrescoBaseImage = "docker.io/xenit/alfresco-repository-community:23.2.0.1"
+
+    //TODO requires JAVAX for alfred telemetry. excluding
+}

@@ -64,15 +64,18 @@ subprojects { Project p ->
             baseAlfrescoWar platform("${alfrescoBaseWarBom}")
         }
         baseAlfrescoWar "${alfrescoBaseWar}"
+        alfrescoSM group: 'org.postgresql', name: 'postgresql', version: '42.7.4'
         alfrescoAmp project(path: ":integration-tests", configuration: "amp")
         alfrescoAmp project(path: ":alfresco-health-processor-platform", configuration: "amp")
         alfrescoAmp "eu.xenit.alfred.telemetry:alfred-telemetry-platform:${alfredTelemetryVersion}@amp"
+        alfrescoSM "io.micrometer:micrometer-core:${micrometerVersion}"
+        alfrescoSM "io.github.mweirauch:micrometer-jvm-extras:${jvmExtrasVersion}"
     }
 
     dockerBuild {
         alfresco {
             baseImage = "${alfrescoBaseImage}"
-            leanImage = true
+            leanImage = false
         }
     }
 
@@ -85,7 +88,9 @@ subprojects { Project p ->
 //        scale = [alfresco: 2]
         ignorePullFailure = false
 
-        removeVolumes = true
+        removeVolumes = false
+        stopContainers = false
+        retainContainersOnStartupFailure = true
         captureContainersOutput = false
 
         // Uncomment for quick iterations when developing integration tests

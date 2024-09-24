@@ -18,8 +18,9 @@ sonarqube {
 
 ext {
     alfrescoVersion = '5.2.f'
-    alfredTelemetryVersion = '0.6.0'
+    alfredTelemetryVersion = '0.10.1'
     micrometerVersion = '1.0.6'
+    jvmExtrasVersion = "0.1.2"
     lombokVersion = '1.18.10'
 }
 

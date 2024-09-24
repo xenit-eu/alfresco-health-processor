@@ -1,4 +1,3 @@
-version: '3.2'
 services:
   alfresco:
     image: ${DOCKER_IMAGE}
@@ -10,7 +9,8 @@ services:
     environment:
       - JAVA_XMX=1G
       - DEBUG=true
-      - SOLR_SSL=none
+      - GLOBAL_messaging.broker.url=failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true
+      - GLOBAL_localTransform.core-aio.url=http://transform-core-aio:8090/
       - ENABLE_CLUSTERING=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.task.cron=0/20 * * * * ? *
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.node-batch-size=1000
@@ -31,12 +31,17 @@ services:
       - LOG4J_logger.org.alfresco.repo.content.transform.LocalTransformServiceRegistry=OFF
     depends_on:
       - postgresql
+    networks:
+      - alfresco-health-processor-network
+
   solr:
     image: docker.io/xenit/alfresco-solr6:2.0
     environment:
       - ALFRESCO_HOST=alfresco
       - ALFRESCO_SSL=none
       - GLOBAL_ALL_alfresco.index.transformContent=false
+    networks:
+      - alfresco-health-processor-network
 
   postgresql:
     image: docker.io/xenit/postgres
@@ -44,7 +49,18 @@ services:
       - POSTGRES_USER=alfresco
       - POSTGRES_PASSWORD=admin
       - POSTGRES_DB=alfresco
+    networks:
+      - alfresco-health-processor-network
+
+  activemq:
+    image: alfresco/alfresco-activemq:5.17.1-jre17-rockylinux8
+    mem_limit: 1g
+    networks:
+      - alfresco-health-processor-network
 
 volumes:
   alf_data:
 
+networks:
+  alfresco-health-processor-network:
+    name: alfresco-health-processor-network
