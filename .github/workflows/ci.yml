@@ -16,7 +16,7 @@ jobs:
           distribution: 'temurin'
           java-version: 11
       - name: Test
-        run: ./gradlew test
+        run: ./gradlew test --info
       - name: Upload reports
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
@@ -27,9 +27,9 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
-        run: ./gradlew aggregateJacocoReport sonarqube
+        run: ./gradlew aggregateJacocoReport sonarqube --info
       - name: Javadoc
-        run: ./gradlew javadoc
+        run: ./gradlew javadoc --info
   integration-test:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' || startsWith(github.ref, 'refs/tags/') }}
@@ -46,7 +46,7 @@ jobs:
           distribution: 'temurin'
           java-version: 11
       - name: Test
-        run: ./gradlew :integration-tests:alfresco-${{ matrix.flavour }}-${{ matrix.version }}:integrationTest -Prandom_ports=true
+        run: ./gradlew :integration-tests:alfresco-${{ matrix.flavour }}-${{ matrix.version }}:integrationTest -Prandom_ports=true --info
       - name: Upload reports
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
@@ -70,4 +70,4 @@ jobs:
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.MAVEN_CENTRAL_GPG_PASSWORD }}
           ORG_GRADLE_PROJECT_sonatype_username: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_sonatype_password: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-        run: ./gradlew publish -PsigningKeyId=CDE3528F
+        run: ./gradlew publish -PsigningKeyId=CDE3528F --info
