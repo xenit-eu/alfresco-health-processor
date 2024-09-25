@@ -1,8 +1,8 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'io.freefair.lombok' version '6.2.0'
-    id 'io.freefair.javadocs' version '6.2.0'
+    id 'io.freefair.lombok' version '8.10'
+    id 'io.freefair.javadocs' version '8.10'
 }
 
 description = "Java API for extensions for ${rootProject.description}"
