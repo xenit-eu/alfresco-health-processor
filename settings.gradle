@@ -9,7 +9,8 @@ include 'alfresco-health-processor-platform'
 include 'alfresco-health-processor-platform:alfresco-7-upwards'
 include 'integration-tests'
 
-def integrationTestVersions = ["71", "72", "73", "74", "23"];
+//TODO redadd 23 after fixing the telemetry startup issue
+def integrationTestVersions = ["71", "72", "73", "74"]
 
 integrationTestVersions.each {version ->
     include ":integration-tests:alfresco-community-${version}"
