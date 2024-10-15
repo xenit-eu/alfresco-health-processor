@@ -2,6 +2,8 @@ package eu.xenit.alfresco.healthprocessor.solr;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -17,6 +19,7 @@ public class NodeFinder {
     private final SearchService searchService;
     private final NamespaceService namespaceService;
 
+    //This points to a built-in images folder of site (Sample: Web Site Design Project), which should contain 11 images.
     private static final String XPATH = "/app:company_home/st:sites/cm:swsdp/cm:documentLibrary/cm:Agency_x0020_Files/cm:Images/*";
 
     public NodeFinder(NodeService nodeService, SearchService searchService,
@@ -40,7 +43,9 @@ public class NodeFinder {
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         searchParameters.setQueryConsistency(QueryConsistency.EVENTUAL);
         searchParameters.setQuery("PATH:'" + XPATH + "'");
+
         ResultSet resultSet = searchService.query(searchParameters);
+
         return resultSet.getNodeRefs();
     }
 }

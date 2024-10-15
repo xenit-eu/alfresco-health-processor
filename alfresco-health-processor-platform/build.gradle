@@ -1,8 +1,8 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "7.1.0"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
     id 'java-test-fixtures'
     id 'java-library'
-    id 'io.freefair.lombok' version '8.10'
+    id "io.freefair.lombok"
     id 'eu.xenit.alfresco'
     id 'eu.xenit.amp'
 }
@@ -70,17 +70,14 @@ dependencies {
     testFixturesApi("org.alfresco:alfresco-data-model")
 }
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+//relocateshadowjar Code was changed from (pre 8.10) please see https://github.com/GradleUp/shadow/blob/main/src/docs/plugins/README.md#automatic-package-relocation-with-shadow-prior-to-v810
+//Configuration is now added directly in the shadowJar tasks instead of (the now failing) importing ConfigureShadowRelocation
 
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-    target = tasks.shadowJar
-    prefix = "eu.xenit.alfresco.healthprocessor.internal.shadow"
-}
-
-tasks.shadowJar.dependsOn tasks.relocateShadowJar
 tasks.assemble.dependsOn tasks.shadowJar
 
 shadowJar {
+    enableRelocation true
+    relocationPrefix = "eu.xenit.alfresco.healthprocessor.internal.shadow"
     configurations = [ project.configurations.embedded ]
     archiveClassifier.set('')
 }

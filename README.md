@@ -45,7 +45,9 @@ Please consult the official Alfresco documentation on how to install Module Pack
 
 ### Supported Alfresco versions
 
-The module is systematically integration tested against Alfresco 5.2, 6.1, 6.2 and 7.0.
+The module is systematically integration tested against Alfresco 7.1, 7.2, 7.4
+Please use a previous version of the health-processor for older versions.
+
 
 ## Overview
 
