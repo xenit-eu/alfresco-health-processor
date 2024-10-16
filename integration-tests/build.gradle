@@ -6,6 +6,9 @@ plugins {
 
 ext {
     slf4jVersion = '1.7.36'
+    //Default overloaded in subprojects.
+    //docker-compose_solr_ssl.yml
+    integrationTestComposeFile = 'docker-compose_solr_secret.yml'
 }
 
 dependencies {
@@ -88,7 +91,7 @@ subprojects { Project p ->
     dockerCompose {
         ignorePullFailure = true
         useComposeFiles = [
-                "${project.parent.projectDir}/src/test/resources/compose/docker-compose_solr_secret.yml",
+                "${project.parent.projectDir}/src/test/resources/compose/${integrationTestComposeFile}",
         ]
 
 //        scale = [alfresco: 2]

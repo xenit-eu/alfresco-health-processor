@@ -176,6 +176,8 @@ Activation property: `eu.xenit.alfresco.healthprocessor.plugin.solr-index.enable
 Validates that nodes are present in a Solr/Alfresco Search Services index.
 
 By default, the plugin will check the solr server configured with `solr.host` & `solr.port` with the default `alfresco` and `archive` indexes.
+> [!WARNING]
+> when ussing ssl this needs to be explicitly set to use HTTPS and the solr.port.ssl
 
 It is possible to configure the solr servers to check and, for sharded setups, which nodes should be present in which solr server.
 

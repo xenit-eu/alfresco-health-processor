@@ -12,6 +12,12 @@ services:
       - GLOBAL_messaging.broker.url=failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true
       - GLOBAL_localTransform.core-aio.url=http://transform-core-aio:8090/
       - ENABLE_CLUSTERING=false
+      #Solr
+      - SOLR_SSL=https
+      - SOLR_PORT_SSL=8443
+      #HealthProcessor
+      - eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints=
+
       - GLOBAL_eu.xenit.alfresco.healthprocessor.task.cron=0/20 * * * * ? *
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.node-batch-size=1000
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.max-batches-per-second=100
@@ -40,9 +46,10 @@ services:
     environment:
       - ALFRESCO_HOST=alfresco
       - ALFRESCO_SSL=true
+      - JETTY_PORT_SSL=8443
       - GLOBAL_ALL_alfresco.index.transformContent=false
     ports:
-      - 9000:8080
+      - 9000:8443
     networks:
       - alfresco-health-processor-network
 

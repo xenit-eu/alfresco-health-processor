@@ -11,7 +11,7 @@ include 'integration-tests'
 
 //TODO re-add 23 after fixing the telemetry startup issue
 //TODO  alfresco-73 fails to initialise a bean in the code, temporarily excluded
-def integrationTestVersions = ["71", "72", "74"]
+def integrationTestVersions = ["71", "71-ssl", "72", "74"]
 
 integrationTestVersions.each { version ->
     include ":integration-tests:alfresco-community-${version}"
