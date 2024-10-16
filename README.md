@@ -288,7 +288,11 @@ Activation property: `eu.xenit.alfresco.healthprocessor.reporter.log.summary.ena
 A simple implementation that writes, once a Health Processor cycle is completed, a summary and unhealthy nodes to the
 Alfresco logs.
 
-Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.log.SummaryLoggingHealthReporter=INFO`
+> [!WARNING]
+> Starting from alfresco 7.4, alfresco has migrated to log4j2. The original log4j logger will no longer exist.
+ 
+Relevant logger (log4j) (pre Alfresco 7.3): `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.log.SummaryLoggingHealthReporter=INFO`
+Relevant logger (log4j2): `logger.eu-xenit-alfresco-healthprocessor.name=eu.xenit.alfresco.healthprocessor`
 
 Example output:
 

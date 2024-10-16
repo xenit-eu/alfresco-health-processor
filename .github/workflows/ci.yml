@@ -37,6 +37,7 @@ jobs:
       matrix:
         flavour: [ "community" ]
         version: [ "71", "72", "73", "74" ]
+        #add SSL and secret here.
     steps:
       - uses: actions/checkout@v4
         with:
