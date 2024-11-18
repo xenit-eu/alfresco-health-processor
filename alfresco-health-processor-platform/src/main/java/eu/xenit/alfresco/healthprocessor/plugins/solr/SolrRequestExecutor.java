@@ -2,12 +2,13 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.net.ssl.SSLContext;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Value;
@@ -25,10 +27,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContexts;
-import org.json.HTTP;
 import org.springframework.util.ResourceUtils;
-
-import javax.net.ssl.SSLContext;
 
 
 /**
@@ -37,14 +36,24 @@ import javax.net.ssl.SSLContext;
 @Slf4j
 public class SolrRequestExecutor {
 
+
+    //Note that some of these are alfresco variables.
     private static final String GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX = "eu.xenit.alfresco.healthprocessor.plugin.solr-index.";
-    public static final String GLOBAL_PROPERTY_KEYSTORE_TYPE = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("keystore.type");
-    public static final String GLOBAL_PROPERTY_KEYSTORE_PASSWORD = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("keystore.password");
-    public static final String GLOBAL_PROPERTY_KEYSTORE_FILE_LOCATION = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("keystore.location");
-    public static final String GLOBAL_PROPERTY_TRUSTSTORE_TYPE = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("truststore.type");
-    public static final String GLOBAL_PROPERTY_TRUSTSTORE_PASSWORD = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("truststore.password");
-    public static final String GLOBAL_PROPERTY_TRUSTSTORE_FILE_LOCATION = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("truststore.location");
-    public static final String GLOBAL_PROPERTY_SOLRREQUESTEXECUTOR_USE_SSL = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat("use-ssl");
+    public static final String GLOBAL_PROPERTY_SOLRREQUESTEXECUTOR_USE_SSL = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat(
+            "use-ssl");
+
+    public static final String GLOBAL_PROPERTY_KEYSTORE_TYPE = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat(
+            "keystore.type");
+    public static final String GLOBAL_PROPERTY_KEYSTORE_PASSWORD = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat(
+            "keystore.password");
+    public static final String GLOBAL_PROPERTY_KEYSTORE_FILE_LOCATION = "encryption.ssl.keystore.location";
+
+    public static final String GLOBAL_PROPERTY_TRUSTSTORE_TYPE = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat(
+            "truststore.type");
+    public static final String GLOBAL_PROPERTY_TRUSTSTORE_PASSWORD = GLOBAL_PROPERTY_PLUGIN_KEY_PREFIX.concat(
+            "truststore.password");
+    public static final String GLOBAL_PROPERTY_TRUSTSTORE_FILE_LOCATION = "encryption.ssl.truststore.location";
+
 
     private Properties globalProperties;
     private final HttpClient httpClient;
@@ -52,7 +61,8 @@ public class SolrRequestExecutor {
 
     public SolrRequestExecutor(Boolean checkTransaction, Properties globalProperties) {
         this.globalProperties = globalProperties;
-        this.httpClient = HttpClientBuilder.create().build();
+        log.info("Creating httpclient");
+        this.httpClient = buildHttpClient();
         this.checkTransaction = checkTransaction;
     }
 
@@ -63,6 +73,15 @@ public class SolrRequestExecutor {
 
     private HttpClient buildHttpClient() {
         if (Boolean.parseBoolean(globalProperties.getProperty(GLOBAL_PROPERTY_SOLRREQUESTEXECUTOR_USE_SSL))) {
+            log.debug("Creating sll httpclient");
+            log.warn("- keystore location: {}", globalProperties.getProperty(GLOBAL_PROPERTY_KEYSTORE_FILE_LOCATION));
+            log.warn("- keystore type: {}", globalProperties.getProperty(GLOBAL_PROPERTY_KEYSTORE_TYPE));
+            log.warn("- keystore pas: {}", globalProperties.getProperty(GLOBAL_PROPERTY_KEYSTORE_PASSWORD));
+
+            log.warn("- truststore location: {}",
+                    globalProperties.getProperty(GLOBAL_PROPERTY_TRUSTSTORE_FILE_LOCATION));
+            log.warn("- truststore type: {}", globalProperties.getProperty(GLOBAL_PROPERTY_TRUSTSTORE_TYPE));
+            log.warn("- trustore pas: {}", globalProperties.getProperty(GLOBAL_PROPERTY_TRUSTSTORE_PASSWORD));
             return HttpClientBuilder
                     .create()
                     .setSSLContext(getAlfrescoSolrSslContext(
@@ -78,6 +97,7 @@ public class SolrRequestExecutor {
         return HttpClientBuilder.create().build();
     }
 
+    //Also see:https://github.com/xenit-eu/docker-alfresco/blob/7b067793afca467d940aefb8d2b5de3e959847f3/tomcat-base/src/shared/main/java/eu/xenit/alfresco/tomcat/embedded/alfresco/tomcat/AlfrescoTomcatFactoryHelper.java#L75C1-L80C105
     private SSLContext getAlfrescoSolrSslContext(
             String keystoreType,
             String keystorePass,
@@ -88,10 +108,13 @@ public class SolrRequestExecutor {
     ) {
         try {
             KeyStore keystore = KeyStore.getInstance(keystoreType);
-            keystore.load(Files.newInputStream(ResourceUtils.getFile(keystoreFileLocation).toPath()), keystorePass.toCharArray());
+            keystore.load(Files.newInputStream(ResourceUtils.getFile(keystoreFileLocation).toPath()),
+                    keystorePass.toCharArray());
             KeyStore trustStore = KeyStore.getInstance(truststoreType);
-            trustStore.load(Files.newInputStream(ResourceUtils.getFile(truststoreFileLocation).toPath()), truststorePass.toCharArray());
-            return SSLContexts.custom().loadKeyMaterial(keystore, keystorePass.toCharArray()).loadTrustMaterial(trustStore, (((chain, authType) -> false))).build();
+            trustStore.load(Files.newInputStream(ResourceUtils.getFile(truststoreFileLocation).toPath()),
+                    truststorePass.toCharArray());
+            return SSLContexts.custom().loadKeyMaterial(keystore, keystorePass.toCharArray())
+                    .loadTrustMaterial(trustStore, (((chain, authType) -> false))).build();
         } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException |
                  UnrecoverableKeyException | KeyManagementException e) {
             throw new RuntimeException(e);
@@ -101,7 +124,7 @@ public class SolrRequestExecutor {
     /**
      * Performs a search operation on an endpoint to determine if the nodes are indexed or not
      *
-     * @param endpoint     The endpoint to perform a search on
+     * @param endpoint The endpoint to perform a search on
      * @param nodeStatuses Nodes to search for
      * @return The result of the search operation
      * @throws IOException When the HTTP request goes wrong
@@ -181,7 +204,7 @@ public class SolrRequestExecutor {
             // Searching for both DBID and TX from Alfresco validates that the node is indexed
             // and that it's related transaction is the latest. (making sure no later transaction was accidentally skipped)
             solrQuery = nodeStatuses.stream()
-                    .map(status -> "(DBID:" + status.getDbId() + "%20AND%20INTXID:" + status.getDbTxnId() + ")" )
+                    .map(status -> "(DBID:" + status.getDbId() + "%20AND%20INTXID:" + status.getDbTxnId() + ")")
                     .collect(Collectors.joining("%20OR%20"));
         }
 
@@ -196,20 +219,22 @@ public class SolrRequestExecutor {
     }
 
     /**
-     * Schedules an async SolrNodeCommand for a node on a search endpoint.
-     * This action/command is scheduled for execution by solr or a failure is returned.
+     * Schedules an async SolrNodeCommand for a node on a search endpoint. This action/command is scheduled for
+     * execution by solr or a failure is returned.
+     *
      * @param endpoint the search endpoint
      * @param nodeStatus node status containing information about the dbIDs and transactionIds
      * @param command Solr action that will be executed
-     * @return
      * @throws IOException when the command can not be sent to solr
      */
-    public SolrActionResponse executeAsyncNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
+    public SolrActionResponse executeAsyncNodeCommand(SearchEndpoint endpoint, Status nodeStatus,
+            SolrNodeCommand command)
             throws IOException {
         String coreName = endpoint.getCoreName();
 
         String solrEndpoint = "cores?action=" + command.getCommand() + "&wt=json&coreName=" + coreName;
-        solrEndpoint += (command.isTargetsTransaction())? "&txid=" + nodeStatus.getDbTxnId() : "&nodeid=" + nodeStatus.getDbId();
+        solrEndpoint += (command.isTargetsTransaction()) ? "&txid=" + nodeStatus.getDbTxnId()
+                : "&nodeid=" + nodeStatus.getDbId();
 
         HttpUriRequest indexRequest = new HttpGet(endpoint.getAdminUri().resolve(solrEndpoint));
 
@@ -234,14 +259,15 @@ public class SolrRequestExecutor {
 
     @Value
     public static class SolrActionResponse {
+
         private final boolean successFull;
         private final String message;
     }
 
     /**
-     * The boolean targetsTransaction indicates if the action should be sent for the transaction the node was contained in.
-     * If true, the nodeCommand will be scheduled for the complete transaction of this node.
-     * If false, the nodeCommand is scheduled for this single node contained in the nodestatus.
+     * The boolean targetsTransaction indicates if the action should be sent for the transaction the node was contained
+     * in. If true, the nodeCommand will be scheduled for the complete transaction of this node. If false, the
+     * nodeCommand is scheduled for this single node contained in the nodestatus.
      */
     @AllArgsConstructor
     public enum SolrNodeCommand {

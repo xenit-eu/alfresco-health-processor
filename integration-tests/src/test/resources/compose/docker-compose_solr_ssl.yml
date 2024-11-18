@@ -16,8 +16,6 @@ services:
       - SOLR_SSL=https
       - SOLR_PORT_SSL=8443
       #HealthProcessor
-      - eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints=
-
       - GLOBAL_eu.xenit.alfresco.healthprocessor.task.cron=0/20 * * * * ? *
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.node-batch-size=1000
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.max-batches-per-second=100
@@ -30,10 +28,22 @@ services:
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:content
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=true
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.use-ssl=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.check-transaction=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled=true
+      #Healthprocessor specific SSL settings (key/truststore)
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.default.base-uri=https://solr:8443/solr/alfresco
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.archive.base-uri=https://solr:8443/solr/archive
+
+#SSL MTLS settings
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.use-ssl=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.keystore.type=JCEKS
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.keystore.password=kT9X6oe68t
+#      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.keystore.location=default
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.truststore.type=JCEKS
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.truststore.password=kT9X6oe68t
+#     - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.truststore.location=default
+
       # Disable this loud logger which sends errors in Alfresco 7.0.
       - LOG4J_logger.org.alfresco.repo.content.transform.LocalTransformServiceRegistry=OFF
     depends_on:
@@ -45,7 +55,7 @@ services:
     image: docker.io/xenit/alfresco-solr6:2.0
     environment:
       - ALFRESCO_HOST=alfresco
-      - ALFRESCO_SSL=true
+      - ALFRESCO_SSL=https
       - JETTY_PORT_SSL=8443
       - GLOBAL_ALL_alfresco.index.transformContent=false
     ports:
@@ -74,3 +84,4 @@ volumes:
 networks:
   alfresco-health-processor-network:
     name: alfresco-health-processor-network
+
