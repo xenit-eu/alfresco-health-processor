@@ -98,7 +98,7 @@ subprojects { Project p ->
         ignorePullFailure = false
 
         removeVolumes = false
-        stopContainers = false
+        stopContainers = true
         retainContainersOnStartupFailure = true
         captureContainersOutput = false
 

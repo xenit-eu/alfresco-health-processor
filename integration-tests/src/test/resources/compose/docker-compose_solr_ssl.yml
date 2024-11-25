@@ -34,7 +34,6 @@ services:
       #Healthprocessor specific SSL settings (key/truststore)
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.default.base-uri=https://solr:8443/solr/alfresco
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.archive.base-uri=https://solr:8443/solr/archive
-
 #SSL MTLS settings
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.use-ssl=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.keystore.type=JCEKS
@@ -43,7 +42,8 @@ services:
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.truststore.type=JCEKS
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.truststore.password=kT9X6oe68t
 #     - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.truststore.location=default
-
+      # When enabled it will validate that the hostnames match in the certificate, since our hostnames vary wildly , especially in docker services, and in tests. we turn this off.
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.SSL-validate-hostnames=false
       # Disable this loud logger which sends errors in Alfresco 7.0.
       - LOG4J_logger.org.alfresco.repo.content.transform.LocalTransformServiceRegistry=OFF
     depends_on:

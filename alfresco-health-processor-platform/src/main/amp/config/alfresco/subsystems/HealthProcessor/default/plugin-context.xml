@@ -38,6 +38,12 @@
             class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor" >
         <constructor-arg name="checkTransaction" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-index.check-transaction}" />
         <constructor-arg name="globalProperties" ref="global-properties" />
+        <constructor-arg name="clientFactory" ref="eu.xenit.alfresco.healthprocessor.plugins.solr.utils.HealthProcessorSimpleHttpClientFactory" />
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.utils.HealthProcessorSimpleHttpClientFactory"
+          class="eu.xenit.alfresco.healthprocessor.plugins.solr.utils.HealthProcessorSimpleHttpClientFactory" >
+        <constructor-arg name="globalProperties" ref="global-properties" />
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector"

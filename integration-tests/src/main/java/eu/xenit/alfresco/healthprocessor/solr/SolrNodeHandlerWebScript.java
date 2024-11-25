@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import eu.xenit.alfresco.healthprocessor.plugins.solr.utils.HealthProcessorSimpleHttpClientFactory;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -28,12 +30,15 @@ public abstract class SolrNodeHandlerWebScript extends AbstractWebScript {
 
     private final SearchEndpointSelector endpointSelector;
 
-    protected final HttpClient httpClient = HttpClientBuilder.create().build();
+    protected final HttpClient httpClient;
 
     protected SolrNodeHandlerWebScript(NodeFinder nodeFinder,
-            SearchEndpointSelector endpointSelector) {
+            SearchEndpointSelector endpointSelector,
+                                       HealthProcessorSimpleHttpClientFactory clientFactory) {
         this.nodeFinder = nodeFinder;
         this.endpointSelector = endpointSelector;
+
+         httpClient = clientFactory.createHttpClient();
     }
 
     @Override

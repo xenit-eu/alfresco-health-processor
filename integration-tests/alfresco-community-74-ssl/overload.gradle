@@ -4,5 +4,6 @@ ext {
     alfrescoBaseWar = 'org.alfresco:content-services-community@war'
     alfrescoBaseImage = "docker.io/xenit/alfresco-repository-community:7.4"
 
-    shareVersion = "7.4"
+    shareVersion = "7.1"
+    integrationTestComposeFile = 'docker-compose_solr_ssl.yml'
 }
