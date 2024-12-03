@@ -169,6 +169,9 @@ eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:conten
 If this property is not set (which is the default), the plugin will request all properties of type `d:content`
 from Alfresco's `DictionaryService`.
 
+When validating content, "NONE" in the reporting means, there is no status for a certain document, because it was not checked.
+For example, content checks report nodes without any content property as none.
+
 #### Solr index Validation
 
 Activation property: `eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=true`

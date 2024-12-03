@@ -77,8 +77,11 @@ subprojects { Project p ->
         alfrescoAmp "org.alfresco:alfresco-share-services:7.0.1.3@amp"
         //OOTB tools is used for troubleshooting/loggers
         alfrescoAmp 'org.orderofthebee.support-tools:support-tools-repo:1.2.2.0:amp@amp'
-        alfrescoSM "io.micrometer:micrometer-core:${micrometerVersion}"
-        alfrescoSM "io.github.mweirauch:micrometer-jvm-extras:${jvmExtrasVersion}"
+        alfrescoSM(group: 'io.micrometer', name: "micrometer-core", version: "${micrometerVersion}")
+        alfrescoSM(group: 'io.github.mweirauch', name: 'micrometer-jvm-extras', version: "${jvmExtrasVersion}")
+                {
+                    exclude group: "org.slf4j", module: "*"
+                }
     }
 
     dockerBuild {
