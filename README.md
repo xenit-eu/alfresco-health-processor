@@ -45,7 +45,9 @@ Please consult the official Alfresco documentation on how to install Module Pack
 
 ### Supported Alfresco versions
 
-The module is systematically integration tested against Alfresco 5.2, 6.1, 6.2 and 7.0.
+The module is systematically integration tested against Alfresco 7.1, 7.2, 7.4
+Please use a previous version of the health-processor for older versions of alfresco.
+
 
 ## Overview
 
@@ -167,6 +169,9 @@ eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:conten
 If this property is not set (which is the default), the plugin will request all properties of type `d:content`
 from Alfresco's `DictionaryService`.
 
+When validating content, "NONE" in the reporting means, there is no status for a certain document, because it was not checked.
+For example, content checks report nodes without any content property as none.
+
 #### Solr index Validation
 
 Activation property: `eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=true`
@@ -174,6 +179,8 @@ Activation property: `eu.xenit.alfresco.healthprocessor.plugin.solr-index.enable
 Validates that nodes are present in a Solr/Alfresco Search Services index.
 
 By default, the plugin will check the solr server configured with `solr.host` & `solr.port` with the default `alfresco` and `archive` indexes.
+> [!WARNING]
+> when ussing ssl this needs to be explicitly set to use HTTPS and the solr.port.ssl
 
 It is possible to configure the solr servers to check and, for sharded setups, which nodes should be present in which solr server.
 
@@ -286,7 +293,11 @@ Activation property: `eu.xenit.alfresco.healthprocessor.reporter.log.summary.ena
 A simple implementation that writes, once a Health Processor cycle is completed, a summary and unhealthy nodes to the
 Alfresco logs.
 
-Relevant logger: `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.log.SummaryLoggingHealthReporter=INFO`
+> [!WARNING]
+> Starting from alfresco 7.4, alfresco has migrated to log4j2. The original log4j logger will no longer exist.
+ 
+Relevant logger (log4j) (pre Alfresco 7.3): `log4j.logger.eu.xenit.alfresco.healthprocessor.reporter.log.SummaryLoggingHealthReporter=INFO`
+Relevant logger (log4j2): `logger.eu-xenit-alfresco-healthprocessor.name=eu.xenit.alfresco.healthprocessor`
 
 Example output:
 

@@ -8,17 +8,18 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v4
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: 17
       - name: Test
-        run: ./gradlew test
+        run: ./gradlew test --info
       - name: Upload reports
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: reports-test
           path: alfresco-health-processor-platform/build/reports
@@ -26,28 +27,30 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
-        run: ./gradlew aggregateJacocoReport sonarqube
+        run: ./gradlew aggregateJacocoReport sonarqube --info
       - name: Javadoc
-        run: ./gradlew javadoc
+        run: ./gradlew javadoc --info
   integration-test:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' || startsWith(github.ref, 'refs/tags/') }}
     strategy:
       matrix:
         flavour: [ "community" ]
-        version: [ "52", "61", "62", "70" ]
+        version: [ "71", "71-ssl", "72", "72-ssl", "74", "74-ssl" ]
+        #add SSL and secret here.
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v4
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: 17
       - name: Test
-        run: ./gradlew :integration-tests:alfresco-${{ matrix.flavour }}-${{ matrix.version }}:integrationTest -Prandom_ports=true
+        run: ./gradlew :integration-tests:alfresco-${{ matrix.flavour }}-${{ matrix.version }}:integrationTest -Prandom_ports=true --info
       - name: Upload reports
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: reports-integration-test-${{ matrix.flavour }}-${{ matrix.version }}
           path: integration-tests/alfresco-${{ matrix.flavour }}-${{ matrix.version }}/build/reports
@@ -56,16 +59,17 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v4
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: 17
       - name: Publish
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.MAVEN_CENTRAL_GPG_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.MAVEN_CENTRAL_GPG_PASSWORD }}
           ORG_GRADLE_PROJECT_sonatype_username: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_sonatype_password: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-        run: ./gradlew publish -PsigningKeyId=CDE3528F
+        run: ./gradlew publish -PsigningKeyId=CDE3528F --info

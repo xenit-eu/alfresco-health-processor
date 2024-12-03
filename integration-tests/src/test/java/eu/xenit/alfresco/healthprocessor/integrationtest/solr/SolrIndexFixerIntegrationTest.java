@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
  * We expect the validation plugin to *detect* nodes that we purged from the index,
  * followed by the fixer plugin to *index* those nodes again to restore the index.
  */
+
 class SolrIndexFixerIntegrationTest extends RestAssuredTest {
 
     private static final long EXPECTED_INDEXED_NODES = 11L;
