@@ -11,18 +11,23 @@
     </bean>
 
     <!--
-    Proxy required to make Admin Console WebScript available in main Spring context
+    Proxy required to make the ResponseViewRenderer available in main Spring context
     -->
-    <bean id="webscript.org.alfresco.enterprise.repository.admin.support-tools.health-processor.get"
-            class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+    <bean id="eu.xenit.alfresco.healthprocessor.webscripts.console.ResponseViewRenderer"
+        class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
         <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>
         <property name="sourceBeanName"
-                value="eu.xenit.alfresco.healthprocessor.webscripts.console.AdminConsoleWebScript"/>
+                value="Admin-Console.ResponseViewRenderer"/>
         <property name="interfaces">
             <list>
-                <value>org.springframework.extensions.webscripts.WebScript</value>
+                <value>eu.xenit.alfresco.healthprocessor.webscripts.console.ResponseViewRenderer</value>
             </list>
         </property>
     </bean>
 
+    <bean id="webscript.org.alfresco.enterprise.repository.admin.support-tools.health-processor.get"
+            class="eu.xenit.alfresco.healthprocessor.webscripts.console.AdminConsoleWebScript"
+            parent="webscript">
+        <constructor-arg ref="eu.xenit.alfresco.healthprocessor.webscripts.console.ResponseViewRenderer"/>
+    </bean>
 </beans>
