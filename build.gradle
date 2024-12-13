@@ -20,7 +20,7 @@ ext {
     alfrescoVersion = '5.2.f'
     alfredTelemetryVersion = '0.6.0'
     micrometerVersion = '1.0.6'
-    lombokVersion = '1.18.10'
+    lombokVersion = '1.18.36'
 }
 
 subprojects {

@@ -5,13 +5,16 @@ plugins {
 }
 
 java {
-    jar.archiveBaseName = "alfresco-health-processor-platform_alfresco7"
     withJavadocJar()
     withSourcesJar()
 
     toolchain {
         languageVersion = JavaLanguageVersion.of(11)
     }
+}
+
+jar {
+    archiveBaseName = "alfresco-health-processor-platform_alfresco7"
 }
 
 dependencies {
