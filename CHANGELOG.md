@@ -22,7 +22,13 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.5.5] - UNRELEASED
+## [0.5.6] - UNRELEASED
+
+## [0.5.5] - 2024-12-16
+
+### Fixed
+
+*[[#59](https://github.com/xenit-eu/alfresco-health-processor/pull/59)] Fix admin console breaking after changing configuration options/restarting subsystem
 
 
 ## [0.5.4] - 2022-03-02
