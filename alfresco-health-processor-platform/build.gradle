@@ -32,11 +32,12 @@ configurations {
 }
 
 java {
-    jar {
-        enabled = false
-    }
     withJavadocJar()
     withSourcesJar()
+}
+
+jar {
+    enabled = false
 }
 
 dependencies {

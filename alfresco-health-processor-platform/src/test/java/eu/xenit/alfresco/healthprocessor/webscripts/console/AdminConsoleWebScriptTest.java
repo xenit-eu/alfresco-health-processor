@@ -11,7 +11,7 @@ class AdminConsoleWebScriptTest {
 
     @Test
     void executeImpl() {
-        ResponseViewRenderer renderer = mock(ResponseViewRenderer.class);
+        ResponseViewRenderer renderer = mock(ResponseViewRendererImpl.class);
 
         AdminConsoleWebScript webScript = new AdminConsoleWebScript(renderer);
 

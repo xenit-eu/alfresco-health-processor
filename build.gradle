@@ -1,9 +1,8 @@
 plugins {
-    id 'eu.xenit.alfresco' version '1.1.0' apply(false)
-    id 'eu.xenit.docker-alfresco' version '5.3.0' apply(false)
+    id 'eu.xenit.alfresco' version '1.2.0' apply(false)
+    id 'eu.xenit.docker-alfresco' version '5.5.0' apply(false)
     id "org.sonarqube" version "3.3"
     id "org.kordamp.gradle.jacoco" version "0.47.0"
-    id 'org.ajoberstar.reckon' version '0.13.0'
 }
 
 description = "Alfresco Health Processor: A background processor capable of performing various operations on the nodes in your Alfresco repository, in a batched and controlled manner"
@@ -21,12 +20,7 @@ ext {
     alfrescoVersion = '5.2.f'
     alfredTelemetryVersion = '0.6.0'
     micrometerVersion = '1.0.6'
-    lombokVersion = '1.18.10'
-}
-
-reckon {
-    scopeFromProp()
-    snapshotFromProp()
+    lombokVersion = '1.18.36'
 }
 
 subprojects {

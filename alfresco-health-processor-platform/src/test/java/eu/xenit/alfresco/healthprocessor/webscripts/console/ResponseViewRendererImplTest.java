@@ -27,13 +27,13 @@ import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.junit.jupiter.api.Test;
 
-class ResponseViewRendererTest {
+class ResponseViewRendererImplTest {
 
     private static final String VERSION = "0.0.7";
 
     @Test
     void render() {
-        ResponseViewRenderer renderer = new ResponseViewRenderer();
+        ResponseViewRendererImpl renderer = new ResponseViewRendererImpl();
 
         ModuleDetails moduleDetails = mock(ModuleDetails.class);
         when(moduleDetails.getModuleVersionNumber()).thenReturn(new ModuleVersionNumber(VERSION));
