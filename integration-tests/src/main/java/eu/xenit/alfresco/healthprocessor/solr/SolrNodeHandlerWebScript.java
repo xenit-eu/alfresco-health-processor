@@ -6,21 +6,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import eu.xenit.alfresco.healthprocessor.plugins.solr.SslHttpClientFactory;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.http.client.HttpClient;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.springframework.extensions.webscripts.AbstractWebScript;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
 public abstract class SolrNodeHandlerWebScript extends AbstractWebScript {
 
@@ -28,12 +30,14 @@ public abstract class SolrNodeHandlerWebScript extends AbstractWebScript {
 
     private final SearchEndpointSelector endpointSelector;
 
-    protected final HttpClient httpClient = HttpClientBuilder.create().build();
+    protected final HttpClient httpClient;
 
     protected SolrNodeHandlerWebScript(NodeFinder nodeFinder,
-            SearchEndpointSelector endpointSelector) {
+                                       SearchEndpointSelector endpointSelector,
+                                       Properties globalProperties) {
         this.nodeFinder = nodeFinder;
         this.endpointSelector = endpointSelector;
+        this.httpClient = SslHttpClientFactory.setupHttpClient(globalProperties);
     }
 
     @Override

@@ -2,12 +2,6 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +11,14 @@ import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.HttpClientBuilder;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 
 /**
@@ -26,11 +27,12 @@ import org.apache.http.impl.client.HttpClientBuilder;
 @Slf4j
 @RequiredArgsConstructor
 public class SolrRequestExecutor {
+
     private final HttpClient httpClient;
     private final boolean checkTransaction;
 
-    public SolrRequestExecutor(Boolean checkTransaction) {
-        this(HttpClientBuilder.create().build(), checkTransaction);
+    public SolrRequestExecutor(Boolean checkTransaction, Properties globalProperties) {
+        this(SslHttpClientFactory.setupHttpClient(globalProperties), checkTransaction);
     }
 
     /**

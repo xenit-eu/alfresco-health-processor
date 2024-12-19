@@ -6,6 +6,8 @@ import eu.xenit.alfresco.healthprocessor.plugins.solr.JSONResponseHandler;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
 import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector;
 import java.io.IOException;
+import java.util.Properties;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -13,8 +15,9 @@ import org.apache.http.client.methods.HttpUriRequest;
 public class SolrPurgeNodeWebScript extends SolrNodeHandlerWebScript {
 
     public SolrPurgeNodeWebScript(NodeFinder nodeFinder,
-            SearchEndpointSelector endpointSelector) {
-        super(nodeFinder, endpointSelector);
+                                  SearchEndpointSelector endpointSelector,
+                                  Properties globalProperties) {
+        super(nodeFinder, endpointSelector, globalProperties);
     }
 
     @Override
