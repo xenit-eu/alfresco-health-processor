@@ -7,6 +7,8 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent.NodeInfo;
@@ -60,6 +62,11 @@ class AlfrescoTrackingComponentTest {
                         new NodeInfo(1L, 102L, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "xyz-987"))));
     }
 
+    @Test
+    void getNodesForEmptyTxnIdList() {
+        trackingComponent.getNodesForTxnIds(Collections.emptyList());
+        verify(solrTrackingComponent, never()).getNodes(any(), any());
+    }
 
     private Node nodeEntity(long txnId, long nodeId, String uuid) {
         Node ret = mock(Node.class);
