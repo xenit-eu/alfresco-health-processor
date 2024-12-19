@@ -32,7 +32,8 @@ jobs:
         run: ./gradlew javadoc
   integration-test:
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' || startsWith(github.ref, 'refs/tags/') }}
+    # Disable temporarily
+    # if: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' || startsWith(github.ref, 'refs/tags/') }}
     strategy:
       matrix:
         flavour: [ "community" ] ## , "enterprise"
