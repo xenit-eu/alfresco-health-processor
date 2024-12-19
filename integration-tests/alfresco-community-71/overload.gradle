@@ -1,5 +1,5 @@
 ext {
-    alfrescoVersion = '7.0.0'
+    alfrescoVersion = '7.1.0.3'
     alfrescoBaseWarBom = "org.alfresco:acs-community-packaging:${alfrescoVersion}"
     alfrescoBaseWar = 'org.alfresco:content-services-community@war'
     alfrescoBaseImage = "docker.io/xenit/alfresco-repository-community:${alfrescoVersion.substring(0,3)}"

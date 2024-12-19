@@ -10,7 +10,8 @@ ext {
 
 dependencies {
     alfrescoProvided project(":alfresco-health-processor-platform")
-    alfrescoProvided(enforcedPlatform("eu.xenit.alfresco:alfresco-community-bom:${alfrescoVersion}"))
+//    alfrescoProvided(enforcedPlatform("eu.xenit.alfresco:alfresco-community-bom:${alfrescoVersion}"))
+    alfrescoProvided platform("org.alfresco:acs-community-packaging:${alfrescoVersion}")
     alfrescoProvided("org.alfresco:alfresco-repository") {
         exclude module: 'spring-social-facebook-web'
     }
@@ -67,12 +68,12 @@ subprojects { Project p ->
         alfrescoAmp project(path: ":integration-tests", configuration: "amp")
         alfrescoAmp project(path: ":alfresco-health-processor-platform", configuration: "amp")
         alfrescoAmp "eu.xenit.alfred.telemetry:alfred-telemetry-platform:${alfredTelemetryVersion}@amp"
+        alfrescoSM(group: 'org.postgresql', name: 'postgresql', version: '42.6.0')
     }
 
     dockerBuild {
         alfresco {
             baseImage = "${alfrescoBaseImage}"
-            leanImage = true
         }
     }
 

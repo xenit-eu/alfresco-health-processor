@@ -1,5 +1,4 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "7.1.0"
     id 'java-test-fixtures'
     id 'java-library'
     id 'io.freefair.lombok' version '6.2.0'
@@ -7,50 +6,22 @@ plugins {
     id 'eu.xenit.amp'
 }
 
-description = "Alfresco Repository module for ${rootProject.description}"
-
-apply from: "${rootDir}/gradle/internalPlatform.gradle"
-
-configurations {
-    ampLib {
-        extendsFrom(runtimeClasspath)
-    }
-    embedded {
-        canBeConsumed = false
-        canBeResolved = true
-        compileClasspath.extendsFrom(it)
-    }
-    runtimeElements {
-        outgoing.artifact(project.tasks.named('shadowJar'))
-    }
-    apiElements {
-        outgoing.artifact(project.tasks.named('shadowJar'))
-    }
-    alfrescoProvided {
-        extendsFrom(internalPlatform)
-    }
-}
+//description = "Alfresco Repository module for ${rootProject.description}"
 
 java {
     withJavadocJar()
     withSourcesJar()
 }
 
-jar {
-    enabled = false
-}
-
 dependencies {
-    internalPlatform platform("eu.xenit.alfresco:alfresco-community-bom:${alfrescoVersion}")
+    alfrescoProvided platform("org.alfresco:acs-community-packaging:${alfrescoVersion}")
+    testFixturesApi platform("org.alfresco:acs-community-packaging:${alfrescoVersion}")
 
     alfrescoProvided("org.alfresco:alfresco-repository") {
         exclude module: 'spring-social-facebook-web'
     }
     alfrescoProvided "io.micrometer:micrometer-core:${micrometerVersion}"
-    embedded 'com.google.guava:guava:30.1-jre'
-    api project(':alfresco-health-processor-api')
-
-    ampLib project(":alfresco-health-processor-platform:alfresco-7-upwards")
+    api(project(':alfresco-health-processor-api')) { transitive = false }
 
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
@@ -68,21 +39,6 @@ dependencies {
     testFixturesApi("org.alfresco:alfresco-data-model")
 }
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-    target = tasks.shadowJar
-    prefix = "eu.xenit.alfresco.healthprocessor.internal.shadow"
-}
-
-tasks.shadowJar.dependsOn tasks.relocateShadowJar
-tasks.assemble.dependsOn tasks.shadowJar
-
-shadowJar {
-    configurations = [ project.configurations.embedded ]
-    archiveClassifier.set('')
-}
-
 test {
     useJUnitPlatform()
     testLogging {
@@ -91,23 +47,16 @@ test {
 }
 
 amp {
-    libs = shadowJar.outputs.files + configurations.ampLib - configurations.alfrescoProvided
+    libs = jar.outputs.files + configurations.runtimeClasspath - configurations.alfrescoProvided
 }
 
 apply from: "${rootDir}/gradle/publish.gradle"
-
-components.java {
-    withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
-        skip()
-    }
-}
-
 
 publishing {
     publications {
         java(MavenPublication) {
             from(components.java)
-            artifact amp
+            artifact tasks.amp
         }
     }
 }

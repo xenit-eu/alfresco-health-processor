@@ -5,7 +5,7 @@ plugins {
     id "org.kordamp.gradle.jacoco" version "0.47.0"
 }
 
-description = "Alfresco Health Processor: A background processor capable of performing various operations on the nodes in your Alfresco repository, in a batched and controlled manner"
+//description = "Alfresco Health Processor: A background processor capable of performing various operations on the nodes in your Alfresco repository, in a batched and controlled manner"
 
 sonarqube {
     properties {
@@ -17,7 +17,7 @@ sonarqube {
 }
 
 ext {
-    alfrescoVersion = '5.2.f'
+    alfrescoVersion = '7.0.0'
     alfredTelemetryVersion = '0.6.0'
     micrometerVersion = '1.0.6'
     lombokVersion = '1.18.36'
@@ -28,7 +28,7 @@ subprojects {
     plugins.withType(JavaBasePlugin) {
         java {
             toolchain {
-                languageVersion = JavaLanguageVersion.of(8)
+                languageVersion = JavaLanguageVersion.of(11)
             }
         }
     }

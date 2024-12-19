@@ -35,8 +35,8 @@ jobs:
     if: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' || startsWith(github.ref, 'refs/tags/') }}
     strategy:
       matrix:
-        flavour: [ "community" ]
-        version: [ "52", "61", "62", "70" ]
+        flavour: [ "community" ] ## , "enterprise"
+        version: [ "70", "71", "72", "73", "74" ]
     steps:
       - uses: actions/checkout@v4
         with:

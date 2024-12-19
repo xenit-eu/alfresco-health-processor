@@ -2,8 +2,6 @@ version: '3.2'
 services:
   alfresco:
     image: ${DOCKER_IMAGE}
-    volumes:
-      - alf_data:/opt/alfresco/alf_data
     ports:
       - ${COMPOSE_INFLOW_TCP_8080:-8080}
     #      - 8000:8000
@@ -45,6 +43,4 @@ services:
       - POSTGRES_PASSWORD=admin
       - POSTGRES_DB=alfresco
 
-volumes:
-  alf_data:
 

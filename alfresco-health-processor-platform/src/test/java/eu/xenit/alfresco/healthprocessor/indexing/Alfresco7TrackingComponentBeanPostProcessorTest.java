@@ -15,10 +15,10 @@
 //import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 //
 //
-//class TrackingComponentBeanPostProcessorTest {
+//class Alfresco7TrackingComponentBeanPostProcessorTest {
 //
 //    @Test
-//    void postProcessBeanDefinitionRegistry_SOLRTrackingComponent() {
+//    void postProcessBeanDefinitionRegistry_SearchTrackingComponent() {
 //        TrackingComponentBeanPostProcessor postProcessor = new TrackingComponentBeanPostProcessor();
 //        BeanDefinitionRegistry beanDefinitionRegistry = mock(BeanDefinitionRegistry.class);
 //        postProcessor.postProcessBeanDefinitionRegistry(beanDefinitionRegistry);
@@ -29,13 +29,13 @@
 //                argument.capture());
 //
 //        assertThat(argument.getValue(), is(not(nullValue())));
-//        assertThat(argument.getValue().getBeanClassName(), is(AlfrescoTrackingComponent.class.getCanonicalName()));
+//        assertThat(argument.getValue().getBeanClassName(), is(Alfresco7TrackingComponent.class.getCanonicalName()));
 //        assertThat(
 //                ((RuntimeBeanReference) argument.getValue()
 //                        .getConstructorArgumentValues()
 //                        .getGenericArgumentValue(RuntimeBeanReference.class).getValue())
 //                        .getBeanName(),
-//                is("solrTrackingComponent"));
+//                is("searchTrackingComponent"));
 //
 //    }
 //
