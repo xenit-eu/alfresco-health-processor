@@ -1,6 +1,6 @@
 ---
 title: Changelog - Alfred Health Processor
-date: 31 May 2021
+date: 19 December 2024
 report: true
 colorlinks: true
 ---
@@ -22,7 +22,12 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.5.6] - UNRELEASED
+## [0.5.6] - 2024-12-19
+
+### Fixed
+
+*[[#60](https://github.com/xenit-eu/alfresco-health-processor/pull/60)] Fix exception when searching for an empty list of transactions for nodes in Solr
+
 
 ## [0.5.5] - 2024-12-16
 
