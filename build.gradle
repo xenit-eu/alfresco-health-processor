@@ -1,11 +1,16 @@
 plugins {
     id 'eu.xenit.alfresco' version '1.2.0' apply(false)
     id 'eu.xenit.docker-alfresco' version '5.5.0' apply(false)
-    id "org.sonarqube" version "3.3"
-    id "org.kordamp.gradle.jacoco" version "0.47.0"
+    id "org.sonarqube" version "5.1.0.4882"
+    id "org.kordamp.gradle.jacoco" version "0.54.0"
+    id "be.vbgn.ci-detect" version "0.5.0"
+    id 'io.freefair.lombok' version '8.11' apply(false)
+    id 'io.freefair.javadocs' version '8.11' apply(false)
 }
 
-description = "Alfresco Health Processor: A background processor capable of performing various operations on the nodes in your Alfresco repository, in a batched and controlled manner"
+description = "Alfresco Health Processor:" +
+                " A background processor capable of performing various operations on the nodes" +
+                " in your Alfresco repository, in a batched and controlled manner"
 
 sonarqube {
     properties {
@@ -13,14 +18,15 @@ sonarqube {
         property "sonar.organization", "xenit-eu"
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.coverage.exclusions", "**/eu/xenit/alfresco/healthprocessor/example/*"
+        if (ci.isPullRequest()) {
+            property "sonar.pullrequest.key", ci.pullRequest
+            property "sonar.pullrequest.branch", ci.branch
+            property "sonar.pullrequest.base", ci.pullRequestTargetBranch
+        } else {
+            // GIT_BRANCH allows to push from local development directly to SonarCloud
+            property "sonar.branch.name", ci.reference != null ? ci.reference : "$System.env.GIT_BRANCH"
+        }
     }
-}
-
-ext {
-    alfrescoVersion = '5.2.f'
-    alfredTelemetryVersion = '0.6.0'
-    micrometerVersion = '1.0.6'
-    lombokVersion = '1.18.36'
 }
 
 subprojects {
@@ -28,7 +34,7 @@ subprojects {
     plugins.withType(JavaBasePlugin) {
         java {
             toolchain {
-                languageVersion = JavaLanguageVersion.of(8)
+                languageVersion = JavaLanguageVersion.of(11)
             }
         }
     }

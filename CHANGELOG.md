@@ -1,11 +1,8 @@
 ---
 title: Changelog - Alfred Health Processor
-date: 19 December 2024
+date: 20 December 2024
 report: true
 colorlinks: true
----
-<!--
-Changelog for Alfred Telemetry
 
 See http://keepachangelog.com/en as reference
 Version template:
@@ -18,9 +15,22 @@ Version template:
 ### Fixed (for any bug fixes)
 ### Security (in case of vulnerabilities)
 ### YANKED (for reverted functionality in)
- -->
 
 # Alfresco Health Processor Changelog
+
+## [0.6.0] - UNRELEASED
+
+### Added
+* Alfresco 7.1, 7.2, 7.3, 7.4 support
+* Added TLS support for Solr HTTP Client
+
+### Removed
+* Alfresco 5 & 6 support
+* Removed secret support for Solr HTTP Client
+
+### Fixed
+* Fixed missing logging bug caused by Alfresco upgrade to log4j2 
+
 
 ## [0.5.6] - 2024-12-19
 

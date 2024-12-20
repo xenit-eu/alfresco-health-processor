@@ -17,7 +17,7 @@ public class NodeFinder {
     private final SearchService searchService;
     private final NamespaceService namespaceService;
 
-    private static final String XPATH = "/app:company_home/st:sites/cm:swsdp/cm:documentLibrary/cm:Agency_x0020_Files/cm:Images/*";
+    private static final String XPATH = "/app:company_home/app:dictionary/app:content_templates/*";
 
     public NodeFinder(NodeService nodeService, SearchService searchService,
             NamespaceService namespaceService) {

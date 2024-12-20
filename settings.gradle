@@ -6,10 +6,9 @@ rootProject.name = 'alfresco-health-processor'
 
 include 'alfresco-health-processor-api'
 include 'alfresco-health-processor-platform'
-include 'alfresco-health-processor-platform:alfresco-7-upwards'
 include 'integration-tests'
 
-def integrationTestVersions = ["52", "61", "62", "70"];
+def integrationTestVersions = ["71","72","73","74"]
 
 integrationTestVersions.each {version ->
     include ":integration-tests:alfresco-community-${version}"

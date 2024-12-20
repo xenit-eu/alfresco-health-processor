@@ -1,0 +1,3 @@
+ext {
+    alfrescoVersion = '7.2.2.4'
+}

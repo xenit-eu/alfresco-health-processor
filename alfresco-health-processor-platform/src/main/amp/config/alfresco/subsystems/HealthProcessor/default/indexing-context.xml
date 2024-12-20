@@ -4,8 +4,6 @@
         xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean class="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponentBeanPostProcessor" />
-
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy.IndexingStrategyKey"
             class="eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy.IndexingStrategyKey"
             factory-method="fromKey">
@@ -38,6 +36,16 @@
                 <ref bean="eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsIndexingConfiguration" />
             </list>
         </constructor-arg>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent"
+          class="eu.xenit.alfresco.healthprocessor.indexing.Alfresco7TrackingComponent">
+        <constructor-arg name="trackingComponent" ref="searchTrackingComponent" />
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore"
+          class="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore">
+        <constructor-arg name="attributeService" ref="attributeService" />
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy"

@@ -10,7 +10,7 @@ ext {
 
 dependencies {
     alfrescoProvided project(":alfresco-health-processor-platform")
-    alfrescoProvided(enforcedPlatform("eu.xenit.alfresco:alfresco-community-bom:${alfrescoVersion}"))
+    alfrescoProvided platform("org.alfresco:acs-community-packaging:${alfrescoVersion}")
     alfrescoProvided("org.alfresco:alfresco-repository") {
         exclude module: 'spring-social-facebook-web'
     }
@@ -22,9 +22,6 @@ dependencies {
     testImplementation "org.hamcrest:hamcrest-all:${hamcrestVersion}"
     testImplementation "io.rest-assured:rest-assured:${restAssuredVersion}"
     testImplementation "org.awaitility:awaitility:${awaitilityVersion}"
-
-    testImplementation group: 'org.slf4j', name: 'slf4j-api', version: "${slf4jVersion}"
-    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: "${slf4jVersion}"
 }
 
 test {
@@ -39,7 +36,7 @@ test {
 subprojects { Project p ->
     apply plugin: 'java'
 
-    def alfrescoVersion = project.name[-2..-1]
+//    def alfrescoVersion = project.name[-2..-1]
     apply from: "${project.projectDir}/overload.gradle"
 
     description = "Alfresco ${alfrescoVersion} with Health Processor"
@@ -59,25 +56,37 @@ subprojects { Project p ->
     apply plugin: 'eu.xenit.docker-alfresco'
     apply plugin: 'eu.xenit.docker-compose.auto'
 
-    dependencies {
-        if (project.hasProperty("alfrescoBaseWarBom")) {
-            baseAlfrescoWar platform("${alfrescoBaseWarBom}")
+    configurations {
+        all {
+            exclude group: 'org.slf4j'
         }
-        baseAlfrescoWar "${alfrescoBaseWar}"
+    }
+
+    dependencies {
+        baseAlfrescoWar platform("org.alfresco:acs-community-packaging:${alfrescoVersion}")
+        baseAlfrescoWar "org.alfresco:content-services-community@war"
         alfrescoAmp project(path: ":integration-tests", configuration: "amp")
         alfrescoAmp project(path: ":alfresco-health-processor-platform", configuration: "amp")
         alfrescoAmp "eu.xenit.alfred.telemetry:alfred-telemetry-platform:${alfredTelemetryVersion}@amp"
+
+        alfrescoAmp("org.orderofthebee.support-tools:support-tools-repo:${ootbVersion}:amp@amp")
+        alfrescoSM(group: 'org.postgresql', name: 'postgresql', version: '42.6.0')
+
+        alfrescoSM "io.micrometer:micrometer-core:${micrometerVersion}"
+        alfrescoSM "io.github.mweirauch:micrometer-jvm-extras:${jvmExtrasVersion}"
+
+        alfrescoSM "io.micrometer:micrometer-registry-graphite:${micrometerVersion}"
+        alfrescoSM "io.micrometer:micrometer-registry-jmx:${micrometerVersion}"
+        alfrescoSM "io.micrometer:micrometer-registry-prometheus:${micrometerVersion}"
     }
 
     dockerBuild {
         alfresco {
-            baseImage = "${alfrescoBaseImage}"
-            leanImage = true
+            baseImage = "docker.io/xenit/alfresco-repository-skeleton:${alfrescoVersion.substring(0,3)}"
         }
     }
 
     dockerCompose {
-        ignorePullFailure = true
         useComposeFiles = [
                 "${project.parent.projectDir}/src/test/resources/compose/docker-compose.yml",
         ]

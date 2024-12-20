@@ -22,6 +22,7 @@
         parent="webscript">
         <constructor-arg name="nodeFinder" ref="nodeFinder" />
         <constructor-arg name="endpointSelector" ref="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector" />
+        <constructor-arg name="globalProperties" ref="global-properties" />
     </bean>
     <bean id="solr.CheckWebScript"
             class="eu.xenit.alfresco.healthprocessor.solr.SolrCheckNodeWebScript"
