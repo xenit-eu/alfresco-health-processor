@@ -61,7 +61,11 @@ public class SslHttpClientFactory {
 
             javax.net.ssl.SSLContext sslContext = SSLContexts.custom()
                     .loadKeyMaterial(keyStore, keyPasswordChars)
-                    .loadTrustMaterial(trustStore, (chain, authType) -> true) // Use default trust strategy
+                    // Use default trust strategy "Accept All", because:
+                    // 1. The certificate is already in the docker image = should be trusted
+                    // 2. Requires extensive configurability to allow accepting certificates from various CA 
+                    //    (e.g. different customers have different CA)
+                    .loadTrustMaterial(trustStore, (chain, authType) -> true) 
                     .build();
 
             // Create the SSLConnectionSocketFactory with the SSLContext
