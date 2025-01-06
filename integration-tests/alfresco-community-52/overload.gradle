@@ -1,5 +1,0 @@
-ext {
-    alfrescoVersion = '5.2.f'
-    alfrescoBaseWar = 'org.alfresco:alfresco-platform:5.2.g@war'
-    alfrescoBaseImage = 'docker.io/xenit/alfresco-repository-community:5.2.g'
-}
