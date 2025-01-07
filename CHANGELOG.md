@@ -1,6 +1,6 @@
 ---
 title: Changelog - Alfred Health Processor
-date: 20 December 2024
+date: 07 January 2025
 report: true
 colorlinks: true
 
@@ -18,7 +18,7 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
-## [0.6.0] - UNRELEASED
+## [0.6.0] - 2025-01-07
 
 ### Added
 * Alfresco 7.1, 7.2, 7.3, 7.4 support
