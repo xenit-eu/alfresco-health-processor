@@ -8,10 +8,8 @@ import lombok.Setter;
  *
  * @since 0.5.0
  */
-public abstract class ToggleableHealthFixerPlugin implements HealthFixerPlugin {
+public interface ToggleableHealthFixerPlugin extends HealthFixerPlugin {
 
-    @Getter
-    @Setter
-    private boolean enabled;
+    void setEnabled(boolean status);
 
 }

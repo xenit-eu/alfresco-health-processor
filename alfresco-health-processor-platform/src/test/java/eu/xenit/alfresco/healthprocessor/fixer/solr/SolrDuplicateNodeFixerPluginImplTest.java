@@ -32,15 +32,15 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
-class SolrDuplicateNodeFixerPluginTest {
+class SolrDuplicateNodeFixerPluginImplTest {
 
     private SolrRequestExecutor executor;
-    private SolrDuplicateNodeFixerPlugin duplicateNodeFixerPlugin;
+    private SolrDuplicateNodeFixerPluginImpl duplicateNodeFixerPlugin;
 
     @BeforeEach
     void setup() {
         executor = mock(SolrRequestExecutor.class);
-        duplicateNodeFixerPlugin = new SolrDuplicateNodeFixerPlugin(executor);
+        duplicateNodeFixerPlugin = new SolrDuplicateNodeFixerPluginImpl(executor);
     }
 
     @Test

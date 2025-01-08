@@ -32,15 +32,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class SolrMissingNodeFixerPluginTest {
+class SolrMissingNodeFixerPluginImplTest {
 
     private SolrRequestExecutor executor;
-    private SolrMissingNodeFixerPlugin missingNodeFixerPlugin;
+    private SolrMissingNodeFixerPluginImpl missingNodeFixerPlugin;
 
     @BeforeEach
     void setup() {
         executor = mock(SolrRequestExecutor.class);
-        missingNodeFixerPlugin = new SolrMissingNodeFixerPlugin(executor);
+        missingNodeFixerPlugin = new SolrMissingNodeFixerPluginImpl(executor);
     }
 
     @Test

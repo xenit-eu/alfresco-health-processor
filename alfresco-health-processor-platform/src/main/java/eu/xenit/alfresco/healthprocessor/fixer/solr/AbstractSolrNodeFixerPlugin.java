@@ -13,13 +13,17 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
-abstract class AbstractSolrNodeFixerPlugin extends ToggleableHealthFixerPlugin {
+abstract class AbstractSolrNodeFixerPlugin implements ToggleableHealthFixerPlugin {
 
     private final SolrRequestExecutor solrRequestExecutor;
+    private @Getter @Setter boolean enabled;
 
     @Nonnull
     @Override
