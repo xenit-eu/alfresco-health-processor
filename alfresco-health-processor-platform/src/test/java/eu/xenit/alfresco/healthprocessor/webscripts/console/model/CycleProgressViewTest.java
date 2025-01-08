@@ -91,7 +91,7 @@ class CycleProgressViewTest {
 
         CycleProgressView indexingProgressView = new CycleProgressView(mockIndexingProgress);
 
-        assertThat(indexingProgressView.getProgress(), is(equalTo("10,00%")));
+        assertThat(indexingProgressView.getProgress().replaceAll(",", "."), is(equalTo("10.00%")));
     }
 
     @Test
