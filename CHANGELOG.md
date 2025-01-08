@@ -18,6 +18,11 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
+## [0.6.1] - 2025-01-08
+
+### Fixed
+* Fixed a bug that caused the OOTB admin console to crash the health processor web scripts from the integration tests.
+
 ## [0.6.0] - 2025-01-07
 
 ### Added
