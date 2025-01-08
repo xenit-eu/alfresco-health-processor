@@ -1,7 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.solr;
 
 import eu.xenit.alfresco.healthprocessor.fixer.solr.SolrMissingNodeFixerPlugin;
-import eu.xenit.alfresco.healthprocessor.fixer.solr.SolrMissingNodeFixerPluginImpl;
 import java.io.IOException;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptRequest;
