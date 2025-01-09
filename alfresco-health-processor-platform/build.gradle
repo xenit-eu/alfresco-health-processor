@@ -6,7 +6,7 @@ plugins {
     id 'eu.xenit.amp'
 }
 
-//description = "Alfresco Repository module for ${rootProject.description}"
+description = "Alfresco Repository module for ${rootProject.description}"
 
 java {
     withJavadocJar()
