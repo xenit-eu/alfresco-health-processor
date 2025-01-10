@@ -15,6 +15,10 @@
 A background processor capable of performing various operations on the nodes in your Alfresco repository, in a batched
 and controlled manner.
 
+### Note regarding Alfresco 6.x and 7.x
+Starting from version 1.0.0, the Health Processor is no longer compatible with Alfresco 6.x and 7.x.
+For Alfresco 6.x and 7.x, please use an older version of the Health Processor.
+
 ## Usage
 
 Alfresco Health Processor is available in Maven Central as an
