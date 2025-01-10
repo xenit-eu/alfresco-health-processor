@@ -18,6 +18,13 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
+## [1.0.0] - 2025-01-10
+### Added
+* Added support for Alfresco 23.1
+
+### Removed
+* Removed support for Alfresco 6.x and 7.x
+
 ## [0.6.1] - 2025-01-08
 
 ### Fixed

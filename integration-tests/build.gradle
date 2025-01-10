@@ -82,7 +82,7 @@ subprojects { Project p ->
 
     dockerBuild {
         alfresco {
-            baseImage = "docker.io/xenit/alfresco-repository-skeleton:${alfrescoVersion.substring(0,3)}"
+            baseImage = "docker.io/xenit/alfresco-repository-skeleton:${alfrescoVersion.substring(0, alfrescoVersion.lastIndexOf('.'))}"
         }
     }
 
