@@ -16,12 +16,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
-import lombok.Value;
+
+import lombok.*;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -143,6 +139,30 @@ public class NodeHealthReport implements Serializable {
         }
         nodeHealthReport.data(newData);
         return nodeHealthReport;
+    }
+
+    public static @NonNull NodeHealthReport of(@NonNull NodeHealthStatus status, @NonNull NodeRef nodeRef) {
+        return new NodeHealthReport(status, nodeRef);
+    }
+
+    public static @NonNull NodeHealthReport ofHealthy(@NonNull NodeRef nodeRef) {
+        return of(NodeHealthStatus.HEALTHY, nodeRef);
+    }
+
+    public static @NonNull NodeHealthReport ofUnhealthy(@NonNull NodeRef nodeRef) {
+        return of(NodeHealthStatus.UNHEALTHY, nodeRef);
+    }
+
+    public static @NonNull Set<NodeHealthReport> ofHealthy(@NonNull Collection<NodeRef> nodeRefs) {
+        return nodeRefs.stream()
+                .map(NodeHealthReport::ofHealthy)
+                .collect(Collectors.toSet());
+    }
+
+    public static @NonNull Set<NodeHealthReport> ofUnhealthy(@NonNull Collection<NodeRef> nodeRefs) {
+        return nodeRefs.stream()
+                .map(NodeHealthReport::ofUnhealthy)
+                .collect(Collectors.toSet());
     }
 
     /**

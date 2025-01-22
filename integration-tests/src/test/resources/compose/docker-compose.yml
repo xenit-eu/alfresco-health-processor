@@ -15,7 +15,7 @@ services:
       - GLOBAL_solr.http.connection.timeout=30000
       - GLOBAL_csrf.filter.enabled=false
       - ENABLE_CLUSTERING=true
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.task.cron=0/20 * * * * ? *
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.strategy=single-txns
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.node-batch-size=1000
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.max-batches-per-second=100
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.noop.enabled=true
