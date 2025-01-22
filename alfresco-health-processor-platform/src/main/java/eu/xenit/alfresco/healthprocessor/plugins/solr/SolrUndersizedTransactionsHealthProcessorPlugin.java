@@ -10,10 +10,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -23,18 +21,28 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
 
     private final @NonNull HashSet<@NonNull NodeRef> cache = new HashSet<>();
     private final int threshold;
+    private final @NonNull AtomicBoolean isRunning = new AtomicBoolean(false);
 
     public SolrUndersizedTransactionsHealthProcessorPlugin(boolean enabled, int threshold) {
         super(enabled);
 
         this.threshold = threshold;
         // TODO: check if the correct indexer has been used.
-        SingleTransactionIndexingStrategy.listenToIndexerStart(this::onIndexerRestart);
+        SingleTransactionIndexingStrategy.listenToIndexerStart(this::onIndexerStart);
+        SingleTransactionIndexingStrategy.listenToIndexerStop(this::onIndexerStop);
     }
 
     @Synchronized("cache")
-    private void onIndexerRestart() {
+    private void onIndexerStart() {
         log.debug("Processing the start event from the single-transaction indexing strategy.");
+        isRunning.set(true);
+        cache.clear();
+    }
+
+    @Synchronized("cache")
+    private void onIndexerStop() {
+        log.debug("Processing the stop event from the single-transaction indexing strategy.");
+        isRunning.set(false);
         cache.clear();
     }
 
@@ -70,13 +78,17 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
     }
 
     @Override
+    @Synchronized("cache")
     public Map<String, String> getState() {
-        return super.getState(); // TODO.
+        return Map.of("isRunning", Boolean.toString(isRunning.get()),
+                "cacheSize", Integer.toString(cache.size()));
     }
 
     @Override
     public Map<String, String> getConfiguration() {
-        return super.getConfiguration(); // TODO.
+        HashMap<String, String> returnValue = new HashMap<>(super.getConfiguration());
+        returnValue.put("threshold", Integer.toString(threshold));
+        return returnValue;
     }
 
     private static @NonNull Set<NodeRef> filterArchiveAndWorkspaceNodeRefs(@NonNull Collection<NodeRef> nodeRefs) {

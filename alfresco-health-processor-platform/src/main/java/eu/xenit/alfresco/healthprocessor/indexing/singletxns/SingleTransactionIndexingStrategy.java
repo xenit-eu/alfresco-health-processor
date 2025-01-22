@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 public class SingleTransactionIndexingStrategy implements IndexingStrategy {
 
     private final static @NonNull HashSet<@NonNull Runnable> startListeners = new HashSet<>(1);
+    private final static @NonNull HashSet<@NonNull Runnable> stopListeners = new HashSet<>(1);
 
     private final @NonNull TrackingComponent trackingComponent;
     private final @NonNull SingleTransactionIndexingConfiguration configuration;
@@ -75,6 +76,8 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
         log.debug("SingleTransactionIndexingStrategy has been stopped.");
         state.setCurrentTxnId(configuration.getStartTxnId());
         cycleProgress.set(NullCycleProgress.getInstance());
+
+        announceIndexerStop();
     }
 
     @Override
@@ -96,6 +99,16 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     @Synchronized("startListeners")
     private static void announceIndexerStart() {
         startListeners.forEach(Runnable::run);
+    }
+
+    @Synchronized("stopListeners")
+    public static void listenToIndexerStop(@NonNull Runnable runnable) {
+        stopListeners.add(runnable);
+    }
+
+    @Synchronized("stopListeners")
+    private static void announceIndexerStop() {
+        stopListeners.forEach(Runnable::run);
     }
 
 }
