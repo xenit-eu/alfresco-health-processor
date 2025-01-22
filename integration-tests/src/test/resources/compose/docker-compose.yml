@@ -18,18 +18,20 @@ services:
       - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.strategy=single-txns
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.node-batch-size=1000
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.max-batches-per-second=100
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.noop.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.noop.enabled=false
       - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.store.max-stored-reports=40
       - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.streaming.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.progress.enabled=true
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.alfred-telemetry.enabled=true
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.alfred-telemetry.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled=false
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:content
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=true
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.check-transaction=true
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled=true
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.check-transaction=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threshold=5
       # Disable this loud logger which sends errors in Alfresco 7.0.
       - LOG4J_logger.org.alfresco.repo.content.transform.LocalTransformServiceRegistry=OFF
         # Settings for MQ (is needed!)

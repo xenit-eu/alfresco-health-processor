@@ -34,6 +34,12 @@
                 ref="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor" />
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrUndersizedTransactionsHealthProcessorPlugin"
+          class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrUndersizedTransactionsHealthProcessorPlugin">
+        <constructor-arg name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled}" />
+        <constructor-arg name="threshold" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threshold}" />
+    </bean>
+
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor"
             class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor" >
             <constructor-arg name="checkTransaction" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-index.check-transaction}" />

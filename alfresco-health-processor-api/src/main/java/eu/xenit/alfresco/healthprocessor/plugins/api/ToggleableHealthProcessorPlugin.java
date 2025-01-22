@@ -4,7 +4,10 @@ import eu.xenit.alfresco.healthprocessor.fixer.api.HealthFixerPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import java.util.Set;
 import javax.annotation.Nonnull;
+
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -13,6 +16,8 @@ import org.slf4j.Logger;
 /**
  * {@link HealthFixerPlugin} that already has an <code>enabled</code> property
  */
+@NoArgsConstructor
+@AllArgsConstructor
 @Slf4j
 public abstract class ToggleableHealthProcessorPlugin implements HealthProcessorPlugin {
 

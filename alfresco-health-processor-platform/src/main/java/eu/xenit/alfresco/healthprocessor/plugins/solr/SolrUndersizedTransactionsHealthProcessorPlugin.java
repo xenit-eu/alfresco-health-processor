@@ -1,94 +1,87 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
+import eu.xenit.alfresco.healthprocessor.indexing.singletxns.SingleTransactionIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.ToggleableHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
-import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
 import lombok.NonNull;
+import lombok.Synchronized;
+import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-
+@Slf4j
 public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableHealthProcessorPlugin {
 
-    private final static @NonNull Logger logger = LoggerFactory.getLogger(SolrUndersizedTransactionsHealthProcessorPlugin.class);
+    private final static @NonNull Set<StoreRef> ARCHIVE_AND_WORKSPACE_STORE_REFS = Set.of(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
 
-    private final static @NonNull String THRESHOLD_PARAMETER_NAME = "eu.xenit.alfresco.healthprocessor.plugin.merger.threshold";
-    private final static int DEFAULT_THRESHOLD = 1000;
-
-    private final @NonNull HashSet<NodeRef> rememberedNodes = new HashSet<>();
+    private final @NonNull HashSet<@NonNull NodeRef> cache = new HashSet<>();
     private final int threshold;
-    private long lastProcessedTransactionId = Long.MIN_VALUE;
-    private final @NonNull AttributeStore attributeStore;
 
-    public SolrUndersizedTransactionsHealthProcessorPlugin(@NonNull Properties globalProperties, @NonNull AttributeStore attributeStore) throws IllegalStateException {
-        // TODO: double-check this part.
-        String[] properties = {"eu.xenit.alfresco.healthprocessor.indexing.strategy", "eu.xenit.alfresco.healthprocessor.indexing.txn-id.txn-batch-size"};
-        String[] requiredValue = {"txn-id", "1"}; // Force the indexer to go over all transactions (offset allowed) one at a time.
-        for (int i = 0; i < properties.length; i++) {
-            if (!globalProperties.containsKey(properties[i]) || !requiredValue[i].equals(globalProperties.get(properties[i]))) {
-                throw new IllegalStateException(String.format("The SolrUndersizedTransactionsHealthProcessorPlugin has been enabled, " +
-                        "which requires the (%s) property to be set to (%s), but was (%s)", properties[i], requiredValue[i],
-                        globalProperties.get(properties[i])));
-            }
-        }
+    public SolrUndersizedTransactionsHealthProcessorPlugin(boolean enabled, int threshold) {
+        super(enabled);
 
-        this.attributeStore = attributeStore;
-        this.threshold = Integer.parseInt(globalProperties.getProperty(THRESHOLD_PARAMETER_NAME, String.valueOf(DEFAULT_THRESHOLD)));
-        logger.info("SolrUndersizedTransactionsHealthProcessorPlugin has been enabled with a threshold value of ({}).", threshold);
+        this.threshold = threshold;
+        // TODO: check if the correct indexer has been used.
+        SingleTransactionIndexingStrategy.listenToIndexerStart(this::onIndexerRestart);
+    }
+
+    @Synchronized("cache")
+    private void onIndexerRestart() {
+        log.debug("Processing the start event from the single-transaction indexing strategy.");
+        cache.clear();
     }
 
     @Nonnull
     @Override
+    @Synchronized("cache")
     protected Set<NodeHealthReport> doProcess(Set<NodeRef> nodeRefs) {
-        updateState();
+        // This health processor plugin is only interested in the nodes from the archive & workspace store, so we filter here.
+        nodeRefs = filterArchiveAndWorkspaceNodeRefs(nodeRefs);
 
-        // Did we just start a new batch, and is the current transaction already sufficiently large?
-        if (rememberedNodes.isEmpty() && nodeRefs.size() >= threshold) {
-            logger.debug("The number of nodes in the current transaction ({}) surpasses the threshold ({}) value; " +
-                    "skipping the current transaction.", nodeRefs.size(), threshold);
+        // If nothing is cached yet, and the batch size is sufficiently large, we don't need to merge the transactions.
+        if (cache.isEmpty() && nodeRefs.size() >= threshold) {
+            log.debug("The size of the received batch ({}) is larger than the threshold value ({}); " +
+                    "reporting the nodes as healthy.", nodeRefs.size(), threshold);
             return NodeHealthReport.ofHealthy(nodeRefs);
         }
 
-        // We're currently in a batch & the size of that batch is not sufficiently large yet.
-        rememberedNodes.addAll(nodeRefs);
-        if (rememberedNodes.size() >= threshold) {
-            Set<NodeHealthReport> returnValue = NodeHealthReport.ofUnhealthy(rememberedNodes);
-            rememberedNodes.clear();
-
-            logger.debug("Currently keeping track of ({}) nodes, which surpasses the threshold ({}) value. " +
-                    "Marking the nodes as unhealthy.", returnValue.size(), threshold);
+        // Add the nodes to the cache. If the cache becomes to big, report the nodes as unhealthy so that they can be merged.
+        cache.addAll(nodeRefs);
+        if (cache.size() >= threshold) {
+            log.debug("The size of the cache ({}) is now larger than the threshold value ({}); " +
+                    "reporting the nodes as unhealthy.", cache.size(), threshold);
+            Set<NodeHealthReport> returnValue = NodeHealthReport.ofUnhealthy(cache);
+            cache.clear();
             return returnValue;
         }
 
-        // Still not large enough.
+        // Keep increasing the cache size.
+        log.trace("The size of the cache ({}) is still smaller than the threshold value ({}); " +
+                "waiting for more nodes to be processed.", cache.size(), threshold);
         return Set.of();
+
     }
 
-    private void updateState() {
-        if (indexerHasRestarted()) {
-            rememberedNodes.clear();
-            logger.debug("The indexer has restarted, clearing the remembered nodes.");
-        }
-        lastProcessedTransactionId = getCurrentlyIndexedTransactionId();
-    }
-
-    private long getCurrentlyIndexedTransactionId() {
-        return attributeStore.getAttribute("blahbalh");
-    }
-
-    private boolean indexerHasRestarted() {
-        long currentTransaction = getCurrentlyIndexedTransactionId();
-        return lastProcessedTransactionId >= currentTransaction;
+    @Override
+    public Map<String, String> getState() {
+        return super.getState(); // TODO.
     }
 
     @Override
     public Map<String, String> getConfiguration() {
-        HashMap<String, String> returnValue = new HashMap<>(super.getConfiguration());
-        returnValue.put("threshold", String.valueOf(threshold));
-        return returnValue;
+        return super.getConfiguration(); // TODO.
+    }
+
+    private static @NonNull Set<NodeRef> filterArchiveAndWorkspaceNodeRefs(@NonNull Collection<NodeRef> nodeRefs) {
+        return nodeRefs.stream()
+                .filter(nodeRef -> ARCHIVE_AND_WORKSPACE_STORE_REFS.contains(nodeRef.getStoreRef()))
+                .collect(Collectors.toSet());
     }
 }

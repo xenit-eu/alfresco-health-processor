@@ -10,6 +10,7 @@ import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,9 +21,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SingleTransactionIndexingStrategy implements IndexingStrategy {
 
+    private final static @NonNull HashSet<@NonNull Runnable> startListeners = new HashSet<>(1);
+
     private final @NonNull TrackingComponent trackingComponent;
     private final @NonNull SingleTransactionIndexingConfiguration configuration;
-    private final @NonNull AtomicReference<CycleProgress> cycleProgress = new AtomicReference<>(NullCycleProgress.getInstance());
+    private final @NonNull AtomicReference<@NonNull CycleProgress> cycleProgress = new AtomicReference<>(NullCycleProgress.getInstance());
     private final @NonNull SingleTransactionIndexingState state = new SingleTransactionIndexingState();
     private final @NonNull LongSupplier progressSupplier = () -> {
         synchronized (state) {
@@ -47,6 +50,8 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
         state.setCurrentTxnId(configuration.getStartTxnId());
         if (state.getCurrentTxnId() < 0) state.setCurrentTxnId(1);
         cycleProgress.set(new SimpleCycleProgress(configuration.getStartTxnId(), configuration.getStopTxnId(), progressSupplier));
+
+        announceIndexerStart();
     }
 
 
@@ -82,4 +87,15 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     public @NonNull CycleProgress getCycleProgress() {
         return cycleProgress.get();
     }
+
+    @Synchronized("startListeners")
+    public static void listenToIndexerStart(@NonNull Runnable runnable) {
+        startListeners.add(runnable);
+    }
+
+    @Synchronized("startListeners")
+    private static void announceIndexerStart() {
+        startListeners.forEach(Runnable::run);
+    }
+
 }
