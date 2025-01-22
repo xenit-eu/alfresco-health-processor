@@ -10,13 +10,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
-import lombok.Value;
+
+import lombok.*;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -85,4 +82,16 @@ public class NodeFixReport implements PersistableData {
             Collection<String> messages) {
         this(status, healthReport, new HashSet<>(messages), healthReport.getNodeRef());
     }
+
+    public static @NonNull Set<NodeFixReport> of(@NonNull NodeFixStatus status, @NonNull Collection<NodeHealthReport> healthReports,
+                                                 @NonNull String... messages) {
+        return healthReports.stream()
+                .map(healthReport -> new NodeFixReport(status, healthReport, messages))
+                .collect(Collectors.toSet());
+    }
+
+    public static @NonNull Set<NodeFixReport> ofFixed(@NonNull Collection<NodeHealthReport> healthReports, @NonNull String... messages) {
+        return of(NodeFixStatus.SUCCEEDED, healthReports, messages);
+    }
+
 }

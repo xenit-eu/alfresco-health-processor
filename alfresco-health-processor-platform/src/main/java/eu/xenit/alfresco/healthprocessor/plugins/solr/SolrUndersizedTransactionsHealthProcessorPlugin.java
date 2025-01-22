@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableHealthProcessorPlugin {
 
     private final static @NonNull Set<StoreRef> ARCHIVE_AND_WORKSPACE_STORE_REFS = Set.of(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+    private final static @NonNull String UNHEALTHY_MESSAGE = "Node was collected from transactions that were too small to meet the threshold value";
 
     private final @NonNull HashSet<@NonNull NodeRef> cache = new HashSet<>();
     private final int threshold;
@@ -51,6 +52,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
     @Synchronized("cache")
     protected Set<NodeHealthReport> doProcess(Set<NodeRef> nodeRefs) {
         // This health processor plugin is only interested in the nodes from the archive & workspace store, so we filter here.
+        // TODO: this is wrong. Alfresco starts complaining about non-reported nodes.
         nodeRefs = filterArchiveAndWorkspaceNodeRefs(nodeRefs);
 
         // If nothing is cached yet, and the batch size is sufficiently large, we don't need to merge the transactions.
@@ -65,7 +67,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
         if (cache.size() >= threshold) {
             log.debug("The size of the cache ({}) is now larger than the threshold value ({}); " +
                     "reporting the nodes as unhealthy.", cache.size(), threshold);
-            Set<NodeHealthReport> returnValue = NodeHealthReport.ofUnhealthy(cache);
+            Set<NodeHealthReport> returnValue = NodeHealthReport.ofUnhealthy(cache, UNHEALTHY_MESSAGE);
             cache.clear();
             return returnValue;
         }

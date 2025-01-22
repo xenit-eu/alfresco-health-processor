@@ -141,28 +141,18 @@ public class NodeHealthReport implements Serializable {
         return nodeHealthReport;
     }
 
-    public static @NonNull NodeHealthReport of(@NonNull NodeHealthStatus status, @NonNull NodeRef nodeRef) {
-        return new NodeHealthReport(status, nodeRef);
-    }
-
-    public static @NonNull NodeHealthReport ofHealthy(@NonNull NodeRef nodeRef) {
-        return of(NodeHealthStatus.HEALTHY, nodeRef);
-    }
-
-    public static @NonNull NodeHealthReport ofUnhealthy(@NonNull NodeRef nodeRef) {
-        return of(NodeHealthStatus.UNHEALTHY, nodeRef);
-    }
-
-    public static @NonNull Set<NodeHealthReport> ofHealthy(@NonNull Collection<NodeRef> nodeRefs) {
+    public static @NonNull Set<NodeHealthReport> of(@NonNull NodeHealthStatus status, @NonNull Collection<NodeRef> nodeRefs, @NonNull String... messages) {
         return nodeRefs.stream()
-                .map(NodeHealthReport::ofHealthy)
+                .map(nodeRef -> new NodeHealthReport(status, nodeRef, messages))
                 .collect(Collectors.toSet());
     }
 
-    public static @NonNull Set<NodeHealthReport> ofUnhealthy(@NonNull Collection<NodeRef> nodeRefs) {
-        return nodeRefs.stream()
-                .map(NodeHealthReport::ofUnhealthy)
-                .collect(Collectors.toSet());
+    public static @NonNull Set<NodeHealthReport> ofHealthy(@NonNull Collection<NodeRef> nodeRefs, @NonNull String... messages) {
+        return of(NodeHealthStatus.HEALTHY, nodeRefs, messages);
+    }
+
+    public static @NonNull Set<NodeHealthReport> ofUnhealthy(@NonNull Collection<NodeRef> nodeRefs, @NonNull String... messages) {
+        return of(NodeHealthStatus.UNHEALTHY, nodeRefs, messages);
     }
 
     /**
