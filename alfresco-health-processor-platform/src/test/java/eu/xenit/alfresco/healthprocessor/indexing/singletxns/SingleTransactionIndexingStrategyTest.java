@@ -20,8 +20,7 @@ import java.util.stream.Collectors;
 
 import static eu.xenit.alfresco.healthprocessor.indexing.singletxns.SingleTransactionIndexingStrategy.selectedIndexingStrategyPropertyKey;
 import static eu.xenit.alfresco.healthprocessor.plugins.solr.SolrUndersizedTransactionsHealthProcessorPluginTest.generateRandomNodeRefs;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
@@ -56,6 +55,15 @@ class SingleTransactionIndexingStrategyTest {
 
         verify(trackingComponent, times((int) (MAX_TXN + 1))).getNodesForTxnIds(anyList());
         assertEquals(List.of(0L, 1L, 2L), fetchTransactions);
+    }
+
+    @Test
+    void txnSettersTest() {
+        assertThrows(IllegalArgumentException.class, () -> configuration.setStartTxnId(MAX_TXN + 1));
+        assertThrows(IllegalArgumentException.class, () -> configuration.setStopTxnId(-1));
+
+        configuration.setStopTxnId(15);
+        configuration.setStartTxnId(15);
     }
 
     @Test
