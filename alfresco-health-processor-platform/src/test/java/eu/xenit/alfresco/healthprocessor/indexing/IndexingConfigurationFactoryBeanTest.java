@@ -18,7 +18,7 @@ class IndexingConfigurationFactoryBeanTest {
     void selectConfigurationForIndexingKey() {
         assertThat(factoryBean(IndexingStrategyKey.TXNID).createInstance(), is(instanceOf(TxnIdIndexingConfiguration.class)));
         assertThat(factoryBean(IndexingStrategyKey.LAST_TXNS).createInstance(), is(instanceOf(LastTxnsIndexingConfiguration.class)));
-        assertThat(factoryBean(IndexingStrategyKey.SINGLE_TXNS).createInstance(), is(instanceOf(LastTxnsIndexingConfiguration.class)));
+        assertThat(factoryBean(IndexingStrategyKey.SINGLE_TXNS).createInstance(), is(instanceOf(SingleTransactionIndexingConfiguration.class)));
     }
 
     @Test
