@@ -151,10 +151,6 @@ public class NodeHealthReport implements Serializable {
         return of(NodeHealthStatus.HEALTHY, nodeRefs, messages);
     }
 
-    public static @NonNull Set<NodeHealthReport> ofUnhealthy(@NonNull Collection<NodeRef> nodeRefs, @NonNull String... messages) {
-        return of(NodeHealthStatus.UNHEALTHY, nodeRefs, messages);
-    }
-
     /**
      * Classes that implement this interface and are added to a health report in the {@link #data(Class)} set are stored
      * in the database and can be accessed after a cycle has finished in {@link HealthReporter#onCycleDone(List)}

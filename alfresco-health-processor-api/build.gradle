@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'eu.xenit.alfresco'
     id 'maven-publish'
     id 'io.freefair.lombok'
     id 'io.freefair.javadocs'
@@ -15,12 +16,15 @@ java {
 dependencies {
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
-    compileOnly platform("org.alfresco:acs-community-packaging:${alfrescoVersion}")
-    compileOnly("org.alfresco:alfresco-data-model") {
+    alfrescoProvided platform("org.alfresco:acs-community-packaging:${alfrescoVersion}")
+    alfrescoProvided("org.alfresco:alfresco-data-model") {
         // We only need the NodeRef class, not all dependencies
         transitive = false
     }
     compileOnly 'org.slf4j:slf4j-api'
+
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:${junitJupiterVersion}"
 }
 
 apply from: "${rootDir}/gradle/publish.gradle"
