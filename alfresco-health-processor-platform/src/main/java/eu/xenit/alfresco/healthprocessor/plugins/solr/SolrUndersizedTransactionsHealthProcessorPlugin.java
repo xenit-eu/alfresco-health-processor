@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableHealthProcessorPlugin {
 
     private final static @NonNull Set<StoreRef> ARCHIVE_AND_WORKSPACE_STORE_REFS = Set.of(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-    private final static @NonNull QName DESCRIPTION_QNAME = QName.createQName("cm:description");
+    private final static @NonNull QName DESCRIPTION_QNAME = QName.createQName("{http://www.alfresco.org/model/content/1.0}description");
     private final static @NonNull String DESCRIPTION_MESSAGE = "This node has been touched by the health processor to " +
             "trigger ACS to merge the transactions.";
 
