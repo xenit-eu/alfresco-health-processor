@@ -36,15 +36,11 @@
 
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrUndersizedTransactionsHealthProcessorPlugin"
           class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrUndersizedTransactionsHealthProcessorPlugin">
+        <constructor-arg name="properties" ref="global-properties" />
         <constructor-arg name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled}" />
         <constructor-arg name="threshold" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threshold}" />
-    </bean>
-
-    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrUndersizedTransactionsFixerPlugin"
-          class="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrUndersizedTransactionsFixerPluginImpl">
-        <constructor-arg name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled}" />
-        <constructor-arg name="nodeService" ref="NodeService" />
         <constructor-arg name="transactionHelper" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoTransactionHelper" />
+        <constructor-arg name="nodeService" ref="NodeService" />
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor"

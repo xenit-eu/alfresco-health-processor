@@ -5,21 +5,22 @@ import eu.xenit.alfresco.healthprocessor.indexing.NullCycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.SimpleCycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.LongSupplier;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class SingleTransactionIndexingStrategy implements IndexingStrategy {
+
+    private final static @NonNull String selectedIndexingStrategyPropertyKey = "eu.xenit.alfresco.healthprocessor.indexing.strategy";
+    private final static @NonNull IndexingStrategyKey indexingStrategyKey = IndexingStrategyKey.SINGLE_TXNS;
 
     private final static @NonNull HashSet<@NonNull Runnable> startListeners = new HashSet<>(1);
     private final static @NonNull HashSet<@NonNull Runnable> stopListeners = new HashSet<>(1);
@@ -109,6 +110,10 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     @Synchronized("stopListeners")
     private static void announceIndexerStop() {
         stopListeners.forEach(Runnable::run);
+    }
+
+    public static boolean isSelectedIndexingStrategy(@NonNull Properties properties) {
+        return indexingStrategyKey.getKey().equals(properties.get(selectedIndexingStrategyPropertyKey));
     }
 
 }

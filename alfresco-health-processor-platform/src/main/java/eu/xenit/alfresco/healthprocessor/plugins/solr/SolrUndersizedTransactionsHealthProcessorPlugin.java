@@ -3,11 +3,15 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr;
 import eu.xenit.alfresco.healthprocessor.indexing.singletxns.SingleTransactionIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.ToggleableHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import lombok.NonNull;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -18,19 +22,36 @@ import java.util.stream.Collectors;
 public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableHealthProcessorPlugin {
 
     private final static @NonNull Set<StoreRef> ARCHIVE_AND_WORKSPACE_STORE_REFS = Set.of(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-    private final static @NonNull String UNHEALTHY_MESSAGE = "Node was collected from transactions that were too small to meet the threshold value";
+    private final static @NonNull QName DESCRIPTION_QNAME = QName.createQName("cm:description");
+    private final static @NonNull String DESCRIPTION_MESSAGE = "This node has been touched by the health processor to " +
+            "trigger ACS to merge the transactions.";
 
     private final @NonNull HashSet<@NonNull NodeRef> cache = new HashSet<>();
     private final int threshold;
+    private final @NonNull TransactionHelper transactionHelper;
+    private final @NonNull NodeService nodeService;
     private final @NonNull AtomicBoolean isRunning = new AtomicBoolean(false);
 
-    public SolrUndersizedTransactionsHealthProcessorPlugin(boolean enabled, int threshold) {
+    public SolrUndersizedTransactionsHealthProcessorPlugin(@NonNull Properties properties, boolean enabled,
+                                                           int threshold, @NonNull TransactionHelper transactionHelper,
+                                                           @NonNull NodeService nodeService) {
         super(enabled);
+        guaranteeSingleTransactionIndexerIsUsed(properties);
 
         this.threshold = threshold;
-        // TODO: check if the correct indexer has been used.
+        this.transactionHelper = transactionHelper;
+        this.nodeService = nodeService;
+
         SingleTransactionIndexingStrategy.listenToIndexerStart(this::onIndexerStart);
         SingleTransactionIndexingStrategy.listenToIndexerStop(this::onIndexerStop);
+    }
+
+    private void guaranteeSingleTransactionIndexerIsUsed(@NonNull Properties properties) throws AssertionError {
+        if (SingleTransactionIndexingStrategy.isSelectedIndexingStrategy(properties)) return;
+
+        throw new AssertionError("The SolrUndersizedTransactionsHealthProcessorPlugin has been activated, " +
+                "which requires the SingleTransactionIndexingStrategy to be used. However, the latter one has not been " +
+                "activated.");
     }
 
     @Synchronized("cache")
@@ -50,33 +71,50 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
     @Nonnull
     @Override
     @Synchronized("cache")
-    protected Set<NodeHealthReport> doProcess(Set<NodeRef> nodeRefs) {
-        // This health processor plugin is only interested in the nodes from the archive & workspace store, so we filter here.
-        // TODO: this is wrong. Alfresco starts complaining about non-reported nodes.
-        nodeRefs = filterArchiveAndWorkspaceNodeRefs(nodeRefs);
+    protected Set<NodeHealthReport> doProcess(Set<NodeRef> allNodeRefs) {
+        // Ignore the non-archive and non-workspace nodes. Just make sure their health is also reported at the end.
+        Set<NodeRef> filteredNodeRefs = filterWorkspaceAndArchiveNodes(allNodeRefs);
 
-        // If nothing is cached yet, and the batch size is sufficiently large, we don't need to merge the transactions.
-        if (cache.isEmpty() && nodeRefs.size() >= threshold) {
-            log.debug("The size of the received batch ({}) is larger than the threshold value ({}); " +
-                    "reporting the nodes as healthy.", nodeRefs.size(), threshold);
-            return NodeHealthReport.ofHealthy(nodeRefs);
+        // For the relevant nodes from the current transaction:
+        // A) if nothing from the previous transactions has been cached yet & the current transaction is large enough,
+        //      then nothing needs to be merged. Do nothing in that case.
+        if (cache.isEmpty() && filteredNodeRefs.size() >= threshold) {
+            log.trace("The current transaction is large enough; received {} node(s) while the threshold value is ({}). " +
+                    "No transactions will be merged.", filteredNodeRefs.size(), threshold);
+        } else {
+            // B) if A) does not apply, add the current transaction to the cache. Once the cache overflows,
+            //      start merging the transactions.
+            cache.addAll(filteredNodeRefs);
+            log.trace("Added {} nodes(s) to the cache (current size: {}).", filteredNodeRefs.size(), cache.size());
+
+            if (cache.size() >= threshold) {
+                mergeTransactions();
+                cache.clear();
+            }
         }
 
-        // Add the nodes to the cache. If the cache becomes to big, report the nodes as unhealthy so that they can be merged.
-        cache.addAll(nodeRefs);
-        if (cache.size() >= threshold) {
-            log.debug("The size of the cache ({}) is now larger than the threshold value ({}); " +
-                    "reporting the nodes as unhealthy.", cache.size(), threshold);
-            Set<NodeHealthReport> returnValue = NodeHealthReport.ofUnhealthy(cache, UNHEALTHY_MESSAGE);
-            cache.clear();
-            return returnValue;
-        }
+        return NodeHealthReport.ofHealthy(allNodeRefs);
+    }
 
-        // Keep increasing the cache size.
-        log.trace("The size of the cache ({}) is still smaller than the threshold value ({}); " +
-                "waiting for more nodes to be processed.", cache.size(), threshold);
-        return Set.of();
+    private void mergeTransactions() {
+        log.debug("The cache (current size: {}) has reached the threshold value ({}). Merging the transactions.",
+                cache.size(), threshold);
 
+        AuthenticationUtil.runAsSystem(() -> {
+           transactionHelper.inNewTransaction(() -> {
+               for (NodeRef nodeRef : cache) {
+                    nodeService.setProperty(nodeRef, DESCRIPTION_QNAME, DESCRIPTION_MESSAGE);
+               }
+           }, false);
+
+           return null;
+        });
+    }
+
+    private @NonNull Set<NodeRef> filterWorkspaceAndArchiveNodes(@NonNull Set<NodeRef> allNodeRefs) {
+        return allNodeRefs.stream()
+                .filter(nodeRef -> ARCHIVE_AND_WORKSPACE_STORE_REFS.contains(nodeRef.getStoreRef()))
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -93,9 +131,4 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
         return returnValue;
     }
 
-    private static @NonNull Set<NodeRef> filterArchiveAndWorkspaceNodeRefs(@NonNull Collection<NodeRef> nodeRefs) {
-        return nodeRefs.stream()
-                .filter(nodeRef -> ARCHIVE_AND_WORKSPACE_STORE_REFS.contains(nodeRef.getStoreRef()))
-                .collect(Collectors.toSet());
-    }
 }
