@@ -14,7 +14,11 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -47,7 +51,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
         SingleTransactionIndexingStrategy.listenToIndexerStop(this::onIndexerStop);
     }
 
-    private void guaranteeSingleTransactionIndexerIsUsed(@NonNull Properties properties) throws AssertionError {
+    public void guaranteeSingleTransactionIndexerIsUsed(@NonNull Properties properties) throws AssertionError {
         if (SingleTransactionIndexingStrategy.isSelectedIndexingStrategy(properties)) return;
 
         throw new AssertionError("The SolrUndersizedTransactionsHealthProcessorPlugin has been activated, " +

@@ -2,6 +2,9 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
 import com.google.common.collect.Sets;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
+import eu.xenit.alfresco.healthprocessor.indexing.singletxns.SingleTransactionIndexingConfiguration;
+import eu.xenit.alfresco.healthprocessor.indexing.singletxns.SingleTransactionIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import lombok.NonNull;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -16,7 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static eu.xenit.alfresco.healthprocessor.plugins.solr.SolrUndersizedTransactionsHealthProcessorPlugin.ARCHIVE_AND_WORKSPACE_STORE_REFS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -79,6 +82,16 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
     }
 
     @Test
+    void testGuaranteeSingleTransactionIndexerIsUsed() {
+        Properties properties = new Properties();
+        assertThrows(AssertionError.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(properties, ENABLED, THRESHOLD, transactionHelper, nodeService));
+        properties.put(SingleTransactionIndexingStrategy.selectedIndexingStrategyPropertyKey, "not single txns");
+        assertThrows(AssertionError.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(properties, ENABLED, THRESHOLD, transactionHelper, nodeService));
+        properties.put(SingleTransactionIndexingStrategy.selectedIndexingStrategyPropertyKey, SingleTransactionIndexingStrategy.indexingStrategyKey.getKey());
+        assertDoesNotThrow(() -> new SolrUndersizedTransactionsHealthProcessorPlugin(properties, ENABLED, THRESHOLD, transactionHelper, nodeService));
+    }
+
+    @Test
     void testNonWorkspaceAndArchiveNodesAreNotProcessed() {
         HashSet<NodeRef> firstTransaction = new HashSet<>(THRESHOLD);
         firstTransaction.addAll(generateRandomNodeRefs(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, THRESHOLD - 2));
@@ -96,6 +109,17 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
                 .filter(nodeRef -> ARCHIVE_AND_WORKSPACE_STORE_REFS.contains(nodeRef.getStoreRef()))
                 .collect(Collectors.toSet()), secondTransaction),
                 Sets.newHashSet(processedNodes), "only workspace and archive nodes should be processed");
+    }
+
+    @Test
+    void testIndexerCallbacks() {
+        SingleTransactionIndexingStrategy strategy = new SingleTransactionIndexingStrategy(mock(TrackingComponent.class),
+                mock(SingleTransactionIndexingConfiguration.class));
+        assertEquals("false", plugin.getState().get("isRunning")); // Normally, this is only called by the UI.
+        strategy.onStart();
+        assertEquals("true", plugin.getState().get("isRunning"));
+        strategy.onStop();
+        assertEquals("false", plugin.getState().get("isRunning"));
     }
 
     public static @NonNull Set<NodeRef> generateRandomNodeRefs(@NonNull StoreRef storeRef, int amount) {
