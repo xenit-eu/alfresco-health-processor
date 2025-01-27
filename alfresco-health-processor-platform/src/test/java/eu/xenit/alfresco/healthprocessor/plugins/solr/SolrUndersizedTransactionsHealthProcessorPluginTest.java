@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-class SolrUndersizedTransactionsHealthProcessorPluginTest {
+public class SolrUndersizedTransactionsHealthProcessorPluginTest {
 
     private final static int THRESHOLD = 100;
     private final static boolean ENABLED = true;
@@ -98,7 +98,7 @@ class SolrUndersizedTransactionsHealthProcessorPluginTest {
                 Sets.newHashSet(processedNodes), "only workspace and archive nodes should be processed");
     }
 
-    private static @NonNull Set<NodeRef> generateRandomNodeRefs(@NonNull StoreRef storeRef, int amount) {
+    public static @NonNull Set<NodeRef> generateRandomNodeRefs(@NonNull StoreRef storeRef, int amount) {
         return IntStream.range(0, amount)
                 .mapToObj(unused -> UUID.randomUUID())
                 .map(uuid -> new NodeRef(storeRef, uuid.toString()))

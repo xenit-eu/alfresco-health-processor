@@ -5,7 +5,6 @@ import eu.xenit.alfresco.healthprocessor.indexing.NullCycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.SimpleCycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +18,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SingleTransactionIndexingStrategy implements IndexingStrategy {
 
-    private final static @NonNull String selectedIndexingStrategyPropertyKey = "eu.xenit.alfresco.healthprocessor.indexing.strategy";
-    private final static @NonNull IndexingStrategyKey indexingStrategyKey = IndexingStrategyKey.SINGLE_TXNS;
+    public final static @NonNull String selectedIndexingStrategyPropertyKey = "eu.xenit.alfresco.healthprocessor.indexing.strategy";
+    public final static @NonNull IndexingStrategyKey indexingStrategyKey = IndexingStrategyKey.SINGLE_TXNS;
 
     private final static @NonNull HashSet<@NonNull Runnable> startListeners = new HashSet<>(1);
     private final static @NonNull HashSet<@NonNull Runnable> stopListeners = new HashSet<>(1);
