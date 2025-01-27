@@ -18,6 +18,14 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
+## [0.6.2] - 2025-01-27
+
+### Added
+* Added the `single-txns` indexing strategy, which ignores the amount of requested nodes
+  and always returns a single transaction for each requested batch.
+* Added the `SolrUndersizedTransactionsHealthProcessorPlugin` plugin, which adds a placeholder description
+  to existing nodes in order to trigger ACS to merge the corresponding transactions.
+
 ## [0.6.1] - 2025-01-08
 
 ### Fixed
