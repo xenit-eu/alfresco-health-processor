@@ -42,6 +42,8 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
 
         this.trackingComponent = trackingComponent;
         this.configuration = configuration;
+
+        this.state.setLastTxnId(configuration.getStopTxnId());
     }
 
     @Override
@@ -49,8 +51,9 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     public void onStart() {
         log.debug("SingleTransactionIndexingStrategy has been started.");
         state.setCurrentTxnId(configuration.getStartTxnId());
+        state.setLastTxnId(Math.min(configuration.getStopTxnId(), trackingComponent.getMaxTxnId()));
         if (state.getCurrentTxnId() < 0) state.setCurrentTxnId(1);
-        cycleProgress.set(new SimpleCycleProgress(configuration.getStartTxnId(), configuration.getStopTxnId(), progressSupplier));
+        cycleProgress.set(new SimpleCycleProgress(state.getCurrentTxnId(), state.getLastTxnId(), progressSupplier));
 
         announceIndexerStart();
     }
@@ -59,15 +62,22 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     @Override
     @Synchronized("state")
     public @NonNull Set<NodeRef> getNextNodeIds(int ignored) {
-        long currentTxnId = state.getCurrentTxnId();
-        log.debug("Currently processing transaction with ID ({}).", currentTxnId);
-        if (currentTxnId > configuration.getStopTxnId() || currentTxnId > trackingComponent.getMaxTxnId()) return Set.of();
+        Set<NodeRef> returnValue = null;
+        do {
+            if (returnValue != null) log.debug("Skipping transaction with ID ({}), as it has no nodes.", state.getCurrentTxnId() - 1);
 
-        state.setCurrentTxnId(currentTxnId + 1);
-        return trackingComponent.getNodesForTxnIds(List.of(currentTxnId))
-                .stream()
-                .map(TrackingComponent.NodeInfo::getNodeRef)
-                .collect(Collectors.toSet());
+            long currentTxnId = state.getCurrentTxnId();
+            log.debug("Currently processing transaction with ID ({}).", currentTxnId);
+            if (currentTxnId > state.getLastTxnId()) return Set.of();
+
+            state.setCurrentTxnId(currentTxnId + 1);
+            returnValue = trackingComponent.getNodesForTxnIds(List.of(currentTxnId))
+                    .stream()
+                    .map(TrackingComponent.NodeInfo::getNodeRef)
+                    .collect(Collectors.toSet());
+        } while (returnValue.isEmpty());
+
+        return returnValue;
     }
 
     @Override
@@ -75,6 +85,7 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     public void onStop() {
         log.debug("SingleTransactionIndexingStrategy has been stopped.");
         state.setCurrentTxnId(configuration.getStartTxnId());
+        state.setLastTxnId(configuration.getStopTxnId());
         cycleProgress.set(NullCycleProgress.getInstance());
 
         announceIndexerStop();
