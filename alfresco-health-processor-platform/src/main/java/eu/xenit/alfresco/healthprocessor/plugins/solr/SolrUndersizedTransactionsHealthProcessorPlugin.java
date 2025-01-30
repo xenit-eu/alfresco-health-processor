@@ -21,16 +21,13 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableHealthProcessorPlugin {
 
-    final static @NonNull QName DESCRIPTION_QNAME = QName.createQName("{http://www.alfresco.org/model/content/1.0}description");
-    final static @NonNull String DESCRIPTION_MESSAGE = "This node has been touched by the health processor to " +
-            "trigger ACS to merge the transactions.";
+    final static @NonNull QName ASPECT_QNAME = QName.createQName("http://www.alfresco.org/model/healthprocessor/1.0", "dummyAspect");
     final static @NonNull Set<StoreRef> ARCHIVE_AND_WORKSPACE_STORE_REFS = Set.of(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
 
     private final int threshold;
@@ -105,7 +102,8 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
             AuthenticationUtil.runAsSystem(() -> {
                 transactionHelper.inNewTransaction(() -> {
                     for (NodeRef nodeRef : backgroundWorkerBatch) {
-                        nodeService.setProperty(nodeRef, DESCRIPTION_QNAME, DESCRIPTION_MESSAGE);
+                        nodeService.addAspect(nodeRef, ASPECT_QNAME, Map.of());
+                        nodeService.removeAspect(nodeRef, ASPECT_QNAME);
                     }
                 }, false);
 

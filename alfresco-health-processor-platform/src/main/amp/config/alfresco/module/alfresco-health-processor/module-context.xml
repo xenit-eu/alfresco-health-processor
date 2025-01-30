@@ -10,6 +10,14 @@
         <property name="autoStart" value="true"/>
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.dictionaryBootstrap" parent="dictionaryModelBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/module/alfresco-health-processor/content-model.xml</value>
+            </list>
+        </property>
+    </bean>
+
     <!--
     Proxy required to make the ResponseViewRenderer available in main Spring context
     -->
