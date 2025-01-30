@@ -53,8 +53,8 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
         doAnswer(invocation -> {
             processedNodes.add(invocation.getArgument(0));
             return null;
-        }).when(nodeService).setProperty(any(), eq(SolrUndersizedTransactionsHealthProcessorPlugin.DESCRIPTION_QNAME),
-                eq(SolrUndersizedTransactionsHealthProcessorPlugin.DESCRIPTION_MESSAGE));
+        }).when(nodeService).addAspect(any(), eq(SolrUndersizedTransactionsHealthProcessorPlugin.ASPECT_QNAME),
+                eq(Map.of()));
 
         this.plugin = new SolrUndersizedTransactionsHealthProcessorPlugin(PROPERTIES, ENABLED, THRESHOLD,
                 AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService);
