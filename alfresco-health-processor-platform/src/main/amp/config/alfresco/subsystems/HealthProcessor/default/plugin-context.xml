@@ -39,6 +39,7 @@
         <constructor-arg name="properties" ref="global-properties" />
         <constructor-arg name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled}" />
         <constructor-arg name="threshold" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threshold}" />
+        <constructor-arg name="mergerThreads" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threads}" />
         <constructor-arg name="transactionHelper" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoTransactionHelper" />
         <constructor-arg name="nodeService" ref="NodeService" />
     </bean>

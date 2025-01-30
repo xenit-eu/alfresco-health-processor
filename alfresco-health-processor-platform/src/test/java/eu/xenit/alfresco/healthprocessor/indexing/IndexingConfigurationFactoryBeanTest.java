@@ -32,6 +32,7 @@ class IndexingConfigurationFactoryBeanTest {
         return new IndexingConfigurationFactoryBean(indexingStrategyKey, set(
                 new LastTxnsIndexingConfiguration(1,1),
                 new TxnIdIndexingConfiguration(1,1,1),
-                new SingleTransactionIndexingConfiguration(1,1)));
+                // TODO: this might be wrong.
+                new SingleTransactionIndexingConfiguration(1,1, 1)));
     }
 }

@@ -6,9 +6,11 @@ import eu.xenit.alfresco.healthprocessor.indexing.SimpleCycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.collections4.set.UnmodifiableSet;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -24,10 +26,11 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     private final static @NonNull HashSet<@NonNull Runnable> startListeners = new HashSet<>(1);
     private final static @NonNull HashSet<@NonNull Runnable> stopListeners = new HashSet<>(1);
 
-    private final @NonNull TrackingComponent trackingComponent;
     private final @NonNull SingleTransactionIndexingConfiguration configuration;
+    private final @NonNull TrackingComponent trackingComponent;
     private final @NonNull AtomicReference<@NonNull CycleProgress> cycleProgress = new AtomicReference<>(NullCycleProgress.getInstance());
     private final @NonNull SingleTransactionIndexingState state = new SingleTransactionIndexingState();
+    private final @NonNull SingleTransactionIndexingBackgroundWorker backgroundWorker;
     private final @NonNull LongSupplier progressSupplier = () -> {
         synchronized (state) {
             return state.getCurrentTxnId();
@@ -40,9 +43,11 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
                 "Please note that this strategy ignores the amount of requested nodeRefs and always returns exactly " +
                 "one transaction worth of nodeRefs.");
 
-        this.trackingComponent = trackingComponent;
+        this.backgroundWorker = new SingleTransactionIndexingBackgroundWorker(trackingComponent, configuration, state);
         this.configuration = configuration;
+        this.trackingComponent = trackingComponent;
 
+        this.state.setCurrentTxnId(-1);
         this.state.setLastTxnId(configuration.getStopTxnId());
     }
 
@@ -50,10 +55,15 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     @Synchronized("state")
     public void onStart() {
         log.debug("SingleTransactionIndexingStrategy has been started.");
+
         state.setCurrentTxnId(configuration.getStartTxnId());
-        state.setLastTxnId(Math.min(configuration.getStopTxnId(), trackingComponent.getMaxTxnId()));
         if (state.getCurrentTxnId() < 0) state.setCurrentTxnId(1);
+        state.setLastTxnId(Math.min(configuration.getStopTxnId(), trackingComponent.getMaxTxnId()));
         cycleProgress.set(new SimpleCycleProgress(state.getCurrentTxnId(), state.getLastTxnId(), progressSupplier));
+
+        Thread backgroundWorkerThread = new Thread(backgroundWorker);
+        backgroundWorkerThread.setName("SingleTransactionIndexingBackgroundWorker");
+        backgroundWorkerThread.start();
 
         announceIndexerStart();
     }
@@ -61,22 +71,10 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
 
     @Override
     @Synchronized("state")
+    @SneakyThrows(InterruptedException.class) // Not possible with the current code.
     public @NonNull Set<NodeRef> getNextNodeIds(int ignored) {
-        Set<NodeRef> returnValue = null;
-        do {
-            if (returnValue != null) log.debug("Skipping transaction with ID ({}), as it has no nodes.", state.getCurrentTxnId() - 1);
-
-            long currentTxnId = state.getCurrentTxnId();
-            log.debug("Currently processing transaction with ID ({}).", currentTxnId);
-            if (currentTxnId > state.getLastTxnId()) return Set.of();
-
-            state.setCurrentTxnId(currentTxnId + 1);
-            returnValue = trackingComponent.getNodesForTxnIds(List.of(currentTxnId))
-                    .stream()
-                    .map(TrackingComponent.NodeInfo::getNodeRef)
-                    .collect(Collectors.toSet());
-        } while (returnValue.isEmpty());
-
+        Set<NodeRef> returnValue = backgroundWorker.takeNextTransaction();
+        state.setCurrentTxnId(state.getCurrentTxnId() + 1);
         return returnValue;
     }
 
@@ -84,8 +82,7 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     @Synchronized("state")
     public void onStop() {
         log.debug("SingleTransactionIndexingStrategy has been stopped.");
-        state.setCurrentTxnId(configuration.getStartTxnId());
-        state.setLastTxnId(configuration.getStopTxnId());
+        state.setCurrentTxnId(-1);
         cycleProgress.set(NullCycleProgress.getInstance());
 
         announceIndexerStop();

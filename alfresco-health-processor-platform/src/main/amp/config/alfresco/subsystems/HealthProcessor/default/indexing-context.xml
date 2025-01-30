@@ -24,6 +24,7 @@
     autowire-candidate="false">
         <constructor-arg name="startTxnId" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-id.start}" />
         <constructor-arg name="stopTxnId" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-id.stop}" />
+        <constructor-arg name="backgroundWorkerTransactionsQueueSize" value="${eu.xenit.alfresco.healthprocessor.indexing.single-txns.background-worker-queue-size}" />
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsIndexingConfiguration"
