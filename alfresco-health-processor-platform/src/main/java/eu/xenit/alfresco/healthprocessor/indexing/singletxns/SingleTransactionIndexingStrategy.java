@@ -11,7 +11,9 @@ import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.collections4.set.UnmodifiableSet;
+import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.LongSupplier;
@@ -20,8 +22,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SingleTransactionIndexingStrategy implements IndexingStrategy {
 
-    public final static @NonNull String selectedIndexingStrategyPropertyKey = "eu.xenit.alfresco.healthprocessor.indexing.strategy";
-    public final static @NonNull IndexingStrategyKey indexingStrategyKey = IndexingStrategyKey.SINGLE_TXNS;
+    private final static @NonNull String selectedIndexingStrategyPropertyKey = "eu.xenit.alfresco.healthprocessor.indexing.strategy";
+    private final static @NonNull IndexingStrategyKey indexingStrategyKey = IndexingStrategyKey.SINGLE_TXNS;
 
     private final static @NonNull HashSet<@NonNull Runnable> startListeners = new HashSet<>(1);
     private final static @NonNull HashSet<@NonNull Runnable> stopListeners = new HashSet<>(1);
@@ -31,11 +33,8 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     private final @NonNull AtomicReference<@NonNull CycleProgress> cycleProgress = new AtomicReference<>(NullCycleProgress.getInstance());
     private final @NonNull SingleTransactionIndexingState state = new SingleTransactionIndexingState();
     private final @NonNull SingleTransactionIndexingBackgroundWorker backgroundWorker;
-    private final @NonNull LongSupplier progressSupplier = () -> {
-        synchronized (state) {
-            return state.getCurrentTxnId();
-        }
-    };
+    private @Nullable Thread backgroundWorkerThread;
+    private final @NonNull LongSupplier progressSupplier = state::getCurrentTxnId;
 
     public SingleTransactionIndexingStrategy(@NonNull TrackingComponent trackingComponent,
                                              @NonNull SingleTransactionIndexingConfiguration configuration) {
@@ -52,7 +51,6 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     }
 
     @Override
-    @Synchronized("state")
     public void onStart() {
         log.debug("SingleTransactionIndexingStrategy has been started.");
 
@@ -61,7 +59,7 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
         state.setLastTxnId(Math.min(configuration.getStopTxnId(), trackingComponent.getMaxTxnId()));
         cycleProgress.set(new SimpleCycleProgress(state.getCurrentTxnId(), state.getLastTxnId(), progressSupplier));
 
-        Thread backgroundWorkerThread = new Thread(backgroundWorker);
+        backgroundWorkerThread = new Thread(backgroundWorker);
         backgroundWorkerThread.setName("SingleTransactionIndexingBackgroundWorker");
         backgroundWorkerThread.start();
 
@@ -70,26 +68,24 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
 
 
     @Override
-    @Synchronized("state")
-    @SneakyThrows(InterruptedException.class) // Not possible with the current code.
+    @SneakyThrows(InterruptedException.class) // Not possible with the current code flow.
     public @NonNull Set<NodeRef> getNextNodeIds(int ignored) {
-        Set<NodeRef> returnValue = backgroundWorker.takeNextTransaction();
-        state.setCurrentTxnId(state.getCurrentTxnId() + 1);
-        return returnValue;
+        Pair<Long, Set<NodeRef>> txnIdAndNodeRefs = backgroundWorker.takeNextTransaction();
+        state.setCurrentTxnId(txnIdAndNodeRefs.getLeft());
+        return txnIdAndNodeRefs.getRight();
     }
 
     @Override
-    @Synchronized("state")
     public void onStop() {
         log.debug("SingleTransactionIndexingStrategy has been stopped.");
         state.setCurrentTxnId(-1);
         cycleProgress.set(NullCycleProgress.getInstance());
+        if (backgroundWorkerThread != null) backgroundWorkerThread.interrupt();
 
         announceIndexerStop();
     }
 
     @Override
-    @Synchronized("state")
     public @NonNull Map<String, String> getState() {
         return state.generateMapRepresentation();
     }

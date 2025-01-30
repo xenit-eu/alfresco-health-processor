@@ -22,15 +22,15 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableHealthProcessorPlugin {
 
-    public final static @NonNull QName DESCRIPTION_QNAME = QName.createQName("{http://www.alfresco.org/model/content/1.0}description");
-    public final static @NonNull String DESCRIPTION_MESSAGE = "This node has been touched by the health processor to " +
+    private final static @NonNull QName DESCRIPTION_QNAME = QName.createQName("{http://www.alfresco.org/model/content/1.0}description");
+    private final static @NonNull String DESCRIPTION_MESSAGE = "This node has been touched by the health processor to " +
             "trigger ACS to merge the transactions.";
-
     private final static @NonNull Set<StoreRef> ARCHIVE_AND_WORKSPACE_STORE_REFS = Set.of(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
 
     private final int threshold;
@@ -38,7 +38,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
     private final @NonNull TransactionHelper transactionHelper;
     private final @NonNull NodeService nodeService;
     private boolean receivingNewTransactionsFromIndexer = false;
-    private int queuedMergeRequests = 0;
+    private final @NonNull AtomicInteger queuedMergeRequests = new AtomicInteger(0);
     private final @NonNull ExecutorService mergerExecutor;
 
     public SolrUndersizedTransactionsHealthProcessorPlugin(@NonNull Properties properties, boolean enabled,
@@ -57,13 +57,13 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
         SingleTransactionIndexingStrategy.listenToIndexerStop(this::onIndexerStop);
     }
 
-    private synchronized void onIndexerStart() {
+    private void onIndexerStart() {
         log.debug("Processing the start event from the single-transaction indexing strategy.");
         receivingNewTransactionsFromIndexer = true;
         currentBatch.clear();
     }
 
-    private synchronized void onIndexerStop() {
+    private void onIndexerStop() {
         log.debug("Processing the stop event from the single-transaction indexing strategy.");
         receivingNewTransactionsFromIndexer = false;
         currentBatch.clear(); // For the state.
@@ -71,7 +71,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
 
     @Nonnull
     @Override
-    protected synchronized Set<NodeHealthReport> doProcess(Set<NodeRef> allNodeRefs) {
+    protected Set<NodeHealthReport> doProcess(Set<NodeRef> allNodeRefs) {
         // Ignore the non-archive and non-workspace nodes. Just make sure their health is also reported at the end.
         Set<NodeRef> filteredNodeRefs = filterWorkspaceAndArchiveNodes(allNodeRefs);
 
@@ -90,7 +90,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
             if (currentBatch.size() >= threshold) {
                 HashSet<NodeRef> backgroundWorkerBatch = new HashSet<>(this.currentBatch);
                 mergerExecutor.submit(() -> mergeTransactions(new HashSet<>(backgroundWorkerBatch)));
-                queuedMergeRequests++;
+                queuedMergeRequests.incrementAndGet();
                 log.debug("The cache (current size: {}) has reached the threshold value ({}). A new merge request has " +
                         "been created (current total: {}).", currentBatch.size(), threshold, queuedMergeRequests);
                 currentBatch.clear();
@@ -114,14 +114,13 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
         } catch (Exception e) {
             log.error("An error occurred while merging the transactions.", e);
         } finally {
-            synchronized (this) {
-                queuedMergeRequests--;
-            }
+            queuedMergeRequests.decrementAndGet();
         }
     }
 
     @Override
-    public synchronized Map<String, String> getState() {
+    public Map<String, String> getState() {
+        int queuedMergeRequests = this.queuedMergeRequests.get();
         return Map.of("isRunning", Boolean.toString(receivingNewTransactionsFromIndexer || queuedMergeRequests > 0),
                 "cacheSize", Integer.toString(currentBatch.size()),
                 "queuedMergeRequests", Integer.toString(queuedMergeRequests));
