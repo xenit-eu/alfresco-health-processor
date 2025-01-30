@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SingleTransactionIndexingStrategy implements IndexingStrategy {
 
-    private final static @NonNull String selectedIndexingStrategyPropertyKey = "eu.xenit.alfresco.healthprocessor.indexing.strategy";
-    private final static @NonNull IndexingStrategyKey indexingStrategyKey = IndexingStrategyKey.SINGLE_TXNS;
+    public final static @NonNull String selectedIndexingStrategyPropertyKey = "eu.xenit.alfresco.healthprocessor.indexing.strategy";
+    public final static @NonNull IndexingStrategyKey indexingStrategyKey = IndexingStrategyKey.SINGLE_TXNS;
 
     private final static @NonNull HashSet<@NonNull Runnable> startListeners = new HashSet<>(1);
     private final static @NonNull HashSet<@NonNull Runnable> stopListeners = new HashSet<>(1);

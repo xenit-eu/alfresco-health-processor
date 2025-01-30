@@ -28,6 +28,7 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
     private final static int THRESHOLD = 100;
     private final static boolean ENABLED = true;
     private final static @NonNull Properties PROPERTIES = new Properties(1);
+    private final static int AMOUNT_OF_MERGER_THREADS = 1;
 
     private TransactionHelper transactionHelper;
     private ArrayList<NodeRef> processedNodes;
@@ -55,7 +56,8 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
         }).when(nodeService).setProperty(any(), eq(SolrUndersizedTransactionsHealthProcessorPlugin.DESCRIPTION_QNAME),
                 eq(SolrUndersizedTransactionsHealthProcessorPlugin.DESCRIPTION_MESSAGE));
 
-        this.plugin = new SolrUndersizedTransactionsHealthProcessorPlugin(PROPERTIES, ENABLED, THRESHOLD, transactionHelper, nodeService);
+        this.plugin = new SolrUndersizedTransactionsHealthProcessorPlugin(PROPERTIES, ENABLED, THRESHOLD,
+                AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService);
     }
 
     @Test
@@ -68,7 +70,7 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
     }
 
     @Test
-    void testSmallTransactionsAreMerged() {
+    void testSmallTransactionsAreMerged() throws InterruptedException {
         Set<NodeRef> firstTransaction = generateRandomNodeRefs(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, THRESHOLD - 1);
         Set<NodeRef> secondTransaction = generateRandomNodeRefs(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, 1);
 
@@ -77,6 +79,11 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
         verify(nodeService, never()).setProperty(any(), any(), any());
 
         plugin.process(secondTransaction);
+        for (int i = 0; i < 10; i ++) {
+            if (plugin.queuedMergeRequests.get() == 0) break;
+            Thread.sleep(1000);
+        }
+        if (plugin.queuedMergeRequests.get() != 0) fail("The merge request was not processed in time.");
         verify(transactionHelper, times(1)).inNewTransaction(any(Runnable.class), eq(false));
         assertEquals(Sets.union(firstTransaction, secondTransaction), Sets.newHashSet(processedNodes), "all nodes should be processed");
     }
@@ -84,15 +91,15 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
     @Test
     void testGuaranteeSingleTransactionIndexerIsUsed() {
         Properties properties = new Properties();
-        assertThrows(AssertionError.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(properties, ENABLED, THRESHOLD, transactionHelper, nodeService));
+        assertThrows(AssertionError.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(properties, ENABLED, THRESHOLD, AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService));
         properties.put(SingleTransactionIndexingStrategy.selectedIndexingStrategyPropertyKey, "not single txns");
-        assertThrows(AssertionError.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(properties, ENABLED, THRESHOLD, transactionHelper, nodeService));
+        assertThrows(AssertionError.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(properties, ENABLED, THRESHOLD, AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService));
         properties.put(SingleTransactionIndexingStrategy.selectedIndexingStrategyPropertyKey, SingleTransactionIndexingStrategy.indexingStrategyKey.getKey());
-        assertDoesNotThrow(() -> new SolrUndersizedTransactionsHealthProcessorPlugin(properties, ENABLED, THRESHOLD, transactionHelper, nodeService));
+        assertDoesNotThrow(() -> new SolrUndersizedTransactionsHealthProcessorPlugin(properties, ENABLED, THRESHOLD, AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService));
     }
 
     @Test
-    void testNonWorkspaceAndArchiveNodesAreNotProcessed() {
+    void testNonWorkspaceAndArchiveNodesAreNotProcessed() throws InterruptedException {
         HashSet<NodeRef> firstTransaction = new HashSet<>(THRESHOLD);
         firstTransaction.addAll(generateRandomNodeRefs(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, THRESHOLD - 2));
         firstTransaction.addAll(generateRandomNodeRefs(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, 1));
@@ -104,6 +111,12 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
         verify(nodeService, never()).setProperty(any(), any(), any());
 
         plugin.process(secondTransaction);
+        plugin.process(secondTransaction);
+        for (int i = 0; i < 10; i ++) {
+            if (plugin.queuedMergeRequests.get() == 0) break;
+            Thread.sleep(1000);
+        }
+        if (plugin.queuedMergeRequests.get() != 0) fail("The merge request was not processed in time.");
         verify(transactionHelper, times(1)).inNewTransaction(any(Runnable.class), eq(false));
         assertEquals(Sets.union(firstTransaction.stream()
                 .filter(nodeRef -> ARCHIVE_AND_WORKSPACE_STORE_REFS.contains(nodeRef.getStoreRef()))
@@ -114,7 +127,7 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
     @Test
     void testIndexerCallbacks() {
         SingleTransactionIndexingStrategy strategy = new SingleTransactionIndexingStrategy(mock(TrackingComponent.class),
-                mock(SingleTransactionIndexingConfiguration.class));
+                new SingleTransactionIndexingConfiguration(1, 1, 1));
         assertEquals("false", plugin.getState().get("isRunning")); // Normally, this is only called by the UI.
         strategy.onStart();
         assertEquals("true", plugin.getState().get("isRunning"));

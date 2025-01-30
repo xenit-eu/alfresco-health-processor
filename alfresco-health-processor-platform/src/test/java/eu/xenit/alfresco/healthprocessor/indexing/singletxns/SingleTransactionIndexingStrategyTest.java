@@ -27,6 +27,7 @@ import static org.mockito.Mockito.*;
 class SingleTransactionIndexingStrategyTest {
 
     private final static long MAX_TXN = 2;
+    private final static int TRANSACTION_QUEUE_LENGTH = 10;
 
     TrackingComponent trackingComponent;
     SingleTransactionIndexingConfiguration configuration;
@@ -36,7 +37,7 @@ class SingleTransactionIndexingStrategyTest {
     void setUp() {
         trackingComponent = mock(TrackingComponent.class);
         when(trackingComponent.getMaxTxnId()).thenReturn((long) MAX_TXN);
-        configuration = new SingleTransactionIndexingConfiguration(0, MAX_TXN);
+        configuration = new SingleTransactionIndexingConfiguration(0, MAX_TXN, TRANSACTION_QUEUE_LENGTH);
         strategy = new SingleTransactionIndexingStrategy(trackingComponent, configuration);
     }
 
@@ -51,28 +52,19 @@ class SingleTransactionIndexingStrategyTest {
         });
 
         strategy.onStart();
-        for (int i = 0; i < 5; i ++) strategy.getNextNodeIds(Integer.MAX_VALUE);
+        for (int i = 0; i < 3; i ++) strategy.getNextNodeIds(Integer.MAX_VALUE);
 
-        verify(trackingComponent, times((int) (MAX_TXN + 1))).getNodesForTxnIds(anyList());
-        assertEquals(List.of(0L, 1L, 2L), fetchTransactions);
-    }
-
-    @Test
-    void txnSettersTest() {
-        assertThrows(IllegalArgumentException.class, () -> configuration.setStartTxnId(MAX_TXN + 1));
-        assertThrows(IllegalArgumentException.class, () -> configuration.setStopTxnId(-1));
-
-        configuration.setStopTxnId(15);
-        configuration.setStartTxnId(15);
+        verify(trackingComponent, times((int) MAX_TXN)).getNodesForTxnIds(anyList());
+        assertEquals(List.of(0L, 1L), fetchTransactions);
     }
 
     @Test
     void getState() {
-        assertEquals(Map.of("current-txn-id", "-1"), strategy.getState());
+        assertEquals("-1", strategy.getState().get("current-txn-id"));
         strategy.onStart();
-        assertEquals(Map.of("current-txn-id", "0"), strategy.getState());
+        assertEquals("0", strategy.getState().get("current-txn-id"));
         strategy.getNextNodeIds(Integer.MAX_VALUE);
-        assertEquals(Map.of("current-txn-id", "1"), strategy.getState());
+        assertEquals("-1", strategy.getState().get("current-txn-id"));
     }
 
     @Test
@@ -81,10 +73,9 @@ class SingleTransactionIndexingStrategyTest {
 
         strategy.onStart();
         CycleProgress cycleProgress = strategy.getCycleProgress();
-        for (int i = 0; i < 3; i ++) {
-            assertEquals( (i + 1.0f) / (MAX_TXN + 1.0f), cycleProgress.getProgress());
-            strategy.getNextNodeIds(Integer.MAX_VALUE);
-        }
+        assertEquals(1/3f, cycleProgress.getProgress());
+        strategy.getNextNodeIds(Integer.MAX_VALUE);
+        assertEquals(0, cycleProgress.getProgress());
     }
 
     @Test

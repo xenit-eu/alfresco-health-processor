@@ -28,17 +28,17 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableHealthProcessorPlugin {
 
-    private final static @NonNull QName DESCRIPTION_QNAME = QName.createQName("{http://www.alfresco.org/model/content/1.0}description");
-    private final static @NonNull String DESCRIPTION_MESSAGE = "This node has been touched by the health processor to " +
+    final static @NonNull QName DESCRIPTION_QNAME = QName.createQName("{http://www.alfresco.org/model/content/1.0}description");
+    final static @NonNull String DESCRIPTION_MESSAGE = "This node has been touched by the health processor to " +
             "trigger ACS to merge the transactions.";
-    private final static @NonNull Set<StoreRef> ARCHIVE_AND_WORKSPACE_STORE_REFS = Set.of(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+    final static @NonNull Set<StoreRef> ARCHIVE_AND_WORKSPACE_STORE_REFS = Set.of(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
 
     private final int threshold;
     private final @NonNull HashSet<@NonNull NodeRef> currentBatch;
     private final @NonNull TransactionHelper transactionHelper;
     private final @NonNull NodeService nodeService;
     private boolean receivingNewTransactionsFromIndexer = false;
-    private final @NonNull AtomicInteger queuedMergeRequests = new AtomicInteger(0);
+    final @NonNull AtomicInteger queuedMergeRequests = new AtomicInteger(0);
     private final @NonNull ExecutorService mergerExecutor;
 
     public SolrUndersizedTransactionsHealthProcessorPlugin(@NonNull Properties properties, boolean enabled,
