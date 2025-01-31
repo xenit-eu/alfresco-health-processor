@@ -157,10 +157,14 @@ Loops over (a subset of) all transactions in Alfresco & returns all nodes in tha
 
 ```properties
 GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.strategy=single-txns
-GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-id.start=-1
-GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-id.stop=9223372036854775807
+GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-id.start=-1 // or an actual transaction ID.
+GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-id.stop=-1 // or an actual transaction ID. Must be larger than start.
+GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.single-txns.background-worker-queue-size=1000
 ```
 
+The `single-txns` indexer uses a background worker to fetch the transaction nodes.
+The `background-worker-queue-size` property configures the size of the queue that is used to store the transactions that
+are fetched from the database.
 
 ### HealthProcessorPlugin implementations
 
@@ -235,6 +239,29 @@ eu.xenit.alfresco.healthprocessor.plugin.solr-index.endpoints.solr-shard2.indexe
 ##### Solr 2.0
 When the health-processor is used for Solr index validation on Search Services 2.0 and upper it is advised to enable `eu.xenit.alfresco.healthprocessor.plugin.solr-index.check-transaction=true`.
 This property checks that the document is fully up-to-date with the latest transaction instead of only checking presence in the index in any version.
+
+#### Undersized transactions merger
+
+Activation property: `eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled=true`
+<br>
+Also, the `single-txns` indexing strategy should be used. An exception will be thrown if this is not the case,
+which causes the Health Processor to be disabled in general.
+
+This plugin is basically a health processor and fixer in one (due to technical limitations of the health processor platform).
+It uses the `single-txns` indexing strategy to fetch the nodes from all transactions, filters the archive and workspace ones,
+and stores them temporarily in a bucket.
+Once this bucket overflows, the plugin starts a new, single transaction in the background to add a temporary aspect to 
+all the nodes in the bucket. This aspect is also removed in the same transaction.
+By running the `nodeServiceCleanupTrigger` (scheduled) job afterward, ACS will restructure the transactions and merge them
+if possible.
+Finally, the plugin will always report `HEALTHY` for all nodes (including the non-archive and non-workspace ones).
+
+Additional properties that are required:
+* `GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threshold`: the size of the bucket.
+  This represents the <u>minimum</u> number of nodes that should be in the bucket before the plugin starts a new transaction.
+  Transactions are always added as a whole, so the actual number of nodes in the bucket can be higher.
+* `GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threads`: the amount of transactions that can
+    be processed in parallel. Transactions that can not be processed right away are queued.
 
 ### HealthFixerPlugin implementations
 
