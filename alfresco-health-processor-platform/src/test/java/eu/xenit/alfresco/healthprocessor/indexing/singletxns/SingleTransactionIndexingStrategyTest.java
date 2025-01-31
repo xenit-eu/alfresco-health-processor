@@ -52,17 +52,17 @@ class SingleTransactionIndexingStrategyTest {
         });
 
         strategy.onStart();
-        for (int i = 0; i < 3; i ++) strategy.getNextNodeIds(Integer.MAX_VALUE);
+        for (int i = 0; i < 2; i ++) strategy.getNextNodeIds(Integer.MAX_VALUE);
 
-        verify(trackingComponent, times((int) MAX_TXN)).getNodesForTxnIds(anyList());
-        assertEquals(List.of(0L, 1L), fetchTransactions);
+        verify(trackingComponent, times(1)).getNodesForTxnIds(anyList());
+        assertEquals(List.of(1L), fetchTransactions);
     }
 
     @Test
     void getState() {
         assertEquals("-1", strategy.getState().get("current-txn-id"));
         strategy.onStart();
-        assertEquals("0", strategy.getState().get("current-txn-id"));
+        assertEquals("1", strategy.getState().get("current-txn-id"));
         strategy.getNextNodeIds(Integer.MAX_VALUE);
         assertEquals("-1", strategy.getState().get("current-txn-id"));
     }
@@ -73,7 +73,7 @@ class SingleTransactionIndexingStrategyTest {
 
         strategy.onStart();
         CycleProgress cycleProgress = strategy.getCycleProgress();
-        assertEquals(1/3f, cycleProgress.getProgress());
+        assertEquals(1/2f, cycleProgress.getProgress());
         strategy.getNextNodeIds(Integer.MAX_VALUE);
         assertEquals(0, cycleProgress.getProgress());
     }
