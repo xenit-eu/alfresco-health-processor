@@ -45,11 +45,16 @@ public class SingleTransactionIndexingBackgroundWorker implements Runnable {
             long start = state.getCurrentTxnId();
             long end = state.getLastTxnId();
             for (long i = start; i < end; i++) handleNextTransaction(i);
-            signalEnd();
 
             log.debug("The background worker of the SingleTransactionIndexingStrategy has stopped.");
         } catch (InterruptedException e) {
             log.warn("The background worker of the SingleTransactionIndexingStrategy has been interrupted.", e);
+        } finally {
+            try {
+                signalEnd();
+            } catch (InterruptedException e) {
+                log.error("The background worker of the SingleTransactionIndexingStrategy has been interrupted while signaling the end.", e);
+            }
         }
     }
 
@@ -59,23 +64,19 @@ public class SingleTransactionIndexingBackgroundWorker implements Runnable {
         Set<NodeRef> nodeRefs = fetchedNodes.stream()
                 .map(TrackingComponent.NodeInfo::getNodeRef)
                 .collect(Collectors.toSet());
-        if (!nodeRefs.isEmpty()) updateBuffer(txnId, nodeRefs);
+        updateBuffer(txnId, nodeRefs);
         updateProcessedTxnIdState(txnId);
     }
 
     private void signalEnd() throws InterruptedException {
-        // The empty collection signals to the health processor platform that the indexer is done.
-        updateBuffer(Set.of());
+        // The Txn ID of -1 signals to the health processor platform that the indexer is done.
+        updateBuffer(-1, Set.of());
         // Leave the last processed transaction ID as is. No particular reason to update it.
     }
 
     private void updateBuffer(long txnId, @NonNull Set<@NonNull NodeRef> elements) throws InterruptedException {
         buffer.putLast(Pair.of(txnId, elements));
         updateBufferState();
-    }
-
-    private void updateBuffer(@NonNull Set<@NonNull NodeRef> elements) throws InterruptedException {
-        updateBuffer(-1, elements);
     }
 
     private void updateBufferState() {

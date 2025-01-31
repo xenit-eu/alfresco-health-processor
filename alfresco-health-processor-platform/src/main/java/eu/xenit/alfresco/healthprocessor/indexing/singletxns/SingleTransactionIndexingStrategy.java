@@ -54,9 +54,8 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     public void onStart() {
         log.debug("SingleTransactionIndexingStrategy has been started.");
 
-        state.setCurrentTxnId(configuration.getStartTxnId());
-        if (state.getCurrentTxnId() < 0) state.setCurrentTxnId(1);
-        state.setLastTxnId(Math.min(configuration.getStopTxnId(), trackingComponent.getMaxTxnId()));
+        state.setCurrentTxnId(configuration.getStartTxnId() > 0? configuration.getStartTxnId() : 1);
+        state.setLastTxnId(Math.min((configuration.getStopTxnId() > state.getCurrentTxnId()? configuration.getStopTxnId() : Long.MAX_VALUE), trackingComponent.getMaxTxnId()));
         cycleProgress.set(new SimpleCycleProgress(state.getCurrentTxnId(), state.getLastTxnId(), progressSupplier));
 
         backgroundWorkerThread = new Thread(backgroundWorker);
@@ -70,8 +69,12 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     @Override
     @SneakyThrows(InterruptedException.class) // Not possible with the current code flow.
     public @NonNull Set<NodeRef> getNextNodeIds(int ignored) {
-        Pair<Long, Set<NodeRef>> txnIdAndNodeRefs = backgroundWorker.takeNextTransaction();
-        state.setCurrentTxnId(txnIdAndNodeRefs.getLeft());
+        Pair<Long, Set<NodeRef>> txnIdAndNodeRefs;
+        do {
+            txnIdAndNodeRefs = backgroundWorker.takeNextTransaction();
+            state.setCurrentTxnId(txnIdAndNodeRefs.getLeft());
+        } while (txnIdAndNodeRefs.getRight().isEmpty() && txnIdAndNodeRefs.getLeft() != -1);
+
         return txnIdAndNodeRefs.getRight();
     }
 

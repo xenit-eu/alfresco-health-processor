@@ -149,6 +149,19 @@ eu.xenit.alfresco.healthprocessor.indexing.last-txns.lookback-transactions=10000
 eu.xenit.alfresco.healthprocessor.indexing.last-txns.txn-batch-size=5000
 ```
 
+#### Indexing per transaction
+
+strategy id: `single-txns`
+
+Loops over (a subset of) all transactions in Alfresco & returns all nodes in that transaction.
+
+```properties
+GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.strategy=single-txns
+GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-id.start=-1
+GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-id.stop=9223372036854775807
+```
+
+
 ### HealthProcessorPlugin implementations
 
 #### Content Validation
