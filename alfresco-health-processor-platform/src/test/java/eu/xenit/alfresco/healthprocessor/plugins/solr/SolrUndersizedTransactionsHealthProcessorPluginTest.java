@@ -1,6 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
 import com.google.common.collect.Sets;
+import eu.xenit.alfresco.healthprocessor.NodeDaoAwareTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.singletxns.SingleTransactionIndexingConfiguration;
@@ -126,7 +127,7 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
 
     @Test
     void testIndexerCallbacks() {
-        SingleTransactionIndexingStrategy strategy = new SingleTransactionIndexingStrategy(mock(TrackingComponent.class),
+        SingleTransactionIndexingStrategy strategy = new SingleTransactionIndexingStrategy(mock(NodeDaoAwareTrackingComponent.class),
                 new SingleTransactionIndexingConfiguration(1, 1, 1));
         assertEquals("false", plugin.getState().get("isRunning")); // Normally, this is only called by the UI.
         strategy.onStart();

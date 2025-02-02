@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.indexing;
 
+import eu.xenit.alfresco.healthprocessor.NodeDaoAwareTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsBasedIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsIndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.singletxns.SingleTransactionIndexingConfiguration;
@@ -17,6 +18,8 @@ public final class IndexingStrategyFactoryBean extends AbstractFactoryBean<Index
     private final TrackingComponent trackingComponent;
     private final AttributeStore attributeStore;
 
+    private final NodeDaoAwareTrackingComponent nodeDaoAwareTrackingComponent;
+
     @Override
     public Class<?> getObjectType() {
         return IndexingStrategy.class;
@@ -30,11 +33,14 @@ public final class IndexingStrategyFactoryBean extends AbstractFactoryBean<Index
     private IndexingStrategy createIndexingStrategy(IndexingStrategy.IndexingStrategyKey indexingStrategy) {
         switch(indexingStrategy) {
             case TXNID:
-                return new TxnIdBasedIndexingStrategy((TxnIdIndexingConfiguration) configuration, trackingComponent, attributeStore);
+                return new TxnIdBasedIndexingStrategy(
+                        (TxnIdIndexingConfiguration) configuration, trackingComponent, attributeStore);
             case LAST_TXNS:
-                return new LastTxnsBasedIndexingStrategy((LastTxnsIndexingConfiguration) configuration, trackingComponent);
+                return new LastTxnsBasedIndexingStrategy(
+                        (LastTxnsIndexingConfiguration) configuration, trackingComponent);
             case SINGLE_TXNS:
-                return new SingleTransactionIndexingStrategy(trackingComponent, (SingleTransactionIndexingConfiguration) configuration);
+                return new SingleTransactionIndexingStrategy(
+                        nodeDaoAwareTrackingComponent, (SingleTransactionIndexingConfiguration) configuration);
             default:
                 throw new IllegalArgumentException("Unknown indexing strategy: "+ indexingStrategy);
         }
