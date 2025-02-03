@@ -8,9 +8,7 @@ plugins {
     id 'io.freefair.javadocs' version '8.11' apply(false)
 }
 
-description = "Alfresco Health Processor:" +
-             " A background processor capable of performing various operations on the nodes" +
-             " in your Alfresco repository, in a batched and controlled manner"
+description = "Alfresco Health Processor = A background processor capable of performing various operations on the nodes in your Alfresco repository, in a batched and controlled manner"
 
 sonarqube {
     properties {

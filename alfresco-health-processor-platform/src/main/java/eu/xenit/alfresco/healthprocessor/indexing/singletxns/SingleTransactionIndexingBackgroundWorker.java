@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.indexing.singletxns;
 
+import com.google.common.base.Strings;
 import eu.xenit.alfresco.healthprocessor.NodeDaoAwareTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import lombok.NonNull;
@@ -20,6 +21,7 @@ public class SingleTransactionIndexingBackgroundWorker implements Runnable {
     private final @NonNull BlockingDeque<@NonNull Pair<@NonNull Long, @NonNull Set<@NonNull NodeRef>>> buffer;
     private final @NonNull NodeDaoAwareTrackingComponent trackingComponent;
     private final @NonNull SingleTransactionIndexingState state;
+    private final int aggregateThreshhold;
 
     public SingleTransactionIndexingBackgroundWorker(@NonNull NodeDaoAwareTrackingComponent trackingComponent,
                                                      @NonNull SingleTransactionIndexingConfiguration configuration,
@@ -27,6 +29,8 @@ public class SingleTransactionIndexingBackgroundWorker implements Runnable {
         this.buffer = new LinkedBlockingDeque<>(configuration.getBackgroundWorkerTransactionsQueueSize());
         this.trackingComponent = trackingComponent;
         this.state = state;
+        String threshold = configuration.getConfiguration().get("transaction-min-size-threshold");
+        this.aggregateThreshhold = Strings.isNullOrEmpty(threshold) ? 0 : Integer.parseInt(threshold);
 
         this.state.setCurrentlyProcessedTxnId(-1);
     }
@@ -71,6 +75,10 @@ public class SingleTransactionIndexingBackgroundWorker implements Runnable {
 
     private void handleNextTransaction(long txnId) throws InterruptedException {
         Set<TrackingComponent.NodeInfo> fetchedNodes = trackingComponent.getNodesForTxnIds(List.of(txnId));
+        state.setCurrentTxnId(txnId);
+        if(fetchedNodes.size() <= aggregateThreshhold) {
+            return;
+        }
         Set<NodeRef> nodeRefs = fetchedNodes.stream()
                 .map(TrackingComponent.NodeInfo::getNodeRef)
                 .collect(Collectors.toSet());

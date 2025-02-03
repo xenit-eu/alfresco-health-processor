@@ -5,17 +5,20 @@ import eu.xenit.alfresco.healthprocessor.plugins.api.ToggleableHealthProcessorPl
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import lombok.NonNull;
-import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -37,10 +40,11 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
     private boolean receivingNewTransactionsFromIndexer = false;
     final @NonNull AtomicInteger queuedMergeRequests = new AtomicInteger(0);
     private final @NonNull ExecutorService mergerExecutor;
+    private final @NonNull NodeDAO nodeDAO;
 
     public SolrUndersizedTransactionsHealthProcessorPlugin(@NonNull Properties properties, boolean enabled,
                                                            int threshold, int mergerThreads, @NonNull TransactionHelper transactionHelper,
-                                                           @NonNull NodeService nodeService) {
+                                                           @NonNull NodeService nodeService, @NonNull AbstractNodeDAOImpl nodeDAO) {
         super(enabled);
         guaranteeSingleTransactionIndexerIsUsed(properties);
 
@@ -49,6 +53,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
         this.transactionHelper = transactionHelper;
         this.nodeService = nodeService;
         this.mergerExecutor = Executors.newFixedThreadPool(mergerThreads);
+        this.nodeDAO = nodeDAO;
 
         SingleTransactionIndexingStrategy.listenToIndexerStart(this::onIndexerStart);
         SingleTransactionIndexingStrategy.listenToIndexerStop(this::onIndexerStop);
@@ -99,16 +104,16 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
 
     private void mergeTransactions(@NonNull Set<@NonNull NodeRef> backgroundWorkerBatch) {
         try {
-            AuthenticationUtil.runAsSystem(() -> {
+            List<Long> nodeIds = backgroundWorkerBatch.parallelStream()
+                                        .map(this.nodeDAO::getNodePair)
+                                        .map(Pair::getFirst).collect(Collectors.toList());
+//            AuthenticationUtil.runAsSystem(() -> {
                 transactionHelper.inNewTransaction(() -> {
-                    for (NodeRef nodeRef : backgroundWorkerBatch) {
-                        nodeService.addAspect(nodeRef, ASPECT_QNAME, Map.of());
-                        nodeService.removeAspect(nodeRef, ASPECT_QNAME);
-                    }
+                    long txnId = this.nodeDAO.getCurrentTransactionId(false);
+                    this.nodeDAO.touchNodes(txnId, nodeIds);
                 }, false);
-
-                return null;
-            });
+//                return null;
+//            });
         } catch (Exception e) {
             log.error("An error occurred while merging the transactions.", e);
         } finally {

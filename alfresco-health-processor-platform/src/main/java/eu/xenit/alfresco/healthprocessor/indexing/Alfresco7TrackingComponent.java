@@ -7,6 +7,8 @@ import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.solr.NodeParameters;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 import java.util.HashSet;
 import java.util.List;
@@ -43,6 +45,14 @@ public class Alfresco7TrackingComponent implements NodeDaoAwareTrackingComponent
         log.debug("Returning {} transactions from {} to {}", txns, lastTxnTime, newLastTxnTime);
         lastTxnTime = newLastTxnTime;
         return txns;
+    }
+
+    public int changesCount(long txnId) {
+        List<NodeRef.Status> changes = this.nodeDAO.getTxnChangesForStore(
+                StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, txnId);
+        int count = changes.size();
+        log.debug("Txn {} has {} changes", txnId, count);
+        return count;
     }
 
     @Override

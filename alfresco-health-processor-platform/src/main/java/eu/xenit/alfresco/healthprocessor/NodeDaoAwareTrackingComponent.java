@@ -8,4 +8,5 @@ import java.util.List;
 public interface NodeDaoAwareTrackingComponent extends TrackingComponent {
     int getTransactionCount();
     List<Transaction> getNextTransactions(Integer count);
+    int changesCount(long txnId);
 }

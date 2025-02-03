@@ -37,7 +37,7 @@ class SingleTransactionIndexingStrategyTest {
     void setUp() {
         trackingComponent = mock(NodeDaoAwareTrackingComponent.class);
         when(trackingComponent.getMaxTxnId()).thenReturn(MAX_TXN);
-        configuration = new SingleTransactionIndexingConfiguration(0, MAX_TXN, TRANSACTION_QUEUE_LENGTH);
+        configuration = new SingleTransactionIndexingConfiguration(0, MAX_TXN, TRANSACTION_QUEUE_LENGTH, 1);
         strategy = new SingleTransactionIndexingStrategy(trackingComponent, configuration);
     }
 

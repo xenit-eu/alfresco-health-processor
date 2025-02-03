@@ -8,12 +8,17 @@ import eu.xenit.alfresco.healthprocessor.indexing.singletxns.SingleTransactionIn
 import eu.xenit.alfresco.healthprocessor.indexing.singletxns.SingleTransactionIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import lombok.NonNull;
+import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
+import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,12 +29,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class SolrUndersizedTransactionsHealthProcessorPluginTest {
 
     private final static int THRESHOLD = 100;
     private final static boolean ENABLED = true;
     private final static @NonNull Properties PROPERTIES = new Properties(1);
     private final static int AMOUNT_OF_MERGER_THREADS = 1;
+
+    @Mock
+    private AbstractNodeDAOImpl nodeDAO;
 
     private TransactionHelper transactionHelper;
     private ArrayList<NodeRef> processedNodes;
@@ -58,7 +67,7 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
                 eq(Map.of()));
 
         this.plugin = new SolrUndersizedTransactionsHealthProcessorPlugin(PROPERTIES, ENABLED, THRESHOLD,
-                AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService);
+                AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService, nodeDAO);
     }
 
     @Test
@@ -92,11 +101,16 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
     @Test
     void testGuaranteeSingleTransactionIndexerIsUsed() {
         Properties properties = new Properties();
-        assertThrows(AssertionError.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(properties, ENABLED, THRESHOLD, AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService));
+        assertThrows(AssertionError.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(
+                properties, ENABLED, THRESHOLD, AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService, nodeDAO));
         properties.put(SingleTransactionIndexingStrategy.selectedIndexingStrategyPropertyKey, "not single txns");
-        assertThrows(AssertionError.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(properties, ENABLED, THRESHOLD, AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService));
-        properties.put(SingleTransactionIndexingStrategy.selectedIndexingStrategyPropertyKey, SingleTransactionIndexingStrategy.indexingStrategyKey.getKey());
-        assertDoesNotThrow(() -> new SolrUndersizedTransactionsHealthProcessorPlugin(properties, ENABLED, THRESHOLD, AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService));
+        assertThrows(AssertionError.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(
+                properties, ENABLED, THRESHOLD, AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService, nodeDAO));
+        properties.put(
+                SingleTransactionIndexingStrategy.selectedIndexingStrategyPropertyKey,
+                SingleTransactionIndexingStrategy.indexingStrategyKey.getKey());
+        assertDoesNotThrow(() -> new SolrUndersizedTransactionsHealthProcessorPlugin(
+                properties, ENABLED, THRESHOLD, AMOUNT_OF_MERGER_THREADS, transactionHelper, nodeService, nodeDAO));
     }
 
     @Test
@@ -128,7 +142,7 @@ public class SolrUndersizedTransactionsHealthProcessorPluginTest {
     @Test
     void testIndexerCallbacks() {
         SingleTransactionIndexingStrategy strategy = new SingleTransactionIndexingStrategy(mock(NodeDaoAwareTrackingComponent.class),
-                new SingleTransactionIndexingConfiguration(1, 1, 1));
+                new SingleTransactionIndexingConfiguration(1, 1, 1, 1));
         assertEquals("false", plugin.getState().get("isRunning")); // Normally, this is only called by the UI.
         strategy.onStart();
         assertEquals("true", plugin.getState().get("isRunning"));

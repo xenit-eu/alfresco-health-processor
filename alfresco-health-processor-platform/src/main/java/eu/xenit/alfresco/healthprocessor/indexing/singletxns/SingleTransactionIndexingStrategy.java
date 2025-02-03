@@ -33,7 +33,7 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     private final @NonNull SingleTransactionIndexingState state = new SingleTransactionIndexingState();
     private final @NonNull SingleTransactionIndexingBackgroundWorker backgroundWorker;
     private @Nullable Thread backgroundWorkerThread;
-    private final @NonNull LongSupplier progressSupplier = state::getCurrentTxnId;
+    private final @NonNull LongSupplier progressSupplier = state::getCurrentlyProcessedTxnId;
 
     public SingleTransactionIndexingStrategy(@NonNull NodeDaoAwareTrackingComponent trackingComponent,
                                              @NonNull SingleTransactionIndexingConfiguration configuration) {
@@ -71,7 +71,6 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
         Pair<Long, Set<NodeRef>> txnIdAndNodeRefs;
         do {
             txnIdAndNodeRefs = backgroundWorker.takeNextTransaction();
-            state.setCurrentTxnId(txnIdAndNodeRefs.getLeft());
         } while (txnIdAndNodeRefs.getRight().isEmpty() && txnIdAndNodeRefs.getLeft() != -1);
 
         return txnIdAndNodeRefs.getRight();

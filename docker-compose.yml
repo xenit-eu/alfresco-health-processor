@@ -1,0 +1,160 @@
+version: '3.2'
+services:
+  alfresco:
+#    image: edd5ca43565d
+    image: 10eea325b18
+#    volumes:
+#      - ./opentelemetry:/opt/opentelemetry3
+    ports:
+      - ":8080:8080"
+#      - ":8000:8000"
+    environment:
+      - ACCESS_LOGGING=true
+#      - JAVA_OPTS_DEBUG=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000
+#      - JAVA_OPTS_DEBUG_2=-XX:+FlightRecorder
+      - JAVA_XMX=8G
+      - DEBUG=true
+#      - SOLR_SSL=none
+      - INDEX=solr6
+      - GLOBAL_solr.http.socket.timeout=30000
+      - GLOBAL_solr.http.connection.timeout=30000
+      - GLOBAL_csrf.filter.enabled=false
+      - ENABLE_CLUSTERING=false
+      - GLOBAL_system.node_table_cleaner.algorithm=V1
+      - GLOBAL_index.tracking.minRecordPurgeAgeDays=0
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.strategy=single-txns
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-id.start=-1 # 1191934
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-id.end=-1
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threads=16
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.node-batch-size=1000
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.max-batches-per-second=0
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.noop.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.store.max-stored-reports=4000
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.streaming.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.progress.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.alfred-telemetry.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:content
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.check-transaction=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threshold=1000
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.single-txns.background-worker-queue-size=100000
+      # Disable this loud logger which sends errors in Alfresco 7.0.
+      - LOG4J_logger.org.alfresco.repo.content.transform.LocalTransformServiceRegistry=OFF
+        # Settings for MQ (is needed!)
+      - GLOBAL_messaging.subsystem.autostart=false
+      - GLOBAL_events.subsystem.autostart=false
+        # Settings for transformation services
+      - GLOBAL_transform.service.enabled=false
+      - GLOBAL_local.transform.service.enabled=false
+      - GLOBAL_legacy.transform.service.enabled=false
+        # Needed to silence transformation routing log spam
+      - GLOBAL_messaging.broker.username=admin
+      - GLOBAL_messaging.broker.password=admin
+      - GLOBAL_messaging.broker.url=vm://localhost?broker.persistent=false
+        # Disable unused services
+      - GLOBAL_cifs.enabled=false
+      - GLOBAL_nfs.enabled=false
+      - GLOBAL_ftp.enabled=false
+      - GLOBAL_system.metadata-query-indexes.ignored=false
+      - GLOBAL_system.workflow.engine.jbpm.enabled=false
+      - GLOBAL_system.workflow.engine.activiti.enabled=false
+      - GLOBAL_system.usages.enabled=false
+      - GLOBAL_replication.enabled=false
+      - GLOBAL_audit.enabled=false
+      - GLOBAL_transferservice.receiver.enabled=false
+      - GLOBAL_home.folder.creation.eager=false
+      - GLOBAL_activities.feed.notifier.enabled=false
+      - GLOBAL_sync.pullJob.enabled=false
+      - GLOBAL_sync.pushJob.enabled=false
+      - GLOBAL_activities.feed.generator.enabled=false
+      - GLOBAL_activities.feed.cleaner.enabled=false
+      - GLOBAL_activities.post.lookup.enabled=false
+      - GLOBAL_activities.post.cleaner.enabled=false
+      - GLOBAL_ooo.enabled=false
+      - GLOBAL_jodconverter.enabled=false
+      - SOLR_SSL=secret
+      - GLOBAL_solr.sharedSecret=secret
+    depends_on:
+      - postgresql
+  solr:
+    image: private.docker.xenit.eu/alfresco-enterprise/alfresco-solr6-xenit:2.0.9.1
+#    image: docker.io/xenit/alfresco-solr6:2.0
+#    volumes:
+#      - ./opentelemetry:/opt/opentelemetry
+    ports:
+      - "8085:8080"
+    environment:
+      - ALFRESCO_HOST=alfresco
+#      - ALFRESCO_SSL=none
+      - GLOBAL_ALL_alfresco.index.transformContent=false
+      - GLOBAL_ALL_solr.suggester.enabled=false
+      - GLOBAL_ALL_alfresco.cron=0 0/1 * * * ? *
+#      - GLOBAL_ALL_alfresco.transactionDocsBatchSize=1000
+#      - GLOBAL_ALL_alfresco.nodeBatchSize=1000
+#      - GLOBAL_ALL_alfresco.metadata.tracker.timestep=86400000
+      - ALFRESCO_SSL=secret
+      - ALFRESCO_SECRET=secret
+      - GLOBAL_ALL_alfresco.newSearcherInterval=60000 #every 60 sec, to avoid unnecessary CPU during reindexing
+      - GLOBAL_ALL_alfresco.nodeBatchSize=1000
+      - GLOBAL_ALL_alfresco.transactionDocsBatchSize=1000
+      - GLOBAL_ALL_alfresco.corePoolSize=64
+      - GLOBAL_ALL_merger.maxMergeCount=16
+      - GLOBAL_ALL_merger.maxThreadCount=7
+      - GLOBAL_ALL_merge.policy.maxMergedSegmentMB=5120
+      - GLOBAL_ALL_merge.policy.maxMergeAtOnce=10
+      - GLOBAL_ALL_merge.policy.segmentsPerTier=10
+#      - JAVA_OPTS_opentelemtry=-javaagent:/opt/opentelemetry/opentelemetry-javaagent.jar
+#      - JAVA_OPTS_opentelemtry_extensions=-Dotel.javaagent.extensions="/opt/opentelemetry/extensions/"
+#      - JAVA_OPTS_opentelemtry_service=-Dotel.resource.attributes=service.name=solr
+#      - JAVA_OPTS_opentelemtry_exporter=-Dotel.traces.exporter=otlp
+#      - JAVA_OPTS_opentelemtry_exporter_endpoint=-Dotel.exporter.otlp.endpoint=http://tempo:4317
+  postgresql:
+    image: docker.io/xenit/postgres
+    ports:
+        - ":5432:5432"
+    environment:
+      - POSTGRES_USER=alfresco
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=alfresco
+  tempo:
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./config/tempo.yaml:/etc/tempo.yaml
+      - tempo-data:/tmp/tempo
+    ports:
+      - "3200:3200"   # tempo
+      - "4317:4317"  # otlp grpc
+      - "4318:4318"  # otlp http
+
+  prometheus:
+    image: prom/prometheus
+    command:
+      - --config.file=/etc/prometheus.yaml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+    volumes:
+      - ./config/prometheus.yaml:/etc/prometheus.yaml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:9.3.2
+    volumes:
+      - ./config/provisioning/:/etc/grafana/provisioning/
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+    ports:
+      - "3000:3000"
+
+volumes:
+  tempo-data:
+
