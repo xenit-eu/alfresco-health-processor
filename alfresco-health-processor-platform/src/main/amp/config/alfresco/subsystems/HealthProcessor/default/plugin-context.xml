@@ -42,6 +42,7 @@
         <constructor-arg name="mergerThreads" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threads}" />
         <constructor-arg name="transactionHelper" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoTransactionHelper" />
         <constructor-arg name="nodeService" ref="NodeService" />
+        <constructor-arg name="nodeDAO" ref="nodeDAO"/>
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor"

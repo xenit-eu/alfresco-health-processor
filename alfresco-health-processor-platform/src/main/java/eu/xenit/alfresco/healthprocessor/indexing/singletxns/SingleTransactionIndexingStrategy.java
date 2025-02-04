@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.indexing.singletxns;
 
+import eu.xenit.alfresco.healthprocessor.NodeDaoAwareTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.NullCycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.SimpleCycleProgress;
@@ -10,14 +11,12 @@ import lombok.SneakyThrows;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.collections4.set.UnmodifiableSet;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.LongSupplier;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class SingleTransactionIndexingStrategy implements IndexingStrategy {
@@ -34,9 +33,9 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
     private final @NonNull SingleTransactionIndexingState state = new SingleTransactionIndexingState();
     private final @NonNull SingleTransactionIndexingBackgroundWorker backgroundWorker;
     private @Nullable Thread backgroundWorkerThread;
-    private final @NonNull LongSupplier progressSupplier = state::getCurrentTxnId;
+    private final @NonNull LongSupplier progressSupplier = state::getCurrentlyProcessedTxnId;
 
-    public SingleTransactionIndexingStrategy(@NonNull TrackingComponent trackingComponent,
+    public SingleTransactionIndexingStrategy(@NonNull NodeDaoAwareTrackingComponent trackingComponent,
                                              @NonNull SingleTransactionIndexingConfiguration configuration) {
         log.warn("A SingleTransactionIndexingStrategy has been created as part of the health processor setup. " +
                 "Please note that this strategy ignores the amount of requested nodeRefs and always returns exactly " +
@@ -46,7 +45,7 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
         this.configuration = configuration;
         this.trackingComponent = trackingComponent;
 
-        this.state.setCurrentTxnId(-1);
+        this.state.setCurrentTxnId(-1L);
         this.state.setLastTxnId(configuration.getStopTxnId());
     }
 
@@ -72,7 +71,6 @@ public class SingleTransactionIndexingStrategy implements IndexingStrategy {
         Pair<Long, Set<NodeRef>> txnIdAndNodeRefs;
         do {
             txnIdAndNodeRefs = backgroundWorker.takeNextTransaction();
-            state.setCurrentTxnId(txnIdAndNodeRefs.getLeft());
         } while (txnIdAndNodeRefs.getRight().isEmpty() && txnIdAndNodeRefs.getLeft() != -1);
 
         return txnIdAndNodeRefs.getRight();

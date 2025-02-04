@@ -1,11 +1,11 @@
 package eu.xenit.alfresco.healthprocessor.indexing.singletxns;
 
+import eu.xenit.alfresco.healthprocessor.NodeDaoAwareTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.NullCycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
 import lombok.NonNull;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,15 +29,15 @@ class SingleTransactionIndexingStrategyTest {
     private final static long MAX_TXN = 2;
     private final static int TRANSACTION_QUEUE_LENGTH = 10;
 
-    TrackingComponent trackingComponent;
+    NodeDaoAwareTrackingComponent trackingComponent;
     SingleTransactionIndexingConfiguration configuration;
     SingleTransactionIndexingStrategy strategy;
 
     @BeforeEach
     void setUp() {
-        trackingComponent = mock(TrackingComponent.class);
-        when(trackingComponent.getMaxTxnId()).thenReturn((long) MAX_TXN);
-        configuration = new SingleTransactionIndexingConfiguration(0, MAX_TXN, TRANSACTION_QUEUE_LENGTH);
+        trackingComponent = mock(NodeDaoAwareTrackingComponent.class);
+        when(trackingComponent.getMaxTxnId()).thenReturn(MAX_TXN);
+        configuration = new SingleTransactionIndexingConfiguration(0, MAX_TXN, TRANSACTION_QUEUE_LENGTH, 1);
         strategy = new SingleTransactionIndexingStrategy(trackingComponent, configuration);
     }
 

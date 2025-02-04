@@ -1,8 +1,11 @@
 package eu.xenit.alfresco.healthprocessor.indexing.singletxns;
 
+import com.google.common.base.Strings;
+import eu.xenit.alfresco.healthprocessor.NodeDaoAwareTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -16,15 +19,18 @@ import java.util.stream.Collectors;
 public class SingleTransactionIndexingBackgroundWorker implements Runnable {
 
     private final @NonNull BlockingDeque<@NonNull Pair<@NonNull Long, @NonNull Set<@NonNull NodeRef>>> buffer;
-    private final @NonNull TrackingComponent trackingComponent;
+    private final @NonNull NodeDaoAwareTrackingComponent trackingComponent;
     private final @NonNull SingleTransactionIndexingState state;
+    private final int aggregateThreshhold;
 
-    public SingleTransactionIndexingBackgroundWorker(@NonNull TrackingComponent trackingComponent,
+    public SingleTransactionIndexingBackgroundWorker(@NonNull NodeDaoAwareTrackingComponent trackingComponent,
                                                      @NonNull SingleTransactionIndexingConfiguration configuration,
                                                      @NonNull SingleTransactionIndexingState state) {
         this.buffer = new LinkedBlockingDeque<>(configuration.getBackgroundWorkerTransactionsQueueSize());
         this.trackingComponent = trackingComponent;
         this.state = state;
+        String threshold = configuration.getConfiguration().get("transaction-min-size-threshold");
+        this.aggregateThreshhold = Strings.isNullOrEmpty(threshold) ? 0 : Integer.parseInt(threshold);
 
         this.state.setCurrentlyProcessedTxnId(-1);
     }
@@ -40,11 +46,20 @@ public class SingleTransactionIndexingBackgroundWorker implements Runnable {
         try {
             log.debug("The background worker of the SingleTransactionIndexingStrategy has been started.");
 
-            // Thread-safe: the indexer strategy can not increase its current Txn ID if the background worker
-            //  hasn't returned anything yet. Just make sure the current & last Txn ID are set properly before executing this code.
-            long start = state.getCurrentTxnId();
-            long end = state.getLastTxnId();
-            for (long i = start; i < end; i++) handleNextTransaction(i);
+//            // Thread-safe: the indexer strategy can not increase its current Txn ID if the background worker
+//            //  hasn't returned anything yet. Just make sure the current & last Txn ID are set properly before executing this code.
+            int maxTxnCount = trackingComponent.getTransactionCount();
+            for(int txnCount = 1; txnCount <= maxTxnCount; txnCount++) {
+                log.debug("Getting transaction {}", txnCount);
+                List<Transaction> transactions = trackingComponent.getNextTransactions(1);
+                if (transactions == null || transactions.isEmpty()) return; // early exit, nothing more to process
+
+                Transaction currentlyProcessedTransaction = transactions.get(0);
+                long txnId = currentlyProcessedTransaction.getId();
+                log.trace("Currently processing transaction with ID ({} @ {}).",
+                        txnId, currentlyProcessedTransaction.getCommitTimeMs());
+                handleNextTransaction(txnId);
+            }
 
             log.debug("The background worker of the SingleTransactionIndexingStrategy has stopped.");
         } catch (InterruptedException e) {
@@ -59,8 +74,11 @@ public class SingleTransactionIndexingBackgroundWorker implements Runnable {
     }
 
     private void handleNextTransaction(long txnId) throws InterruptedException {
-        log.trace("Currently processing transaction with ID ({}).", txnId);
         Set<TrackingComponent.NodeInfo> fetchedNodes = trackingComponent.getNodesForTxnIds(List.of(txnId));
+        state.setCurrentTxnId(txnId);
+        if(fetchedNodes.size() <= aggregateThreshhold) {
+            return;
+        }
         Set<NodeRef> nodeRefs = fetchedNodes.stream()
                 .map(TrackingComponent.NodeInfo::getNodeRef)
                 .collect(Collectors.toSet());

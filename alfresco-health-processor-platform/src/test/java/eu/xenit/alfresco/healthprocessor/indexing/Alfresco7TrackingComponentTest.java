@@ -36,7 +36,7 @@ class Alfresco7TrackingComponentTest {
 
     @BeforeEach
     void setup() {
-        trackingComponent = new Alfresco7TrackingComponent(searchTrackingComponent);
+        trackingComponent = new Alfresco7TrackingComponent(searchTrackingComponent, null);
     }
 
     @Test

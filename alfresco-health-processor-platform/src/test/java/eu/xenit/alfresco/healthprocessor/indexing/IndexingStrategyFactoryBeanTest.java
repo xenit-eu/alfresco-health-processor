@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
+import eu.xenit.alfresco.healthprocessor.NodeDaoAwareTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsBasedIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsIndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrategy;
@@ -21,6 +22,9 @@ public class IndexingStrategyFactoryBeanTest {
 
     @Mock
     private TrackingComponent trackingComponent;
+
+    @Mock
+    private NodeDaoAwareTrackingComponent nodeDaoAwareTrackingComponent;
     private AttributeStore attributeStore = new InMemoryAttributeStore();
 
     @Test
@@ -54,6 +58,7 @@ public class IndexingStrategyFactoryBeanTest {
     }
 
     private IndexingStrategyFactoryBean factoryBean(IndexingConfiguration configuration) {
-        return new IndexingStrategyFactoryBean(configuration, trackingComponent, attributeStore);
+        return new IndexingStrategyFactoryBean(configuration, trackingComponent,
+                                            attributeStore, nodeDaoAwareTrackingComponent);
     }
 }

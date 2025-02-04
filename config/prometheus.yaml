@@ -1,0 +1,50 @@
+global:
+  evaluation_interval: 15s
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+rule_files:
+scrape_configs:
+  - job_name: 'alfresco'
+    scrape_interval: 15s
+    metrics_path: /alfresco/service/alfred/telemetry/prometheus
+    static_configs:
+      - targets: ['alfresco:8080']
+      # - targets: ['pvx2alf05n1.ux.pv.be','pvx2alf05n2.ux.pv.be']
+  - job_name: 'solr'
+    scrape_interval: 15s
+    scheme: http
+    fallback_scrape_protocol: PrometheusText0.0.4
+    static_configs:
+      - targets: ['solr:8080']
+      # - targets: ['pvx2alf05n1.ux.pv.be:8444','pvx2alf05n2.ux.pv.be:8444']
+    metrics_path: "/solr/alfresco/metrics"
+    params:
+      wt: ['dummy']
+#    tls_config:
+#      insecure_skip_verify: true
+#      cert_file: /etc/prometheus/solr.xenit.pem
+#      key_file: /etc/prometheus/solr.xenit.pem
+  - job_name: 'inflow'
+    metrics_path: /actuator/prometheus
+    scrape_interval: 1m
+    scrape_timeout: 1m
+    static_configs:
+      - targets: ['inflow:8081']
+      # - targets: ['pvstinflow02:8081']
+  - job_name: 'ebconnect'
+    scrape_interval: 15s
+    metrics_path: /alfresco/service/pvgroup/v1/eb/connect/actuator/prometheus
+    static_configs:
+      - targets: ['sigedis:8080']
+      # - targets: ['pvx2alf05n1.ux.pv.be','pvx2alf05n2.ux.pv.be']
+  - job_name: 'sigedis'
+    scrape_interval: 15s
+    metrics_path: /alfresco/service/pvgroup/v1/eb/sigedis/actuator/prometheus
+    static_configs:
+      - targets: ['sigedis:8080']
+      # - targets: ['pvx2alf05n1.ux.pv.be','pvx2alf05n2.ux.pv.be']

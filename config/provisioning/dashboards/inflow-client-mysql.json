@@ -1,0 +1,661 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "links": [
+      {
+        "asDropdown": false,
+        "icon": "dashboard",
+        "includeVars": true,
+        "keepTime": true,
+        "tags": [],
+        "targetBlank": false,
+        "title": "New link",
+        "tooltip": "",
+        "type": "link",
+        "url": ""
+      }
+    ],
+    "liveNow": false,
+    "panels": [
+      {
+        "datasource": {
+          "type": "mysql",
+          "uid": "umgDmqG4z"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "fillOpacity": 100,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineWidth": 1,
+              "scaleDistribution": {
+                "type": "linear"
+              }
+            },
+            "links": [],
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green"
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "OK"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "semi-dark-green",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "FAILED"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "semi-dark-red",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "INPUTQUEUE"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "semi-dark-yellow",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 11,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 2,
+        "options": {
+          "barRadius": 0,
+          "barWidth": 0.91,
+          "groupWidth": 0.49,
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "orientation": "auto",
+          "showValue": "auto",
+          "stacking": "none",
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          },
+          "xTickLabelRotation": 0,
+          "xTickLabelSpacing": 0
+        },
+        "pluginVersion": "9.1.4",
+        "targets": [
+          {
+            "datasource": {
+              "type": "mysql",
+              "uid": "umgDmqG4z"
+            },
+            "format": "time_series",
+            "group": [
+              {
+                "params": [
+                  "$__interval",
+                  "none"
+                ],
+                "type": "time"
+              }
+            ],
+            "metricColumn": "status",
+            "rawQuery": true,
+            "rawSql": "SELECT\r\n   $__timeGroupAlias( pdl.processedDateTime,$__interval),\r\n   pdl.status AS metric,\r\n  count( pdl.id) AS \"id\"\r\nFROM processedDocumentLog pdl join cycle c on c.id =pdl.cycle_id join job j on j.id = c.job_id\r\nWHERE\r\n  ($__timeFilter(startDateTime) or $__timeFilter(endDateTime) )\r\n  and \r\n  $__timeFilter(processedDateTime)\r\n  and\r\n  pdl.name like CONCAT(REPLACE('${path:regex}','\\\\','\\\\\\\\') , '%')\r\n  and\r\n  pdl.status in ($status)\r\n  and\r\n  j.name in ($job)\r\n  and \r\n  ('' = '${cycleId}' or  FIND_IN_SET( c.id , '${cycleId}'))\r\nGROUP BY 1,2\r\nORDER BY $__timeGroup(processedDateTime,$__interval)",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "id"
+                  ],
+                  "type": "column"
+                },
+                {
+                  "params": [
+                    "count"
+                  ],
+                  "type": "aggregate"
+                },
+                {
+                  "params": [
+                    "id"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "table": "processedDocumentLog",
+            "timeColumn": "processedDateTime",
+            "timeColumnType": "timestamp",
+            "where": [
+              {
+                "name": "$__timeFilter",
+                "params": [],
+                "type": "macro"
+              }
+            ]
+          }
+        ],
+        "type": "barchart"
+      },
+      {
+        "datasource": {
+          "type": "mysql",
+          "uid": "umgDmqG4z"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "fixed"
+            },
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto",
+              "filterable": false,
+              "inspect": false
+            },
+            "links": [],
+            "mappings": [
+              {
+                "options": {
+                  "FAILED": {
+                    "color": "semi-dark-red",
+                    "index": 0
+                  },
+                  "INPUTQUEUE": {
+                    "color": "semi-dark-yellow",
+                    "index": 2
+                  },
+                  "OK": {
+                    "color": "semi-dark-green",
+                    "index": 1
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Id"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 100
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "time"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 160
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Path"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 300
+                },
+                {
+                  "id": "links",
+                  "value": [
+                    {
+                      "title": "",
+                      "url": "/d/${__dashboard.uid}﻿﻿﻿﻿/﻿﻿﻿${__dashboard}﻿﻿﻿?orgId=1&${__url_time_range}&var-path=${__value.text}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Status"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 150
+                },
+                {
+                  "id": "custom.displayMode",
+                  "value": "auto"
+                },
+                {
+                  "id": "custom.displayMode",
+                  "value": "color-background-solid"
+                },
+                {
+                  "id": "links",
+                  "value": [
+                    {
+                      "title": "",
+                      "url": "/d/${__dashboard.uid}﻿﻿﻿﻿/﻿﻿﻿${__dashboard}﻿﻿﻿?orgId=1&${__url_time_range}&var-status=${__value.raw}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Cycle id"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 101
+                },
+                {
+                  "id": "links",
+                  "value": [
+                    {
+                      "title": "",
+                      "url": "/d/${__dashboard.uid}﻿﻿﻿﻿/﻿﻿﻿${__dashboard}﻿﻿﻿?orgId=1&${__url_time_range}&var-cycleId=${__value.text}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Job"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 110
+                },
+                {
+                  "id": "links",
+                  "value": [
+                    {
+                      "title": "",
+                      "url": "/d/${__dashboard.uid}﻿﻿﻿﻿/﻿﻿﻿${__dashboard}﻿﻿﻿?orgId=1&${__url_time_range}&var-job=${__value.raw}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Destination"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 110
+                },
+                {
+                  "id": "links",
+                  "value": [
+                    {
+                      "title": "",
+                      "url": "/d/${__dashboard.uid}﻿﻿﻿﻿/﻿﻿﻿${__dashboard}﻿﻿﻿?orgId=1&${__url_time_range}&var-destinaton=${__value.raw}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 16,
+          "w": 24,
+          "x": 0,
+          "y": 11
+        },
+        "id": 4,
+        "options": {
+          "footer": {
+            "enablePagination": false,
+            "fields": "",
+            "reducer": [
+              "sum"
+            ],
+            "show": false
+          },
+          "showHeader": true,
+          "sortBy": []
+        },
+        "pluginVersion": "9.1.5",
+        "targets": [
+          {
+            "datasource": {
+              "type": "mysql",
+              "uid": "umgDmqG4z"
+            },
+            "format": "table",
+            "group": [],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": " SELECT\r\n    processedDateTime AS \"time\",\r\n    pdl.id as \"Id\",\r\n\t  pdl.name as \"Path\",\r\n    pdl.status as \"Status\",\r\n    pdl.parameters as \"Parameters\",\r\n    pdl.reference as \"Reference\",\r\n    c.id as \"Cycle id\",\r\n    j.name as \"Job\",\r\n    d.name as \"Destination\"\r\nFROM processedDocumentLog pdl\r\n  join cycle c on c.id =pdl.cycle_id\r\n  join job j on j.id = c.job_id\r\n  join destination d on j.destination_id = d.id\r\nWHERE\r\n  ($__timeFilter(startDateTime) or $__timeFilter(endDateTime) )\r\n  and \r\n  $__timeFilter(processedDateTime)\r\n  and\r\n    pdl.name like CONCAT(REPLACE('${path:regex}','\\\\','\\\\\\\\') , '%')\r\n  and\r\n    pdl.status in ($status)\r\n  and\r\n    j.name in ($job)\r\n  and\r\n    d.name in ($destination)\r\n  and\r\n    ('' = '${cycleId}' or FIND_IN_SET( c.id , '${cycleId}'))\r\nORDER BY processedDateTime",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "id"
+                  ],
+                  "type": "column"
+                }
+              ],
+              [
+                {
+                  "params": [
+                    "cycle_id"
+                  ],
+                  "type": "column"
+                }
+              ],
+              [
+                {
+                  "params": [
+                    "status"
+                  ],
+                  "type": "column"
+                }
+              ]
+            ],
+            "table": "processedDocumentLog",
+            "timeColumn": "processedDateTime",
+            "timeColumnType": "timestamp",
+            "where": [
+              {
+                "name": "$__timeFilter",
+                "params": [],
+                "type": "macro"
+              }
+            ]
+          }
+        ],
+        "type": "table"
+      }
+    ],
+    "refresh": false,
+    "schemaVersion": 37,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "selected": false,
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "datasource": {
+            "type": "mysql",
+            "uid": "umgDmqG4z"
+          },
+          "definition": "select name from destination",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Destination",
+          "multi": true,
+          "name": "destination",
+          "options": [],
+          "query": "select name from destination",
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "tagValuesQuery": "",
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "current": {
+            "selected": true,
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "datasource": {
+            "type": "mysql",
+            "uid": "umgDmqG4z"
+          },
+          "definition": "select j.name from job j join destination d on d.id = j.destination_id where d.name in ($destination)",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Job",
+          "multi": true,
+          "name": "job",
+          "options": [],
+          "query": "select j.name from job j join destination d on d.id = j.destination_id where d.name in ($destination)",
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "tagValuesQuery": "",
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "current": {
+            "selected": true,
+            "text": "",
+            "value": ""
+          },
+          "hide": 0,
+          "label": "Cycle",
+          "name": "cycleId",
+          "options": [
+            {
+              "selected": true,
+              "text": "",
+              "value": ""
+            }
+          ],
+          "query": "",
+          "skipUrlSync": false,
+          "type": "textbox"
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": [
+              "All"
+            ],
+            "value": [
+              "$__all"
+            ]
+          },
+          "hide": 0,
+          "includeAll": true,
+          "label": "Status",
+          "multi": true,
+          "name": "status",
+          "options": [
+            {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            },
+            {
+              "selected": false,
+              "text": "OK",
+              "value": "OK"
+            },
+            {
+              "selected": false,
+              "text": "FAILED",
+              "value": "FAILED"
+            },
+            {
+              "selected": false,
+              "text": "INPUTQUEUE",
+              "value": "INPUTQUEUE"
+            },
+            {
+              "selected": false,
+              "text": "INFO",
+              "value": "INFO"
+            },
+            {
+              "selected": false,
+              "text": "WARN",
+              "value": "WARN"
+            }
+          ],
+          "query": "OK,FAILED,INPUTQUEUE,INFO,WARN",
+          "queryValue": "",
+          "skipUrlSync": false,
+          "type": "custom"
+        },
+        {
+          "current": {
+            "selected": true,
+            "text": "",
+            "value": ""
+          },
+          "hide": 0,
+          "label": "Path",
+          "name": "path",
+          "options": [
+            {
+              "selected": true,
+              "text": "",
+              "value": ""
+            }
+          ],
+          "query": "",
+          "skipUrlSync": false,
+          "type": "textbox"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-12h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ]
+    },
+    "timezone": "",
+    "title": "Inflow Database",
+    "uid": "_gnwwCGVk",
+    "version": 3,
+    "weekStart": ""
+  }

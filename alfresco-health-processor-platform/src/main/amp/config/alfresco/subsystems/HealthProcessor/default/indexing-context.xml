@@ -25,6 +25,7 @@
         <constructor-arg name="startTxnId" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-id.start}" />
         <constructor-arg name="stopTxnId" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-id.stop}" />
         <constructor-arg name="backgroundWorkerTransactionsQueueSize" value="${eu.xenit.alfresco.healthprocessor.indexing.single-txns.background-worker-queue-size}" />
+        <constructor-arg name="transactionMinSizeThreshold" value="${eu.xenit.alfresco.healthprocessor.processing.node-batch-size}" />
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsIndexingConfiguration"
@@ -50,6 +51,7 @@
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent"
           class="eu.xenit.alfresco.healthprocessor.indexing.Alfresco7TrackingComponent">
         <constructor-arg name="trackingComponent" ref="searchTrackingComponent" />
+        <constructor-arg name="nodeDAO" ref="nodeDAO"/>
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore"
@@ -62,5 +64,7 @@
         <constructor-arg name="configuration" ref="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration" />
         <constructor-arg name="trackingComponent" ref="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent" />
         <constructor-arg name="attributeStore" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore" />
+        <constructor-arg name="nodeDaoAwareTrackingComponent"
+                         ref="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent" />
     </bean>
 </beans>

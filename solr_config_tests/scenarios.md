@@ -1,0 +1,115 @@
+## baseline
+
+## Scenario 1
+version: '3.2'
+services:
+  solr:
+      - GLOBAL_ALL_alfresco.cron=0 0/1 * * * ? *
+      - GLOBAL_ALL_alfresco.newSearcherInterval=60000 #every 60 sec, to avoid unnecessary CPU during reindexing
+#      - GLOBAL_ALL_alfresco.nodeBatchSize=1000
+#      - GLOBAL_ALL_alfresco.transactionDocsBatchSize=1000
+#      - GLOBAL_ALL_alfresco.corePoolSize=64
+#      - GLOBAL_ALL_merger.maxMergeCount=16
+#      - GLOBAL_ALL_merger.maxThreadCount=7
+#      - GLOBAL_ALL_merge.policy.maxMergedSegmentMB=5120
+#      - GLOBAL_ALL_merge.policy.maxMergeAtOnce=10
+#      - GLOBAL_ALL_merge.policy.segmentsPerTier=10
+#      - GLOBAL_ALL_alfresco.metadata.tracker.timestep=864000001
+
+## Scenario 2
+version: '3.2'
+services:
+  solr:
+      - GLOBAL_ALL_alfresco.cron=0 0/1 * * * ? *
+      - GLOBAL_ALL_alfresco.newSearcherInterval=60000 #every 60 sec, to avoid unnecessary CPU during reindexing
+      - GLOBAL_ALL_alfresco.nodeBatchSize=1000
+      - GLOBAL_ALL_alfresco.transactionDocsBatchSize=1000
+#      - GLOBAL_ALL_alfresco.corePoolSize=64
+#      - GLOBAL_ALL_merger.maxMergeCount=16
+#      - GLOBAL_ALL_merger.maxThreadCount=7
+#      - GLOBAL_ALL_merge.policy.maxMergedSegmentMB=5120
+#      - GLOBAL_ALL_merge.policy.maxMergeAtOnce=10
+#      - GLOBAL_ALL_merge.policy.segmentsPerTier=10
+#      - GLOBAL_ALL_alfresco.metadata.tracker.timestep=864000001
+
+## Scenario 3
+version: '3.2'
+services:
+  solr:
+      - GLOBAL_ALL_alfresco.cron=0 0/1 * * * ? *
+      - GLOBAL_ALL_alfresco.newSearcherInterval=60000 #every 60 sec, to avoid unnecessary CPU during reindexing
+      - GLOBAL_ALL_alfresco.nodeBatchSize=1000
+      - GLOBAL_ALL_alfresco.transactionDocsBatchSize=1000
+      - GLOBAL_ALL_alfresco.corePoolSize=64
+#      - GLOBAL_ALL_merger.maxMergeCount=16
+#      - GLOBAL_ALL_merger.maxThreadCount=7
+#      - GLOBAL_ALL_merge.policy.maxMergedSegmentMB=5120
+#      - GLOBAL_ALL_merge.policy.maxMergeAtOnce=10
+#      - GLOBAL_ALL_merge.policy.segmentsPerTier=10
+#      - GLOBAL_ALL_alfresco.metadata.tracker.timestep=864000001
+
+## Scenario 4
+version: '3.2'
+services:
+  solr:
+      - GLOBAL_ALL_alfresco.cron=0 0/1 * * * ? *
+      - GLOBAL_ALL_alfresco.newSearcherInterval=60000 #every 60 sec, to avoid unnecessary CPU during reindexing
+      - GLOBAL_ALL_alfresco.nodeBatchSize=1000
+      - GLOBAL_ALL_alfresco.transactionDocsBatchSize=1000
+      - GLOBAL_ALL_alfresco.corePoolSize=64
+      - GLOBAL_ALL_merger.maxMergeCount=16
+      - GLOBAL_ALL_merger.maxThreadCount=7
+#      - GLOBAL_ALL_merge.policy.maxMergedSegmentMB=5120
+#      - GLOBAL_ALL_merge.policy.maxMergeAtOnce=10
+#      - GLOBAL_ALL_merge.policy.segmentsPerTier=10
+#      - GLOBAL_ALL_alfresco.metadata.tracker.timestep=864000001
+
+## Scenario 5
+version: '3.2'
+services:
+  solr:
+      - GLOBAL_ALL_alfresco.cron=0 0/1 * * * ? *
+      - GLOBAL_ALL_alfresco.newSearcherInterval=60000 #every 60 sec, to avoid unnecessary CPU during reindexing
+      - GLOBAL_ALL_alfresco.nodeBatchSize=1000
+      - GLOBAL_ALL_alfresco.transactionDocsBatchSize=1000
+      - GLOBAL_ALL_alfresco.corePoolSize=64
+      - GLOBAL_ALL_merger.maxMergeCount=16
+      - GLOBAL_ALL_merger.maxThreadCount=7
+      - GLOBAL_ALL_merge.policy.maxMergedSegmentMB=512
+      - GLOBAL_ALL_merge.policy.maxMergeAtOnce=20
+      - GLOBAL_ALL_merge.policy.segmentsPerTier=10
+#      - GLOBAL_ALL_alfresco.metadata.tracker.timestep=86400000
+
+## Scenario 6
+version: '3.2'
+services:
+  solr:
+      - GLOBAL_ALL_alfresco.cron=0 0/1 * * * ? *
+      - GLOBAL_ALL_alfresco.newSearcherInterval=60000 #every 60 sec, to avoid unnecessary CPU during reindexing
+      - GLOBAL_ALL_alfresco.nodeBatchSize=1000
+      - GLOBAL_ALL_alfresco.transactionDocsBatchSize=1000
+      - GLOBAL_ALL_alfresco.corePoolSize=64
+      - GLOBAL_ALL_merger.maxMergeCount=16
+      - GLOBAL_ALL_merger.maxThreadCount=7
+      - GLOBAL_ALL_merge.policy.maxMergedSegmentMB=512
+      - GLOBAL_ALL_merge.policy.maxMergeAtOnce=20
+      - GLOBAL_ALL_merge.policy.segmentsPerTier=10
+      - GLOBAL_ALL_alfresco.metadata.tracker.timestep=86400000
+
+
+## Scenario 7
+version: '3.2'
+services:
+  solr:
+      - GLOBAL_ALL_alfresco.cron=0 0/1 * * * ? *
+      - GLOBAL_ALL_alfresco.newSearcherInterval=60000 #every 60 sec, to avoid unnecessary CPU during reindexing
+#      - GLOBAL_ALL_alfresco.nodeBatchSize=1000
+#      - GLOBAL_ALL_alfresco.transactionDocsBatchSize=1000
+#      - GLOBAL_ALL_alfresco.corePoolSize=64
+#      - GLOBAL_ALL_merger.maxMergeCount=16
+#      - GLOBAL_ALL_merger.maxThreadCount=7
+      - GLOBAL_ALL_merge.policy.maxMergedSegmentMB=512
+      - GLOBAL_ALL_merge.policy.maxMergeAtOnce=20
+      - GLOBAL_ALL_merge.policy.segmentsPerTier=10
+      - GLOBAL_ALL_alfresco.metadata.tracker.timestep=86400000
+

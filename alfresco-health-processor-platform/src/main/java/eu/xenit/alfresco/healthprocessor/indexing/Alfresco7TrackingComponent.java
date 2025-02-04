@@ -1,20 +1,58 @@
 package eu.xenit.alfresco.healthprocessor.indexing;
 
+import eu.xenit.alfresco.healthprocessor.NodeDaoAwareTrackingComponent;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
+import org.alfresco.repo.domain.node.Transaction;
+import org.alfresco.repo.search.SearchTrackingComponent;
+import org.alfresco.repo.solr.NodeParameters;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import lombok.AllArgsConstructor;
-import org.alfresco.repo.search.SearchTrackingComponent;
-import org.alfresco.repo.solr.NodeParameters;
+import java.util.stream.Collectors;
 
-@AllArgsConstructor
-public class Alfresco7TrackingComponent implements TrackingComponent {
+@Slf4j
+@RequiredArgsConstructor
+public class Alfresco7TrackingComponent implements NodeDaoAwareTrackingComponent {
 
     private final SearchTrackingComponent trackingComponent;
+
+    private final AbstractNodeDAOImpl nodeDAO;
+
+    private Long lastTxnTime = -1L;
 
     @Override
     public long getMaxTxnId() {
         return trackingComponent.getMaxTxnId();
+    }
+
+    @Override
+    public int getTransactionCount() {
+        int count = nodeDAO.getTransactionCount();
+        log.debug("Found {} transactions", count);
+        return count;
+    }
+
+    @Override
+    public synchronized List<Transaction> getNextTransactions(Integer count) {
+        List<Transaction> txns = nodeDAO.selectTxns(lastTxnTime, Long.MAX_VALUE, count,
+                null, null, true);
+        long newLastTxnTime = txns.stream().mapToLong(Transaction::getCommitTimeMs).max().orElse(Long.MAX_VALUE);
+        log.debug("Returning {} transactions from {} to {}", txns, lastTxnTime, newLastTxnTime);
+        lastTxnTime = newLastTxnTime;
+        return txns;
+    }
+
+    public int changesCount(long txnId) {
+        List<NodeRef.Status> changes = this.nodeDAO.getTxnChangesForStore(
+                StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, txnId);
+        int count = changes.size();
+        log.debug("Txn {} has {} changes", txnId, count);
+        return count;
     }
 
     @Override
@@ -30,6 +68,10 @@ public class Alfresco7TrackingComponent implements TrackingComponent {
             return true;
         });
 
+        List<String> ids = txnIds.stream()
+                .map(l -> Long.toString(l))
+                .collect(Collectors.toList());
+        log.debug("Returning {} nodes for transactions {}", ret.size(), String.join(",", ids));
         return ret;
     }
 }
