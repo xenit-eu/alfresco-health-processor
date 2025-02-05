@@ -20,6 +20,14 @@ public abstract class ToggleableHealthProcessorPlugin implements HealthProcessor
     @Setter
     private boolean enabled;
 
+    protected ToggleableHealthProcessorPlugin(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public ToggleableHealthProcessorPlugin() {
+        this(false);
+    }
+
     protected Logger getLogger() {
         return log;
     }

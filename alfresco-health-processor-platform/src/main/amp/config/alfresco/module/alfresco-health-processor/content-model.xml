@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model name="healthprocessor:model" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+    <description>Content model for the health processor plugin</description>
+    <author>Pieter-Jan Vrielynck</author>
+    <version>1.0</version>
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/healthprocessor/1.0" prefix="healthprocessor"/>
+    </namespaces>
+    <aspects>
+        <aspect name="healthprocessor:mergeAspect">
+            <title>Healthprocessor merge aspect</title>
+        </aspect>
+    </aspects>
+</model>
