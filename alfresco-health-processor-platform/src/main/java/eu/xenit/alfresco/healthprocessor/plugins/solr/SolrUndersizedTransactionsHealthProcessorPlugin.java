@@ -65,8 +65,9 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
             List<Long> nodeIds = backgroundWorkerBatch.parallelStream()
                     .map(this.nodeDAO::getNodePair)
                     .map(Pair::getFirst).collect(Collectors.toList());
-            transactionHelper.inNewTransaction(() -> nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds),
-                    false);
+            transactionHelper.inNewTransaction(() -> {
+                    nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
+            }, false);
         } catch (Exception e) {
             log.error("An error occurred while merging a batch of ({}) node(s).", backgroundWorkerBatch.size(), e);
         } finally {
