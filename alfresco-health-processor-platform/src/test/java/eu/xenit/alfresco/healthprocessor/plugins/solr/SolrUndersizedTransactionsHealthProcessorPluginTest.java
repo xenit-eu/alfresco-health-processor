@@ -79,7 +79,7 @@ class SolrUndersizedTransactionsHealthProcessorPluginTest {
     void testChosenIndexerStrategy() {
         Properties wrongProperties = new Properties();
         wrongProperties.put("eu.xenit.alfresco.healthprocessor.indexing.strategy", "wrong-strategy");
-        assertThrows(RuntimeException.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(true, 1, wrongProperties, transactionHelper, nodeDAO));
+        assertThrows(IllegalStateException.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(true, 1, wrongProperties, transactionHelper, nodeDAO));
     }
 
 }

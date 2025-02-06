@@ -13,7 +13,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,7 +26,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableHealthProcessorPlugin {
 
-    public final static @NonNull String SELECTED_INDEXER_STRATEGY_PROPERTY = "eu.xenit.alfresco.healthprocessor.indexing.strategy";
+    public static final @NonNull String SELECTED_INDEXER_STRATEGY_PROPERTY = "eu.xenit.alfresco.healthprocessor.indexing.strategy";
 
     private final @NonNull TransactionHelper transactionHelper;
     private final @NonNull AtomicInteger queuedMergeRequests = new AtomicInteger(0);
@@ -61,9 +65,8 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
             List<Long> nodeIds = backgroundWorkerBatch.parallelStream()
                     .map(this.nodeDAO::getNodePair)
                     .map(Pair::getFirst).collect(Collectors.toList());
-            transactionHelper.inNewTransaction(() -> {
-                    nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
-            }, false);
+            transactionHelper.inNewTransaction(() -> nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds),
+                    false);
         } catch (Exception e) {
             log.error("An error occurred while merging a batch of ({}) node(s).", backgroundWorkerBatch.size(), e);
         } finally {
@@ -82,7 +85,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
         String property = properties.getProperty(SELECTED_INDEXER_STRATEGY_PROPERTY);
         String expected = IndexingStrategy.IndexingStrategyKey.THRESHOLD.getKey();
         if (!(expected.equals(property)))
-            throw new RuntimeException(String.format("The SolrUndersizedTransactionsHealthProcessorPlugin can only be used with the (%s) indexing strategy. " +
+            throw new IllegalStateException(String.format("The SolrUndersizedTransactionsHealthProcessorPlugin can only be used with the (%s) indexing strategy. " +
                     "However, the (%s) strategy was selected. " +
                     "Please adjust the (%s) property.", expected, property, SELECTED_INDEXER_STRATEGY_PROPERTY));
     }

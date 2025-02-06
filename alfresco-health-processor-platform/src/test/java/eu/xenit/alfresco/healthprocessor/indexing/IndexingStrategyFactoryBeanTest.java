@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mock;
 
 import eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsBasedIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsIndexingConfiguration;
-import eu.xenit.alfresco.healthprocessor.indexing.threshold.ThresholdIndexingStrategyConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdIndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;

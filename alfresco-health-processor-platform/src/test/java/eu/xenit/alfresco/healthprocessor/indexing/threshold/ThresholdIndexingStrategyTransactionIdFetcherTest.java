@@ -17,10 +17,10 @@ import static org.mockito.Mockito.when;
 
 class ThresholdIndexingStrategyTransactionIdFetcherTest {
 
-    private final static int AMOUNT_OF_DUMMY_TRANSACTIONS = 1000;
-    private final static int AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS = 5;
-    private final static int TRANSACTIONS_BATCH_SIZE = 10;
-    private final static @NonNull ThresholdIndexingStrategyConfiguration CONFIGURATION =
+    private static final int AMOUNT_OF_DUMMY_TRANSACTIONS = 1000;
+    private static final int AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS = 5;
+    private static final int TRANSACTIONS_BATCH_SIZE = 10;
+    private static final @NonNull ThresholdIndexingStrategyConfiguration CONFIGURATION =
             new ThresholdIndexingStrategyConfiguration(AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS, TRANSACTIONS_BATCH_SIZE,
             -1, 0, AMOUNT_OF_DUMMY_TRANSACTIONS);
 
@@ -83,10 +83,11 @@ class ThresholdIndexingStrategyTransactionIdFetcherTest {
 
     @Test
     public void testArguments() {
+        ThresholdIndexingStrategyState state = new ThresholdIndexingStrategyState(0, 0, 0);
         ThresholdIndexingStrategyConfiguration configurationOne = new ThresholdIndexingStrategyConfiguration(0, 0, 0, 0, 0);
-        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategyTransactionIdFetcher(configurationOne, dummySearchTrackingComponent, new ThresholdIndexingStrategyState(0, 0, 0)));
+        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategyTransactionIdFetcher(configurationOne, dummySearchTrackingComponent, state));
         ThresholdIndexingStrategyConfiguration configurationTwo = new ThresholdIndexingStrategyConfiguration(1, 0, 0, 0, 0);
-        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategyTransactionIdFetcher(configurationTwo, dummySearchTrackingComponent, new ThresholdIndexingStrategyState(0, 0, 0)));
+        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategyTransactionIdFetcher(configurationTwo, dummySearchTrackingComponent, state));
     }
 
 }

@@ -28,12 +28,12 @@ import static org.mockito.Mockito.*;
 
 class ThresholdIndexingStrategyTransactionIdMergerTest {
 
-    private final static @NonNull Random RANDOM = new Random();
-    private final static @NonNull List<StoreRef> WORKSPACE_AND_ARCHIVE_STORE_REFS = List.of(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, StoreRef.STORE_REF_ARCHIVE_SPACESSTORE);
-    private final static @NonNull List<StoreRef> FILTERED_OUT_STORE_REFS = List.of(new StoreRef("we", "are"),
+    private static final @NonNull Random RANDOM = new Random();
+    private static final @NonNull List<StoreRef> WORKSPACE_AND_ARCHIVE_STORE_REFS = List.of(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, StoreRef.STORE_REF_ARCHIVE_SPACESSTORE);
+    private static final @NonNull List<StoreRef> FILTERED_OUT_STORE_REFS = List.of(new StoreRef("we", "are"),
             new StoreRef("really", "not"), new StoreRef("supposed", "to"), new StoreRef("be", "here"));
-    private final static int THRESHOLD = 5;
-    private final static int TRANSACTIONS_BATCH_SIZE = 2;
+    private static final int THRESHOLD = 5;
+    private static final int TRANSACTIONS_BATCH_SIZE = 2;
 
     // * 2: for each workspace / archive document, we're going to add a node from a store that should be filtered out.
     private final @NonNull ArrayList<Node> nodes = new ArrayList<>(THRESHOLD * 2);

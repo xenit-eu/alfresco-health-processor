@@ -27,12 +27,12 @@ class ThresholdIndexingStrategyTest {
     // The queue mechanism is not fair / FIFO on purpose; however, that means that testing the entire indexing strategy
     // with more than one worker is not possible. Workers fetching some transactions faster than others is a possibility &
     // will result in totally different test outcomes.
-    private final static int AMOUNT_OF_BACKGROUND_WORKERS = 1;
-    private final static int TRANSACTION_BATCHES = 1;
-    private final static int NODES_PER_TRANSACTION = 2;
-    private final static int THRESHOLD = 10;
-    private final static int AMOUNT_OF_TRANSACTIONS = AMOUNT_OF_BACKGROUND_WORKERS * (THRESHOLD / NODES_PER_TRANSACTION);
-    private final static @NonNull ThresholdIndexingStrategyConfiguration CONFIGURATION
+    private static final int AMOUNT_OF_BACKGROUND_WORKERS = 1;
+    private static final int TRANSACTION_BATCHES = 1;
+    private static final int NODES_PER_TRANSACTION = 2;
+    private static final int THRESHOLD = 10;
+    private static final int AMOUNT_OF_TRANSACTIONS = AMOUNT_OF_BACKGROUND_WORKERS * (THRESHOLD / NODES_PER_TRANSACTION);
+    private static final @NonNull ThresholdIndexingStrategyConfiguration CONFIGURATION
             = new ThresholdIndexingStrategyConfiguration(AMOUNT_OF_BACKGROUND_WORKERS, TRANSACTION_BATCHES, THRESHOLD,
             0, AMOUNT_OF_TRANSACTIONS);
 
