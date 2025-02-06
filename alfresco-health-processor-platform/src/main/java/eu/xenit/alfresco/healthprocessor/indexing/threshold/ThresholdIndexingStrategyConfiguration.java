@@ -15,7 +15,7 @@ public class ThresholdIndexingStrategyConfiguration implements IndexingConfigura
     private final int threshold;
     private final int minTransactionId;
     private final int maxTransactionId;
-    private final @NonNull Map<String, String> configuration;
+    private final @NonNull Map<@NonNull String, @NonNull String> configuration;
 
     public ThresholdIndexingStrategyConfiguration(int transactionsBackgroundWorkers, int transactionsBatchSize,
                                                   int threshold, int minTransactionId, int maxTransactionId) {

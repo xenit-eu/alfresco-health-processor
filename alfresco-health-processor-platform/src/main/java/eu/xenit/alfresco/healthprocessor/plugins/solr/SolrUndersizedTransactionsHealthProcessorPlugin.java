@@ -28,7 +28,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
     private final @NonNull AtomicInteger queuedMergeRequests = new AtomicInteger(0);
     private final @NonNull ExecutorService mergerExecutor;
     private final @NonNull AbstractNodeDAOImpl nodeDAO;
-    private final @Getter @NonNull Map<String, String> configuration;
+    private final @Getter @NonNull Map<@NonNull String, @NonNull String> configuration;
 
     public SolrUndersizedTransactionsHealthProcessorPlugin(boolean enabled, int mergerThreads,
                                                            @NonNull Properties properties,
@@ -47,7 +47,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
 
     @Nonnull
     @Override
-    protected Set<NodeHealthReport> doProcess(Set<NodeRef> allNodeRefs) {
+    protected Set<@NonNull NodeHealthReport> doProcess(Set<@NonNull NodeRef> allNodeRefs) {
         // This is NOT just a logging statement; the counter is incremented! Do not remove!
         log.debug("Queueing a new batch of ({}) transaction(s). Currently, there are ({}) merge requests queued.",
                 allNodeRefs.size(), queuedMergeRequests.incrementAndGet());
@@ -72,7 +72,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
     }
 
     @Override
-    public Map<String, String> getState() {
+    public @NonNull Map<@NonNull String, @NonNull String> getState() {
         HashMap<String, String> returnValue = new HashMap<>(super.getState());
         returnValue.put("queued-merge-requests", String.valueOf(queuedMergeRequests.get()));
         return returnValue;

@@ -27,10 +27,10 @@ public class ThresholdIndexingStrategy implements IndexingStrategy {
     private final @NonNull SearchTrackingComponent searchTrackingComponent;
     private final @NonNull ThresholdIndexingStrategyState state = new ThresholdIndexingStrategyState();
     private final @NonNull ThresholdIndexingStrategyTransactionIdFetcher transactionIdFetcher;
-    private final @NonNull BlockingDeque<Set<NodeRef>> queuedNodes;
+    private final @NonNull BlockingDeque<@NonNull Set<@NonNull NodeRef>> queuedNodes;
     private final @NonNull ThresholdIndexingStrategyTransactionIdMerger @NonNull [] transactionIdMergers;
-    private final @NonNull HashSet<Thread> runningThreads;
-    private final @NonNull AtomicReference<CycleProgress> cycleProgress = new AtomicReference<>(NullCycleProgress.getInstance());
+    private final @NonNull HashSet<@NonNull Thread> runningThreads;
+    private final @NonNull AtomicReference<@NonNull CycleProgress> cycleProgress = new AtomicReference<>(NullCycleProgress.getInstance());
     private final @NonNull LongSupplier progressReporter = state::getCurrentTransactionId;
 
     public ThresholdIndexingStrategy(@NonNull ThresholdIndexingStrategyConfiguration configuration,
@@ -74,7 +74,7 @@ public class ThresholdIndexingStrategy implements IndexingStrategy {
 
     @Override
     @SneakyThrows(InterruptedException.class)
-    public @NonNull Set<NodeRef> getNextNodeIds(int amount) {
+    public @NonNull Set<@NonNull NodeRef> getNextNodeIds(int amount) {
         Set<NodeRef> returnValue = Set.of();
         while (state.getRunningTransactionMergers() > 0) {
             returnValue = queuedNodes.takeFirst();
@@ -99,7 +99,7 @@ public class ThresholdIndexingStrategy implements IndexingStrategy {
     }
 
     @Override
-    public @NonNull Map<String, String> getState() {
+    public @NonNull Map<@NonNull String, @NonNull String> getState() {
         return state.getMapRepresentation();
     }
 

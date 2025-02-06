@@ -18,7 +18,7 @@ public class ThresholdIndexingStrategyState {
     private int runningTransactionMergers = 0; // Only adjusted by one thread, so does not need to be atomic.
     private final @NonNull AtomicInteger transactionBatchesQueueSize = new AtomicInteger(0);
 
-    public @NonNull Map<String, String> getMapRepresentation() {
+    public @NonNull Map<@NonNull String, @NonNull String> getMapRepresentation() {
         return Map.of(
                 "current-transaction-id", String.valueOf(currentTransactionId),
                 "max-transaction-id", String.valueOf(maxTransactionId),

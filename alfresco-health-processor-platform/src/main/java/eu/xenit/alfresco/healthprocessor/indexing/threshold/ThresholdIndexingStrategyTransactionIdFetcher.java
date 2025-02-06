@@ -87,14 +87,14 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
         for (int i = 0; i < configuration.getTransactionsBackgroundWorkers(); i++) queuedTransactions.putLast(List.of());
     }
 
-    public @NonNull List<Transaction> getNextTransactions() throws InterruptedException {
+    public @NonNull List<@NonNull Transaction> getNextTransactions() throws InterruptedException {
         List<Transaction> transactions = queuedTransactions.takeFirst();
         if (!transactions.isEmpty()) state.getTransactionBatchesQueueSize().decrementAndGet();
         else log.trace("One of the transaction mergers is receiving the end signal from the transaction fetcher.");
         return transactions;
     }
 
-    private void queueTransactions(@NonNull List<Transaction> transactions) throws InterruptedException {
+    private void queueTransactions(@NonNull List<@NonNull Transaction> transactions) throws InterruptedException {
         int transactionsSize = transactions.size();
 
         for (int i = 0; i < configuration.getTransactionsBackgroundWorkers(); i ++) {

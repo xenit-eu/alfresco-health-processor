@@ -1,9 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.indexing.threshold;
 
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.search.SearchTrackingComponent;
@@ -23,7 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ThresholdIndexingStrategyTransactionIdMerger implements Runnable {
 
-    private static final @NonNull Set<StoreRef> WORKSPACE_AND_ARCHIVE_STORE_REFS = Set.of(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, StoreRef.STORE_REF_ARCHIVE_SPACESSTORE);
+    private static final @NonNull Set<@NonNull StoreRef> WORKSPACE_AND_ARCHIVE_STORE_REFS = Set.of(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, StoreRef.STORE_REF_ARCHIVE_SPACESSTORE);
 
     private final @NonNull ThresholdIndexingStrategyTransactionIdFetcher fetcher;
     private final @NonNull BlockingDeque<Set<NodeRef>> queuedNodes;
@@ -65,7 +63,8 @@ public class ThresholdIndexingStrategyTransactionIdMerger implements Runnable {
         }
     }
 
-    private void handleTransactionNodes(@NonNull HashSet<NodeRef> bucket, @NonNull HashMap<Long, HashSet<Node>> transactions) throws InterruptedException {
+    private void handleTransactionNodes(@NonNull HashSet<@NonNull NodeRef> bucket,
+                                        @NonNull HashMap<@NonNull Long, @NonNull HashSet<@NonNull Node>> transactions) throws InterruptedException {
         for (var entry : transactions.entrySet()) {
             if (entry.getValue().size() >= configuration.getThreshold()) {
                 log.debug("Transaction ({}) contains more than the threshold amount of nodes ({}). Skipping the transaction.", entry.getKey(), entry.getValue().size());
@@ -76,7 +75,7 @@ public class ThresholdIndexingStrategyTransactionIdMerger implements Runnable {
         }
     }
 
-    private void handleTransactionNode(@NonNull HashSet<NodeRef> bucket, @NonNull Node node) throws InterruptedException {
+    private void handleTransactionNode(@NonNull HashSet<@NonNull NodeRef> bucket, @NonNull Node node) throws InterruptedException {
         if (!WORKSPACE_AND_ARCHIVE_STORE_REFS.contains(node.getStore().getStoreRef())) return;
 
         bucket.add(node.getNodeRef());
