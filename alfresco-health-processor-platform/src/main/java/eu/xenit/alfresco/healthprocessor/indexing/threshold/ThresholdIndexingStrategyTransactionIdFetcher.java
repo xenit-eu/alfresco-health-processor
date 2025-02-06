@@ -9,7 +9,12 @@ import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
-
+/**
+ * In case the performance ever becomes an issue: this part can be easily multi-threaded too,
+ * by dividing the transaction range into multiple parts and fetching them in parallel (using multiple fetchers).
+ * However, this is not necessary at the moment. We're already at 200.000 transactions per minute on an underpowered laptop.
+ * I'm just leaving this note here, in case this might help another developer in the future.
+ */
 @Slf4j
 public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
 
@@ -22,11 +27,25 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
     public ThresholdIndexingStrategyTransactionIdFetcher(@NonNull ThresholdIndexingStrategyConfiguration configuration,
                                                          @NonNull SearchTrackingComponent searchTrackingComponent,
                                                          @NonNull ThresholdIndexingStrategyState state) {
-        this.queuedTransactions = new LinkedBlockingDeque<>(configuration.getTransactionsBackgroundWorkers());
+        // No more required than the amount of background workers.
+        // If the queue is full, it means that the background workers can not keep up with the transaction fetcher anyway.
+        // Slow down in this case.
+        this(configuration, searchTrackingComponent, state, new LinkedBlockingDeque<>(configuration.getTransactionsBackgroundWorkers()));
+    }
+
+    ThresholdIndexingStrategyTransactionIdFetcher(@NonNull ThresholdIndexingStrategyConfiguration configuration,
+                                                  @NonNull SearchTrackingComponent searchTrackingComponent,
+                                                  @NonNull ThresholdIndexingStrategyState state,
+                                                  @NonNull LinkedBlockingDeque<@NonNull List<@NonNull Transaction>> queuedTransactions) {
+        if (configuration.getTransactionsBackgroundWorkers() <= 0)
+            throw new IllegalArgumentException(String.format("The amount of background workers must be greater than zero (%d provided).", configuration.getTransactionsBackgroundWorkers()));
+        if (configuration.getTransactionsBatchSize() <= 0)
+            throw new IllegalArgumentException(String.format("The batch size must be greater than zero (%d provided).", configuration.getTransactionsBatchSize()));
 
         this.searchTrackingComponent = searchTrackingComponent;
         this.state = state;
         this.configuration = configuration;
+        this.queuedTransactions = queuedTransactions;
     }
 
     @Override
@@ -47,6 +66,7 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
 
                 queueTransactions(fetchedTransactions);
                 currentTransactionId = fetchedTransactions.get(fetchedTransactions.size() - 1).getId() + 1;
+                state.setCurrentTransactionId(currentTransactionId); // UI update; nice to have.
             } while (currentTransactionId < maxTransactionId); // maxTransactionId is exclusive.
         } catch (InterruptedException e) {
             log.warn("The ThresholdIndexingStrategyTransactionIdFetcher has been interrupted. This is unexpected behavior. " +
@@ -55,7 +75,8 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
             try {
                 signalEnd();
             } catch (InterruptedException e) {
-                log.error("The ThresholdIndexingStrategyTransactionIdFetcher has been interrupted while signaling the end to the transaction merger(s).", e);
+                log.error("The ThresholdIndexingStrategyTransactionIdFetcher has been interrupted while signaling the end to the transaction merger(s). " +
+                        "The threshold indexer can not recover from this.", e);
             }
         }
     }
@@ -89,11 +110,4 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
         }
     }
 
-    private long convertTransactionIdToTimestamp(long transactionId) throws IllegalArgumentException {
-        List<Transaction> foundTransaction = searchTrackingComponent.getTransactions(transactionId, Long.MIN_VALUE,
-                transactionId + 1, Long.MAX_VALUE, 1);
-        if (foundTransaction.size() != 1) throw new IllegalArgumentException(String.format("Expected to find one transaction " +
-                "with ID (%d), but found (%d).", transactionId, foundTransaction.size()));
-        return foundTransaction.get(0).getCommitTimeMs();
-    }
 }

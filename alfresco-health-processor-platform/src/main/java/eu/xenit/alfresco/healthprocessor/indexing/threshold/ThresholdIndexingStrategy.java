@@ -36,6 +36,9 @@ public class ThresholdIndexingStrategy implements IndexingStrategy {
     public ThresholdIndexingStrategy(@NonNull ThresholdIndexingStrategyConfiguration configuration,
                                      @NonNull AbstractNodeDAOImpl nodeDAO,
                                      @NonNull SearchTrackingComponent searchTrackingComponent) {
+        if (configuration.getTransactionsBackgroundWorkers() <= 0)
+            throw new IllegalArgumentException(String.format("The amount of background workers must be greater than zero (%d provided).", configuration.getTransactionsBackgroundWorkers()));
+
         this.configuration = configuration;
         this.searchTrackingComponent = searchTrackingComponent;
         this.nodeDAO = nodeDAO;
@@ -46,7 +49,7 @@ public class ThresholdIndexingStrategy implements IndexingStrategy {
 
         this.transactionIdMergers = new ThresholdIndexingStrategyTransactionIdMerger[configuration.getTransactionsBackgroundWorkers()];
         for (int i = 0; i < configuration.getTransactionsBackgroundWorkers(); i++)
-            this.transactionIdMergers[i] = new ThresholdIndexingStrategyTransactionIdMerger(transactionIdFetcher, queuedNodes, configuration, searchTrackingComponent, state);
+            this.transactionIdMergers[i] = new ThresholdIndexingStrategyTransactionIdMerger(transactionIdFetcher, queuedNodes, configuration, searchTrackingComponent);
     }
 
     @Override

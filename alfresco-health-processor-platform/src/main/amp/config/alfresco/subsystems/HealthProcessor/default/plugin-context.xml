@@ -23,9 +23,9 @@
         class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrUndersizedTransactionsHealthProcessorPlugin">
         <constructor-arg name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled}" />
         <constructor-arg name="mergerThreads" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threads}" />
+        <constructor-arg name="properties" ref="global-properties" />
         <constructor-arg name="transactionHelper" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoTransactionHelper" />
-        <constructor-arg name="nodeService" ref="NodeService" />
-        <constructor-arg name="behaviourFilter" ref="policyBehaviourFilter" />
+        <constructor-arg name="nodeDAO" ref="nodeDAO" />
     </bean>
 
 <!--    Used by the eu.xenit.alfresco.healthprocessor.plugins.solr.SolrUndersizedTransactionsHealthProcessorPlugin bean -->

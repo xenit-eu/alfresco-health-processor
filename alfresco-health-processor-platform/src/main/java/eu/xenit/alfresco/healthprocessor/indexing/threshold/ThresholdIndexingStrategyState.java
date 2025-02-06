@@ -1,12 +1,16 @@
 package eu.xenit.alfresco.healthprocessor.indexing.threshold;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ThresholdIndexingStrategyState {
 
     private long currentTransactionId = -1;
