@@ -18,15 +18,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 class ThresholdIndexingStrategyTransactionIdMergerTest {
@@ -51,21 +48,13 @@ class ThresholdIndexingStrategyTransactionIdMergerTest {
         for (int i = 0; i < THRESHOLD * 2; i ++) {
             StoreRef storeRef = (i % 2 == 0)? WORKSPACE_AND_ARCHIVE_STORE_REFS.get(RANDOM.nextInt(WORKSPACE_AND_ARCHIVE_STORE_REFS.size())) :
                     FILTERED_OUT_STORE_REFS.get(RANDOM.nextInt(FILTERED_OUT_STORE_REFS.size()));
-
-            StoreEntity storeEntity = mock(StoreEntity.class);
-            when(storeEntity.getStoreRef()).thenReturn(storeRef);
-            Node dummyNode = mock(Node.class);
-            when(dummyNode.getStore()).thenReturn(storeEntity);
-            when(dummyNode.getNodeRef()).thenReturn(new NodeRef(storeRef, Integer.toString(i)));
-            when(dummyNode.getTransaction()).thenReturn(mock(TransactionEntity.class));
-            when(dummyNode.getTransaction().getId()).thenReturn((long) i);
-
-            nodes.add(dummyNode);
+            // +1: cf. .getNodes() mock.
+            nodes.add(createDummyNode(storeRef, i + 1L, Integer.toString(i)));
         }
 
         when(fetcher.getNextTransactions()).thenAnswer(invocation -> {
            int transactionIndex = transactionIndexCounter.getAndIncrement();
-           return IntStream.range(TRANSACTIONS_BATCH_SIZE * transactionIndex, Math.min(TRANSACTIONS_BATCH_SIZE * (transactionIndex + 1), nodes.size()))
+           return IntStream.range(TRANSACTIONS_BATCH_SIZE * transactionIndex, Math.min(TRANSACTIONS_BATCH_SIZE * (transactionIndex + 1), nodes.size() + 1)) // + 1: cf. .getNodes() mock.
                    .mapToObj(index -> {
                        Transaction transaction = mock(Transaction.class);
                        when(transaction.getId()).thenReturn((long) index);
@@ -77,7 +66,13 @@ class ThresholdIndexingStrategyTransactionIdMergerTest {
             NodeParameters nodeParameters = invocation.getArgument(0);
             SearchTrackingComponent.NodeQueryCallback nodeHandler = invocation.getArgument(1);
 
-            nodeParameters.getTransactionIds().forEach(transactionId -> nodeHandler.handleNode(nodes.get(transactionId.intValue())));
+            // 0 is a special transaction.
+            // Transaction 0 is so big that it should be filtered out.
+            nodeParameters.getTransactionIds().forEach(transactionId -> {
+                if (transactionId == 0) {
+                    for (int i = 0; i < THRESHOLD; i ++) nodeHandler.handleNode(createDummyNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, 0, Integer.toString(i)));
+                } else nodeHandler.handleNode(nodes.get(transactionId.intValue() - 1));
+            });
 
             return null;
         }).when(searchTrackingComponent).getNodes(any(), any());
@@ -116,4 +111,16 @@ class ThresholdIndexingStrategyTransactionIdMergerTest {
             thread.interrupt();
         }
     }
+
+    private static @NonNull Node createDummyNode(@NonNull StoreRef storeRef, long transactionId, @NonNull String nodeUUID) {
+        StoreEntity storeEntity = mock(StoreEntity.class);
+        when(storeEntity.getStoreRef()).thenReturn(storeRef);
+        Node dummyNode = mock(Node.class);
+        when(dummyNode.getStore()).thenReturn(storeEntity);
+        when(dummyNode.getNodeRef()).thenReturn(new NodeRef(storeRef, nodeUUID));
+        when(dummyNode.getTransaction()).thenReturn(mock(TransactionEntity.class));
+        when(dummyNode.getTransaction().getId()).thenReturn(transactionId);
+        return dummyNode;
+    }
+
 }
