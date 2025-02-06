@@ -3,14 +3,12 @@ package eu.xenit.alfresco.healthprocessor.plugins.solr;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import lombok.NonNull;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
-import org.alfresco.repo.domain.node.Node;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,8 +17,8 @@ import static org.mockito.Mockito.*;
 
 class SolrUndersizedTransactionsHealthProcessorPluginTest {
 
-    private final static int AMOUNT_OF_TEST_NODE_REFS = 100;
-    private final static @NonNull Random RANDOM = new Random();
+    private static final int AMOUNT_OF_TEST_NODE_REFS = 100;
+    private static final @NonNull Random RANDOM = new Random();
 
     private final @NonNull Properties properties = new Properties();
     private final @NonNull HashMap<NodeRef, Long> testNodes = new HashMap<>(AMOUNT_OF_TEST_NODE_REFS);

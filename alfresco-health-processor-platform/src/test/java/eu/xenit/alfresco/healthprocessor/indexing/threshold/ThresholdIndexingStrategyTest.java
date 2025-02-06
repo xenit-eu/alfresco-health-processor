@@ -97,8 +97,16 @@ class ThresholdIndexingStrategyTest {
                 allNodeRefsToExpect.removeAll(nodeRefs);
             }
             assertTrue(allNodeRefsToExpect.isEmpty());
+            assertTrue(indexingStrategy.getNextNodeIds(1).isEmpty()); // End signal.
         } finally {
             indexingStrategy.onStop();
         }
     }
+
+    @Test
+    public void testArguments() {
+        ThresholdIndexingStrategyConfiguration configuration = new ThresholdIndexingStrategyConfiguration(0, 0, 0, 0, 0);
+        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategy(configuration, nodeDAO, searchTrackingComponent));
+    }
+
 }

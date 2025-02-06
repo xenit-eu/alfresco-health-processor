@@ -81,4 +81,12 @@ class ThresholdIndexingStrategyTransactionIdFetcherTest {
         }
     }
 
+    @Test
+    public void testArguments() {
+        ThresholdIndexingStrategyConfiguration configurationOne = new ThresholdIndexingStrategyConfiguration(0, 0, 0, 0, 0);
+        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategyTransactionIdFetcher(configurationOne, dummySearchTrackingComponent, new ThresholdIndexingStrategyState(0, 0, 0)));
+        ThresholdIndexingStrategyConfiguration configurationTwo = new ThresholdIndexingStrategyConfiguration(1, 0, 0, 0, 0);
+        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategyTransactionIdFetcher(configurationTwo, dummySearchTrackingComponent, new ThresholdIndexingStrategyState(0, 0, 0)));
+    }
+
 }
