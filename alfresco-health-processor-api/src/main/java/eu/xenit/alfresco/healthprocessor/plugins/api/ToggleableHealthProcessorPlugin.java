@@ -24,7 +24,7 @@ public abstract class ToggleableHealthProcessorPlugin implements HealthProcessor
         this.enabled = enabled;
     }
 
-    ToggleableHealthProcessorPlugin() {
+    public ToggleableHealthProcessorPlugin() {
         this(false);
     }
 
