@@ -1,5 +1,8 @@
 package eu.xenit.alfresco.healthprocessor.indexing.threshold;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.MeterBinder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,28 +12,38 @@ import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.Transaction;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.stream.Collectors;
 
 @Slf4j
-@RequiredArgsConstructor
-public class ThresholdIndexingStrategyTransactionIdMerger implements Runnable {
+public class ThresholdIndexingStrategyTransactionIdMerger implements Runnable, MeterBinder {
 
     private final @NonNull ThresholdIndexingStrategyTransactionIdFetcher fetcher;
     private final @NonNull BlockingDeque<Set<NodeRef>> queuedNodes;
     private final @NonNull ThresholdIndexingStrategyConfiguration configuration;
     private final @NonNull NodeParameters nodeParameters = new NodeParameters();
     private final @NonNull SearchTrackingComponent searchTrackingComponent;
+    private final @NonNull HashSet<NodeRef> bucket;
+    private final int index;
+
+    private @Getter boolean isRunning = false;
+
+    public ThresholdIndexingStrategyTransactionIdMerger(@NonNull ThresholdIndexingStrategyTransactionIdFetcher fetcher, @NonNull BlockingDeque<Set<NodeRef>> queuedNodes, @NonNull ThresholdIndexingStrategyConfiguration configuration, @NonNull SearchTrackingComponent searchTrackingComponent, int index) {
+        this.fetcher = fetcher;
+        this.queuedNodes = queuedNodes;
+        this.configuration = configuration;
+        this.searchTrackingComponent = searchTrackingComponent;
+        this.index = index;
+
+        this.bucket = new HashSet<>(configuration.getThreshold());
+    }
 
     @Override
     public void run() {
         try {
-            log.debug("Starting ({}).", Thread.currentThread().getName());
-            HashSet<NodeRef> bucket = new HashSet<>(configuration.getThreshold());
+            log.debug("Starting merger ({}).", index);
+            isRunning = true;
 
             List<Transaction> newTransactions;
             while (!(newTransactions = fetcher.getNextTransactions()).isEmpty()) {
@@ -52,6 +65,8 @@ public class ThresholdIndexingStrategyTransactionIdMerger implements Runnable {
             log.warn("({}) received an interrupt signal, which was unexpected. Trying to signal the end of the merger thread.", Thread.currentThread().getName(), e);
         } finally {
             try {
+                isRunning = false;
+                bucket.clear();
                 signalEnd();
             } catch (InterruptedException e) {
                 log.error("({}) received an interrupt signal while trying to signal the end of the merger thread. " +
@@ -87,4 +102,10 @@ public class ThresholdIndexingStrategyTransactionIdMerger implements Runnable {
         queuedNodes.putLast(Set.of());
     }
 
+    @Override
+    public void bindTo(@NonNull MeterRegistry registry) {
+        registry.gauge(String.format("eu.xenit.alfresco.healthprocessor.indexing.threshold.transaction-merger-%s.running", index), this, value -> value.isRunning ? 1 : 0);
+        registry.gauge(String.format("eu.xenit.alfresco.healthprocessor.indexing.threshold.transaction-merger-%s.bucket-size", index), this, value -> value.bucket.size());
+
+    }
 }

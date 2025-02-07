@@ -1,5 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.indexing.threshold;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.repo.search.SearchTrackingComponent;
@@ -16,13 +18,15 @@ import java.util.concurrent.LinkedBlockingDeque;
  * I'm just leaving this note here, in case this might help another developer in the future.
  */
 @Slf4j
-public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
+public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable, MeterBinder {
 
     private final @NonNull BlockingDeque<@NonNull List<@NonNull Transaction>> queuedTransactions;
 
     private final @NonNull SearchTrackingComponent searchTrackingComponent;
     private final @NonNull ThresholdIndexingStrategyState state;
     private final @NonNull ThresholdIndexingStrategyConfiguration configuration;
+
+    private boolean isRunning = false;
 
     public ThresholdIndexingStrategyTransactionIdFetcher(@NonNull ThresholdIndexingStrategyConfiguration configuration,
                                                          @NonNull SearchTrackingComponent searchTrackingComponent,
@@ -51,6 +55,7 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
     @Override
     public void run() {
         log.debug("Starting the ThresholdIndexingStrategyTransactionIdFetcher.");
+        isRunning = true;
         try {
             long currentTransactionId = state.getCurrentTransactionId();
             long maxTransactionId = state.getMaxTransactionId();
@@ -73,6 +78,7 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
                     "Trying to recover by signaling the end to the transaction merger(s).", e);
         } finally {
             try {
+                isRunning = false;
                 signalEnd();
             } catch (InterruptedException e) {
                 log.error("The ThresholdIndexingStrategyTransactionIdFetcher has been interrupted while signaling the end to the transaction merger(s). " +
@@ -110,4 +116,8 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
         }
     }
 
+    @Override
+    public void bindTo(@NonNull MeterRegistry registry) {
+        registry.gauge("eu.xenit.alfresco.healthprocessor.indexing.threshold.transaction-fetcher.running", this, value -> value.isRunning ? 1 : 0);
+    }
 }

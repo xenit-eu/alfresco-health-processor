@@ -4,6 +4,8 @@ import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.plugins.api.ToggleableHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,7 @@ import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 import org.alfresco.util.Pair;
+import org.springframework.lang.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -24,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableHealthProcessorPlugin {
+public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableHealthProcessorPlugin implements MeterBinder {
 
     public static final @NonNull String SELECTED_INDEXER_STRATEGY_PROPERTY = "eu.xenit.alfresco.healthprocessor.indexing.strategy";
     private static final @NonNull String MERGER_THREADS_CONFIGURATION_KEY = "merger-threads";
@@ -40,6 +43,15 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
                                                            @NonNull Properties properties,
                                                            @NonNull TransactionHelper transactionHelper,
                                                            @NonNull AbstractNodeDAOImpl nodeDAO) {
+        // Used for testing purposes.
+        this(enabled, mergerThreads, properties, transactionHelper, nodeDAO, null);
+    }
+
+    public SolrUndersizedTransactionsHealthProcessorPlugin(boolean enabled, int mergerThreads,
+                                                           @NonNull Properties properties,
+                                                           @NonNull TransactionHelper transactionHelper,
+                                                           @NonNull AbstractNodeDAOImpl nodeDAO,
+                                                           @Nullable MeterRegistry meterRegistry) {
         super(enabled);
         if (enabled) guaranteeThresholdIndexerIsUsed(properties);
 
@@ -49,6 +61,10 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
 
         this.configuration = new HashMap<>(super.getConfiguration());
         this.configuration.put(MERGER_THREADS_CONFIGURATION_KEY, String.valueOf(mergerThreads));
+
+        if (meterRegistry != null) bindTo(meterRegistry);
+        else log.warn("The SolrUndersizedTransactionsHealthProcessorPlugin was not bound to a MeterRegistry. " +
+                "This means that the queue size will not be reported.");
     }
 
     @Nonnull
@@ -91,6 +107,11 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
             throw new IllegalStateException(String.format("The SolrUndersizedTransactionsHealthProcessorPlugin can only be used with the (%s) indexing strategy. " +
                     "However, the (%s) strategy was selected. " +
                     "Please adjust the (%s) property.", expected, property, SELECTED_INDEXER_STRATEGY_PROPERTY));
+    }
+
+    @Override
+    public void bindTo(@NonNull MeterRegistry registry) {
+        registry.gauge("eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.merge-queue-size", queuedMergeRequests, AtomicInteger::get);
     }
 
 }

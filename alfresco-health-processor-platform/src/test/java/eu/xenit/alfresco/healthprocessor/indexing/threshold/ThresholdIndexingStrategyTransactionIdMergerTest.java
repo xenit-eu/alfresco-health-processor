@@ -79,7 +79,7 @@ class ThresholdIndexingStrategyTransactionIdMergerTest {
         }).when(searchTrackingComponent).getNodes(any(), any());
 
         merger = new ThresholdIndexingStrategyTransactionIdMerger(fetcher, queuedNodes, configuration,
-                searchTrackingComponent);
+                searchTrackingComponent, 0);
     }
 
     @BeforeEach

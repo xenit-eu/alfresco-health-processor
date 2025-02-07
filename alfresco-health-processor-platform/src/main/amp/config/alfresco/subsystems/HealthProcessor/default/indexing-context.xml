@@ -66,5 +66,6 @@
         <constructor-arg name="attributeStore" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore" />
         <constructor-arg name="searchTrackingComponent" ref="searchTrackingComponent" />
         <constructor-arg name="nodeDAO" ref="nodeDAO" />
+        <constructor-arg name="meterRegistry" ref="meterRegistry" />
     </bean>
 </beans>
