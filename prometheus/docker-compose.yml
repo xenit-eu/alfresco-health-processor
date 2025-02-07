@@ -47,7 +47,7 @@ services:
       - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-id.end=-1
 
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled=true
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threads=1
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threads=2
 
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.node-batch-size=1000
       - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.max-batches-per-second=0
