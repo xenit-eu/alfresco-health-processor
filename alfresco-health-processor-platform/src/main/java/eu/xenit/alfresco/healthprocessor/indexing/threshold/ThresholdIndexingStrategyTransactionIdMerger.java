@@ -8,7 +8,6 @@ import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.Transaction;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,8 +19,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class ThresholdIndexingStrategyTransactionIdMerger implements Runnable {
-
-    private static final @NonNull Set<@NonNull StoreRef> WORKSPACE_AND_ARCHIVE_STORE_REFS = Set.of(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, StoreRef.STORE_REF_ARCHIVE_SPACESSTORE);
 
     private final @NonNull ThresholdIndexingStrategyTransactionIdFetcher fetcher;
     private final @NonNull BlockingDeque<Set<NodeRef>> queuedNodes;
@@ -76,8 +73,6 @@ public class ThresholdIndexingStrategyTransactionIdMerger implements Runnable {
     }
 
     private void handleTransactionNode(@NonNull HashSet<@NonNull NodeRef> bucket, @NonNull Node node) throws InterruptedException {
-        if (!WORKSPACE_AND_ARCHIVE_STORE_REFS.contains(node.getStore().getStoreRef())) return;
-
         bucket.add(node.getNodeRef());
         if (bucket.size() >= configuration.getThreshold()) {
             log.debug("Bucket full. Queuing bucket of size ({}).", bucket.size());

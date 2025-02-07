@@ -156,9 +156,8 @@ Strategy id: `threshold`
 Creates a single thread that goes over all transactions in the range of `txn-id.start` and `txn-id.end` (-1 can be used to indicate all transactions).
 Also creates `transactions-background-workers` threads that process these transactions in batches of `transactions-batch-size` transactions in parallel.
 
-Transactions that already have `threshold` nodes linked to them are ignored.
-For the remaining transactions, the non-workspace and non-archive nodes are ignored.
-Finally, the remaining nodes are added to the worker's cache / bucket.
+Transactions that already have at least `threshold` nodes linked to them are ignored.
+The remaining nodes are added to the worker's cache / bucket.
 Once the size of the cache / bucket reaches the `threshold` value, a copy of the bucket
 is scheduled for delivery by the indexing strategy.
 The original bucket is then cleared and can be filled with new nodes.

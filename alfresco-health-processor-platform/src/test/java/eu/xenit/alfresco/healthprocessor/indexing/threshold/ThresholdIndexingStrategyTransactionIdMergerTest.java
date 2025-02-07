@@ -35,8 +35,7 @@ class ThresholdIndexingStrategyTransactionIdMergerTest {
     private static final int THRESHOLD = 5;
     private static final int TRANSACTIONS_BATCH_SIZE = 2;
 
-    // * 2: for each workspace / archive document, we're going to add a node from a store that should be filtered out.
-    private final @NonNull ArrayList<Node> nodes = new ArrayList<>(THRESHOLD * 2);
+    private final @NonNull ArrayList<Node> nodes = new ArrayList<>(THRESHOLD);
     private final @NonNull ThresholdIndexingStrategyTransactionIdFetcher fetcher = mock(ThresholdIndexingStrategyTransactionIdFetcher.class);
     private final @NonNull SearchTrackingComponent searchTrackingComponent = mock(SearchTrackingComponent.class);
     private final @NonNull AtomicInteger transactionIndexCounter = new AtomicInteger(0);
@@ -45,11 +44,8 @@ class ThresholdIndexingStrategyTransactionIdMergerTest {
     private final @NonNull ThresholdIndexingStrategyConfiguration configuration = new ThresholdIndexingStrategyConfiguration(-1, -1, THRESHOLD, -1, -1);
 
     public ThresholdIndexingStrategyTransactionIdMergerTest() throws InterruptedException {
-        for (int i = 0; i < THRESHOLD * 2; i ++) {
-            StoreRef storeRef = (i % 2 == 0)? WORKSPACE_AND_ARCHIVE_STORE_REFS.get(RANDOM.nextInt(WORKSPACE_AND_ARCHIVE_STORE_REFS.size())) :
-                    FILTERED_OUT_STORE_REFS.get(RANDOM.nextInt(FILTERED_OUT_STORE_REFS.size()));
-            // +1: cf. .getNodes() mock.
-            nodes.add(createDummyNode(storeRef, i + 1L, Integer.toString(i)));
+        for (int i = 0; i < THRESHOLD; i ++) {
+            nodes.add(createDummyNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, i + 1L, Integer.toString(i)));
         }
 
         when(fetcher.getNextTransactions()).thenAnswer(invocation -> {
@@ -93,11 +89,9 @@ class ThresholdIndexingStrategyTransactionIdMergerTest {
         thread.start();
 
         try {
-            // We just queued THRESHOLD * 2 transactions, of which half should be filtered.
-            // As a result, we should expect exactly one transaction here.
+            // We should expect exactly one transaction here.
             Set<NodeRef> queuedNodeRefs = queuedNodes.takeFirst();
             assertEquals(nodes.stream()
-                    .filter(node -> WORKSPACE_AND_ARCHIVE_STORE_REFS.contains(node.getStore().getStoreRef()))
                     .map(Node::getNodeRef)
                     .collect(Collectors.toSet()), queuedNodeRefs);
             // Exactly one transaction, so the next poll should contain the end signal of the worker.
