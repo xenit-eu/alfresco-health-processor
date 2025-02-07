@@ -56,11 +56,12 @@ public class ThresholdIndexingStrategy implements IndexingStrategy {
     public void onStart() {
         state.setCurrentTransactionId(Math.max(configuration.getMinTransactionId(), nodeDAO.getMinTxnId()));
         state.setMaxTransactionId(Math.min(configuration.getMaxTransactionId() >= 0? configuration.getMaxTransactionId() : Long.MAX_VALUE, searchTrackingComponent.getMaxTxnId()));
+        cycleProgress.set(new SimpleCycleProgress(state.getCurrentTransactionId(), state.getMaxTransactionId(), progressReporter));
         log.debug("Starting the ThresholdIndexingStrategy with currentTransactionId ({}) and maxTransactionId ({}).", state.getCurrentTransactionId(), state.getMaxTransactionId());
 
-        cycleProgress.set(new SimpleCycleProgress(state.getCurrentTransactionId(), state.getMaxTransactionId(), progressReporter));
-
-        runningThreads.add(new Thread(transactionIdFetcher));
+        Thread fetcherThread = new Thread(transactionIdFetcher);
+        fetcherThread.setName("ThresholdIndexingStrategyTransactionIdFetcher");
+        runningThreads.add(fetcherThread);
         for (int i = 0; i < transactionIdMergers.length; i++) {
             ThresholdIndexingStrategyTransactionIdMerger merger = transactionIdMergers[i];
             Thread mergerThread = new Thread(merger);
@@ -69,6 +70,7 @@ public class ThresholdIndexingStrategy implements IndexingStrategy {
         }
         for (Thread thread : runningThreads) thread.start();
         state.setRunningTransactionMergers(transactionIdMergers.length);
+
         log.debug("Started ({}) background thread(s), of which ({}) transaction merger(s).", runningThreads.size(), state.getRunningTransactionMergers());
     }
 

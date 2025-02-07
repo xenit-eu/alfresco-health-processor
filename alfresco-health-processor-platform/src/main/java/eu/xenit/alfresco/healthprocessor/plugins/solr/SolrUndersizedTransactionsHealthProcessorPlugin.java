@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableHealthProcessorPlugin {
 
     public static final @NonNull String SELECTED_INDEXER_STRATEGY_PROPERTY = "eu.xenit.alfresco.healthprocessor.indexing.strategy";
+    private static final @NonNull String MERGER_THREADS_CONFIGURATION_KEY = "merger-threads";
+    private static final @NonNull String QUEUED_MERGE_REQUESTS_STATE_KEY = "queued-merge-requests";
 
     private final @NonNull TransactionHelper transactionHelper;
     private final @NonNull AtomicInteger queuedMergeRequests = new AtomicInteger(0);
@@ -46,7 +48,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
         this.nodeDAO = nodeDAO;
 
         this.configuration = new HashMap<>(super.getConfiguration());
-        this.configuration.put("merger-threads", String.valueOf(mergerThreads));
+        this.configuration.put(MERGER_THREADS_CONFIGURATION_KEY, String.valueOf(mergerThreads));
     }
 
     @Nonnull
@@ -78,7 +80,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
     @Override
     public @NonNull Map<@NonNull String, @NonNull String> getState() {
         HashMap<String, String> returnValue = new HashMap<>(super.getState());
-        returnValue.put("queued-merge-requests", String.valueOf(queuedMergeRequests.get()));
+        returnValue.put(QUEUED_MERGE_REQUESTS_STATE_KEY, String.valueOf(queuedMergeRequests.get()));
         return returnValue;
     }
 
