@@ -28,15 +28,6 @@
         <constructor-arg name="nodeDAO" ref="nodeDAO" />
     </bean>
 
-<!--    Used by the eu.xenit.alfresco.healthprocessor.plugins.solr.SolrUndersizedTransactionsHealthProcessorPlugin bean -->
-    <bean id="eu.xenit.alfresco.healthprocessor.dictionaryBootstrap" parent="dictionaryModelBootstrap">
-        <property name="models">
-            <list>
-                <value>alfresco/module/alfresco-health-processor/content-model.xml</value>
-            </list>
-        </property>
-    </bean>
-
     <!-- Solr validation -->
     <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelectorBeanPostProcessor" autowire="constructor">
         <constructor-arg name="globalProperties" ref="global-properties" />
