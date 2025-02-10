@@ -7,6 +7,7 @@ import eu.xenit.alfresco.healthprocessor.indexing.threshold.ThresholdIndexingStr
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdIndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.AllArgsConstructor;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.search.SearchTrackingComponent;
@@ -23,6 +24,7 @@ public final class IndexingStrategyFactoryBean extends AbstractFactoryBean<Index
     private final SearchTrackingComponent searchTrackingComponent;
     private final AbstractNodeDAOImpl nodeDAO;
     private final DataSource dataSource;
+    private final MeterRegistry meterRegistry;
 
     @Override
     public Class<?> getObjectType() {
@@ -41,7 +43,8 @@ public final class IndexingStrategyFactoryBean extends AbstractFactoryBean<Index
             case LAST_TXNS:
                 return new LastTxnsBasedIndexingStrategy((LastTxnsIndexingConfiguration) configuration, trackingComponent);
             case THRESHOLD:
-                return new ThresholdIndexingStrategy((ThresholdIndexingStrategyConfiguration) configuration, nodeDAO, searchTrackingComponent, dataSource);
+                return new ThresholdIndexingStrategy((ThresholdIndexingStrategyConfiguration) configuration, nodeDAO,
+                        searchTrackingComponent, dataSource, meterRegistry);
             default:
                 throw new IllegalArgumentException("Unknown indexing strategy: "+ indexingStrategy);
         }

@@ -1,5 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.indexing.threshold;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,7 +13,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 // TODO: add an explanation about why we directly contact the DB.
 @Slf4j
-public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
+public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable, MeterBinder {
 
     private final static @NonNull String QUERY = "SELECT txn.id as id FROM alf_transaction txn WHERE txn.id BETWEEN %d AND %d ORDER BY txn.id ASC LIMIT %d";
 
@@ -20,6 +22,8 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
     private final @NonNull JdbcTemplate jdbcTemplate;
     private final @NonNull ThresholdIndexingStrategyState state;
     private final @NonNull ThresholdIndexingStrategyConfiguration configuration;
+
+    private boolean isRunning = false;
 
     public ThresholdIndexingStrategyTransactionIdFetcher(@NonNull ThresholdIndexingStrategyConfiguration configuration,
                                                          @NonNull DataSource dataSource,
@@ -49,6 +53,7 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
     public void run() {
         log.debug("Starting the ThresholdIndexingStrategyTransactionIdFetcher.");
         try {
+            isRunning = true;
             long currentTransactionId = state.getCurrentTransactionId();
             long maxTransactionId = state.getMaxTransactionId();
             int amountOfTransactionsToFetch = configuration.getTransactionsBackgroundWorkers() * configuration.getTransactionsBatchSize();
@@ -69,6 +74,7 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
             log.warn("An exception occurred while fetching transactions. Trying to signal the end to the transaction merger(s).", e);
         } finally {
             try {
+                isRunning = false;
                 signalEnd();
             } catch (InterruptedException e) {
                 log.error("The ThresholdIndexingStrategyTransactionIdFetcher has been interrupted while signaling the end to the transaction merger(s). " +
@@ -106,4 +112,8 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable {
         }
     }
 
+    @Override
+    public void bindTo(@NonNull MeterRegistry registry) {
+        registry.gauge("eu.xenit.alfresco.healthprocessor.indexing.threshold.transaction-fetcher.running", this, value -> value.isRunning ? 1 : 0);
+    }
 }

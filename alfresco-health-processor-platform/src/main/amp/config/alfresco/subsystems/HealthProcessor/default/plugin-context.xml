@@ -26,6 +26,7 @@
         <constructor-arg name="properties" ref="global-properties" />
         <constructor-arg name="transactionHelper" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoTransactionHelper" />
         <constructor-arg name="nodeDAO" ref="nodeDAO" />
+        <constructor-arg name="meterRegistry" ref="meterRegistry" />
     </bean>
 
     <!-- Solr validation -->

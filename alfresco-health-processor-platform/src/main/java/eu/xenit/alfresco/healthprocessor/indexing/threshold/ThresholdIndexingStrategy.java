@@ -4,6 +4,8 @@ import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.NullCycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.SimpleCycleProgress;
 import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.LongSupplier;
 
 @Slf4j
-public class ThresholdIndexingStrategy implements IndexingStrategy {
+public class ThresholdIndexingStrategy implements IndexingStrategy, MeterBinder {
 
     private final @NonNull ThresholdIndexingStrategyConfiguration configuration;
     private final @NonNull AbstractNodeDAOImpl nodeDAO;
@@ -37,7 +39,8 @@ public class ThresholdIndexingStrategy implements IndexingStrategy {
     public ThresholdIndexingStrategy(@NonNull ThresholdIndexingStrategyConfiguration configuration,
                                      @NonNull AbstractNodeDAOImpl nodeDAO,
                                      @NonNull SearchTrackingComponent searchTrackingComponent,
-                                     @NonNull DataSource dataSource) {
+                                     @NonNull DataSource dataSource,
+                                     @NonNull MeterRegistry meterRegistry) {
         if (configuration.getTransactionsBackgroundWorkers() <= 0)
             throw new IllegalArgumentException(String.format("The amount of background workers must be greater than zero (%d provided).", configuration.getTransactionsBackgroundWorkers()));
 
@@ -52,6 +55,8 @@ public class ThresholdIndexingStrategy implements IndexingStrategy {
         this.transactionIdMergers = new ThresholdIndexingStrategyTransactionIdMerger[configuration.getTransactionsBackgroundWorkers()];
         for (int i = 0; i < configuration.getTransactionsBackgroundWorkers(); i++)
             this.transactionIdMergers[i] = new ThresholdIndexingStrategyTransactionIdMerger(transactionIdFetcher, queuedNodes, configuration, searchTrackingComponent);
+
+        bindTo(meterRegistry);
     }
 
     @Override
@@ -110,5 +115,14 @@ public class ThresholdIndexingStrategy implements IndexingStrategy {
     @Override
     public @NonNull CycleProgress getCycleProgress() {
         return cycleProgress.get();
+    }
+
+    @Override
+    public void bindTo(MeterRegistry registry) {
+        state.bindTo(registry);
+        transactionIdFetcher.bindTo(registry);
+
+        registry.gauge("eu.xenit.alfresco.healthprocessor.indexing.threshold.queued-nodes", queuedNodes, BlockingDeque::size);
+        registry.gauge("eu.xenit.alfresco.healthprocessor.indexing.threshold.running-background-threads", runningThreads, value -> value.stream().filter(Thread::isAlive).count());
     }
 }
