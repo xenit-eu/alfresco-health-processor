@@ -18,6 +18,15 @@ Version template:
 
 # Alfresco Health Processor Changelog
 
+## [0.7.0] - 2025-02-06
+
+### Added
+* Added the SolrUndersizedTransactionsHealthProcessorPlugin,
+   which merges the transactions before they are being indexed by Solr
+   to improve performance.
+* Added the threshold indexing strategy, which multi-threads the retrieval
+  and batching process of transactions to improve performance.
+
 ## [0.6.1] - 2025-01-08
 
 ### Fixed
