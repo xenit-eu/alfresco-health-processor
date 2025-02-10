@@ -11,6 +11,7 @@ import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import javax.sql.DataSource;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +36,8 @@ public class ThresholdIndexingStrategy implements IndexingStrategy {
 
     public ThresholdIndexingStrategy(@NonNull ThresholdIndexingStrategyConfiguration configuration,
                                      @NonNull AbstractNodeDAOImpl nodeDAO,
-                                     @NonNull SearchTrackingComponent searchTrackingComponent) {
+                                     @NonNull SearchTrackingComponent searchTrackingComponent,
+                                     @NonNull DataSource dataSource) {
         if (configuration.getTransactionsBackgroundWorkers() <= 0)
             throw new IllegalArgumentException(String.format("The amount of background workers must be greater than zero (%d provided).", configuration.getTransactionsBackgroundWorkers()));
 
@@ -44,7 +46,7 @@ public class ThresholdIndexingStrategy implements IndexingStrategy {
         this.nodeDAO = nodeDAO;
 
         this.runningThreads = new HashSet<>(configuration.getTransactionsBackgroundWorkers() + 1);
-        this.transactionIdFetcher = new ThresholdIndexingStrategyTransactionIdFetcher(configuration, searchTrackingComponent, state);
+        this.transactionIdFetcher = new ThresholdIndexingStrategyTransactionIdFetcher(configuration, dataSource, state);
         this.queuedNodes = new LinkedBlockingDeque<>(configuration.getTransactionsBackgroundWorkers());
 
         this.transactionIdMergers = new ThresholdIndexingStrategyTransactionIdMerger[configuration.getTransactionsBackgroundWorkers()];

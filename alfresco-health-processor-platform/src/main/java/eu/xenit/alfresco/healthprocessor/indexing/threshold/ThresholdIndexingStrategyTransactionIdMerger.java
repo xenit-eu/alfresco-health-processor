@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.solr.NodeParameters;
-import org.alfresco.repo.solr.Transaction;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 import java.util.HashMap;
@@ -14,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingDeque;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,15 +30,15 @@ public class ThresholdIndexingStrategyTransactionIdMerger implements Runnable {
             log.debug("Starting ({}).", Thread.currentThread().getName());
             HashSet<NodeRef> bucket = new HashSet<>(configuration.getThreshold());
 
-            List<Transaction> newTransactions;
-            while (!(newTransactions = fetcher.getNextTransactions()).isEmpty()) {
+            List<Long> newTransactionIDs;
+            while (!(newTransactionIDs = fetcher.getNextTransactionIDs()).isEmpty()) {
                 // Fetch the nodes of the new transactions.
                 // Even though we fetch multiple transactions at once for IO-efficiency, we still need to keep track
                 // of which nodes belong to which transaction.
                 // Transactions that already contain #threshold nodes shouldn't be part of the merging process, since
                 // there is no point (they are already large enough).
-                log.trace("Fetched a new batch of ({}) transaction(s) from the transaction fetcher to process.", newTransactions.size());
-                nodeParameters.setTransactionIds(newTransactions.stream().map(Transaction::getId).collect(Collectors.toList()));
+                log.trace("Fetched a new batch of ({}) transaction(s) from the transaction fetcher to process.", newTransactionIDs.size());
+                nodeParameters.setTransactionIds(newTransactionIDs);
                 HashMap<Long, HashSet<Node>> fetchedTransactionNodes = new HashMap<>(nodeParameters.getTransactionIds().size());
                 searchTrackingComponent.getNodes(nodeParameters, node ->
                         fetchedTransactionNodes.computeIfAbsent(node.getTransaction().getId(), ignored -> new HashSet<>()).add(node));

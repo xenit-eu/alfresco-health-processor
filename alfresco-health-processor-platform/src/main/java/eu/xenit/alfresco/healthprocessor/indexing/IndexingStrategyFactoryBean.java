@@ -12,6 +12,8 @@ import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.search.SearchTrackingComponent;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 
+import javax.sql.DataSource;
+
 @AllArgsConstructor
 public final class IndexingStrategyFactoryBean extends AbstractFactoryBean<IndexingStrategy> {
 
@@ -20,6 +22,7 @@ public final class IndexingStrategyFactoryBean extends AbstractFactoryBean<Index
     private final AttributeStore attributeStore;
     private final SearchTrackingComponent searchTrackingComponent;
     private final AbstractNodeDAOImpl nodeDAO;
+    private final DataSource dataSource;
 
     @Override
     public Class<?> getObjectType() {
@@ -38,7 +41,7 @@ public final class IndexingStrategyFactoryBean extends AbstractFactoryBean<Index
             case LAST_TXNS:
                 return new LastTxnsBasedIndexingStrategy((LastTxnsIndexingConfiguration) configuration, trackingComponent);
             case THRESHOLD:
-                return new ThresholdIndexingStrategy((ThresholdIndexingStrategyConfiguration) configuration, nodeDAO, searchTrackingComponent);
+                return new ThresholdIndexingStrategy((ThresholdIndexingStrategyConfiguration) configuration, nodeDAO, searchTrackingComponent, dataSource);
             default:
                 throw new IllegalArgumentException("Unknown indexing strategy: "+ indexingStrategy);
         }
