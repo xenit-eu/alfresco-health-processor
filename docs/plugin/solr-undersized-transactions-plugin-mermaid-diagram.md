@@ -16,6 +16,9 @@ sequenceDiagram
     par Receive new tasks
         ProcessorService->>SolrUndersizedTransactionsHealthProcessorPlugin: .doProcess(set of nodeRefs)
         SolrUndersizedTransactionsHealthProcessorPlugin->>SolrUndersizedTransactionsHealthProcessorPlugin: Update state.
+        opt Too many queued tasks
+            SolrUndersizedTransactionsHealthProcessorPlugin->>SolrUndersizedTransactionsHealthProcessorPlugin: Wait until a previous task has been handled.
+        end
         SolrUndersizedTransactionsHealthProcessorPlugin->>Shared thread pool: Queue new task.
         SolrUndersizedTransactionsHealthProcessorPlugin-->>ProcessorService: return healthy reports for all nodeRefs
     
@@ -29,5 +32,6 @@ sequenceDiagram
         Worker thread->>AbstractNodeDAOImpl: .touchNodes(transaction ID, node IDs)
         Worker thread->>TransactionHelper: finalize transaction.
         Worker thread->>SolrUndersizedTransactionsHealthProcessorPlugin: Update state.
+        Worker thread->>SolrUndersizedTransactionsHealthProcessorPlugin: Notify about processed task.
     end
 ```

@@ -12,6 +12,7 @@ sequenceDiagram
     end
     box Darkgreen Alfresco components
     participant SearchTrackingComponent
+    participant dataSource (through JdbcTemplate)
     end
 
     
@@ -22,8 +23,8 @@ sequenceDiagram
     
     par Fetch TxnIDs
         loop while not stopped
-            ThresholdIndexingStrategyTransactionIdFetcher->>SearchTrackingComponent: Fetch a preconfigured amount of transaction IDs for each worker.
-            SearchTrackingComponent-->>ThresholdIndexingStrategyTransactionIdFetcher: transaction IDs
+            ThresholdIndexingStrategyTransactionIdFetcher->>dataSource (through JdbcTemplate): Fetch a preconfigured amount of transaction IDs for each worker.
+            dataSource (through JdbcTemplate)-->>ThresholdIndexingStrategyTransactionIdFetcher: transaction IDs
             ThresholdIndexingStrategyTransactionIdFetcher->>ThresholdIndexingStrategyTransactionIdFetcher: Stop if no transaction IDs are received. Otherwise, divide the transaction IDs for the workers.
             loop foreach worker
                 ThresholdIndexingStrategyTransactionIdFetcher->>Shared queue B: Queue batch of transaction IDs.
