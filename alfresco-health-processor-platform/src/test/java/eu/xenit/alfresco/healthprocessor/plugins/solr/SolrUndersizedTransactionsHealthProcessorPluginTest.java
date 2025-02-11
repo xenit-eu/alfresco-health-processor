@@ -1,7 +1,9 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
+import eu.xenit.alfresco.healthprocessor.indexing.txnaggregation.TransactionAggregationIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.NonNull;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -10,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.function.ToDoubleFunction;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -81,6 +84,30 @@ class SolrUndersizedTransactionsHealthProcessorPluginTest {
         Properties wrongProperties = new Properties();
         wrongProperties.put("eu.xenit.alfresco.healthprocessor.indexing.strategy", "wrong-strategy");
         assertThrows(IllegalStateException.class, () -> new SolrUndersizedTransactionsHealthProcessorPlugin(true, 1, wrongProperties, transactionHelper, nodeDAO));
+    }
+
+    @Test
+    public void isBoundToMeterRegistry() {
+        MeterRegistry meterRegistry = mock(MeterRegistry.class);
+        new SolrUndersizedTransactionsHealthProcessorPlugin(true, 1, properties, transactionHelper, nodeDAO, meterRegistry);
+        verify(meterRegistry, times(1)).gauge(anyString(), any(), any(ToDoubleFunction.class));
+    }
+
+    @Test
+    public void canHandleLongTransactions() throws InterruptedException {
+        transactionHelper = mock(TransactionHelper.class);
+        doAnswer(invocation -> {
+            Thread.sleep(1000);
+            return null;
+        }).when(transactionHelper).inNewTransaction(any(Runnable.class), eq(false));
+        plugin = new SolrUndersizedTransactionsHealthProcessorPlugin(true, 1, properties, transactionHelper, nodeDAO);
+
+        // Trigger the queue behaviour.
+        for (int i = 0; i < 5; i++) plugin.process(testNodes.keySet());
+
+        Thread.sleep(8_000);
+        verify(transactionHelper, times(5)).inNewTransaction(any(Runnable.class), eq(false));
+
     }
 
 }
