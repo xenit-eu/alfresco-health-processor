@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.indexing.txnaggregation;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.ToDoubleFunction;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -27,9 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Slf4j
 class TransactionAggregationIndexingStrategyTest {
@@ -115,6 +115,13 @@ class TransactionAggregationIndexingStrategyTest {
     public void testArguments() {
         TransactionAggregationIndexingStrategyConfiguration configuration = new TransactionAggregationIndexingStrategyConfiguration(0, 0, 0, 0, 0);
         assertThrows(IllegalArgumentException.class, () -> new TransactionAggregationIndexingStrategy(configuration, nodeDAO, searchTrackingComponent, dummyJdbcTemplate));
+    }
+
+    @Test
+    public void isBoundToMeterRegistry() {
+        MeterRegistry meterRegistry = mock(MeterRegistry.class);
+        new TransactionAggregationIndexingStrategy(CONFIGURATION, nodeDAO, searchTrackingComponent, dummyJdbcTemplate, meterRegistry);
+        verify(meterRegistry, times(7)).gauge(anyString(), any(), any(ToDoubleFunction.class));
     }
 
 }
