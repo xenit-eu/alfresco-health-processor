@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.indexing.threshold;
+package eu.xenit.alfresco.healthprocessor.indexing.txnaggregation;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -8,7 +8,6 @@ import org.alfresco.repo.domain.node.StoreEntity;
 import org.alfresco.repo.domain.node.TransactionEntity;
 import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.solr.NodeParameters;
-import org.alfresco.repo.solr.Transaction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,7 @@ import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
-import static eu.xenit.alfresco.healthprocessor.indexing.threshold.ThresholdIndexingStrategyTransactionIdFetcherTest.QUERY_PATTERN;
+import static eu.xenit.alfresco.healthprocessor.indexing.txnaggregation.TransactionAggregationIndexingStrategyTransactionIdFetcherTest.QUERY_PATTERN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,7 +32,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Slf4j
-class ThresholdIndexingStrategyTest {
+class TransactionAggregationIndexingStrategyTest {
 
     // The queue mechanism is not fair / FIFO on purpose; however, that means that testing the entire indexing strategy
     // with more than one worker is not possible. Workers fetching some transactions faster than others is a possibility &
@@ -43,17 +42,17 @@ class ThresholdIndexingStrategyTest {
     private static final int NODES_PER_TRANSACTION = 2;
     private static final int THRESHOLD = 10;
     private static final int AMOUNT_OF_TRANSACTIONS = AMOUNT_OF_BACKGROUND_WORKERS * (THRESHOLD / NODES_PER_TRANSACTION);
-    private static final @NonNull ThresholdIndexingStrategyConfiguration CONFIGURATION
-            = new ThresholdIndexingStrategyConfiguration(AMOUNT_OF_BACKGROUND_WORKERS, TRANSACTION_BATCHES, THRESHOLD,
+    private static final @NonNull TransactionAggregationIndexingStrategyConfiguration CONFIGURATION
+            = new TransactionAggregationIndexingStrategyConfiguration(AMOUNT_OF_BACKGROUND_WORKERS, TRANSACTION_BATCHES, THRESHOLD,
             0, AMOUNT_OF_TRANSACTIONS);
 
     private final @NonNull AbstractNodeDAOImpl nodeDAO = mock(AbstractNodeDAOImpl.class);
     private final @NonNull JdbcTemplate dummyJdbcTemplate = mock(JdbcTemplate.class);
     private final @NonNull SearchTrackingComponent searchTrackingComponent = mock(SearchTrackingComponent.class);
     private final @NonNull ArrayList<Node> nodes = new ArrayList<>();
-    private final @NonNull ThresholdIndexingStrategy indexingStrategy;
+    private final @NonNull TransactionAggregationIndexingStrategy indexingStrategy;
 
-    public ThresholdIndexingStrategyTest() {
+    public TransactionAggregationIndexingStrategyTest() {
         for (int i = 0; i < AMOUNT_OF_TRANSACTIONS * NODES_PER_TRANSACTION; i ++) {
             Node node = mock(Node.class);
             when(node.getStore()).thenReturn(mock(StoreEntity.class));
@@ -89,7 +88,7 @@ class ThresholdIndexingStrategyTest {
             return LongStream.range(startTxnId, end).boxed().collect(Collectors.toList());
         });
 
-        this.indexingStrategy = new ThresholdIndexingStrategy(CONFIGURATION, nodeDAO, searchTrackingComponent, dummyJdbcTemplate);
+        this.indexingStrategy = new TransactionAggregationIndexingStrategy(CONFIGURATION, nodeDAO, searchTrackingComponent, dummyJdbcTemplate);
     }
 
     @Test
@@ -114,8 +113,8 @@ class ThresholdIndexingStrategyTest {
 
     @Test
     public void testArguments() {
-        ThresholdIndexingStrategyConfiguration configuration = new ThresholdIndexingStrategyConfiguration(0, 0, 0, 0, 0);
-        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategy(configuration, nodeDAO, searchTrackingComponent, dummyJdbcTemplate));
+        TransactionAggregationIndexingStrategyConfiguration configuration = new TransactionAggregationIndexingStrategyConfiguration(0, 0, 0, 0, 0);
+        assertThrows(IllegalArgumentException.class, () -> new TransactionAggregationIndexingStrategy(configuration, nodeDAO, searchTrackingComponent, dummyJdbcTemplate));
     }
 
 }

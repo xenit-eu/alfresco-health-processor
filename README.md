@@ -149,9 +149,9 @@ eu.xenit.alfresco.healthprocessor.indexing.last-txns.lookback-transactions=10000
 eu.xenit.alfresco.healthprocessor.indexing.last-txns.txn-batch-size=5000
 ```
 
-#### Multi-threaded threshold indexing
+#### Multi-threaded txn-aggregation strategy
 
-Strategy id: `threshold`
+Strategy id: `txn-aggregation`
 
 Creates a single thread that goes over all transactions in the range of `txn-id.start` and `txn-id.end` (-1 can be used to indicate all transactions).
 Also creates `transactions-background-workers` threads that process these transactions in batches of `transactions-batch-size` transactions in parallel.
@@ -163,12 +163,12 @@ is scheduled for delivery by the indexing strategy.
 The original bucket is then cleared and can be filled with new nodes.
 
 ```properties
-eu.xenit.alfresco.healthprocessor.indexing.strategy=threshold
-eu.xenit.alfresco.healthprocessor.indexing.threshold.transactions-background-workers=5
-eu.xenit.alfresco.healthprocessor.indexing.threshold.transactions-batch-size=1000
-eu.xenit.alfresco.healthprocessor.indexing.threshold.threshold=1000
-eu.xenit.alfresco.healthprocessor.indexing.txn-id.start=-1
-eu.xenit.alfresco.healthprocessor.indexing.txn-id.end=-1
+eu.xenit.alfresco.healthprocessor.indexing.strategy=txn-aggregation
+eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-background-workers=5
+eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-batch-size=1000
+eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.threshold=1000
+eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.start=-1
+eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.end=-1
 ```
 
 ### HealthProcessorPlugin implementations
@@ -281,7 +281,7 @@ All nodes for which an `PURGE` and `REINDEX` commands has been succesfully sent 
 
 Activation property: `eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled=true`
 
-<b>Note: this plugin can only be used in combination with the threshold indexing strategy. 
+<b>Note: this plugin can only be used in combination with the `txn-aggregation` indexing strategy. 
 If this indexing strategy is not selected while the plugin is enabled, the health processor platform will not boot.</b>
 
 This plugin is used to merge transactions that are too small to be indexed by Solr in a performant manner.

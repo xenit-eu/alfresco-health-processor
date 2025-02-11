@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.indexing.threshold;
+package eu.xenit.alfresco.healthprocessor.indexing.txnaggregation;
 
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
@@ -8,7 +8,7 @@ import lombok.NonNull;
 import java.util.Map;
 
 @Data
-public class ThresholdIndexingStrategyConfiguration implements IndexingConfiguration {
+public class TransactionAggregationIndexingStrategyConfiguration implements IndexingConfiguration {
 
     private final int transactionsBackgroundWorkers;
     private final int transactionsBatchSize;
@@ -17,8 +17,8 @@ public class ThresholdIndexingStrategyConfiguration implements IndexingConfigura
     private final int maxTransactionId;
     private final @NonNull Map<@NonNull String, @NonNull String> configuration;
 
-    public ThresholdIndexingStrategyConfiguration(int transactionsBackgroundWorkers, int transactionsBatchSize,
-                                                  int threshold, int minTransactionId, int maxTransactionId) {
+    public TransactionAggregationIndexingStrategyConfiguration(int transactionsBackgroundWorkers, int transactionsBatchSize,
+                                                               int threshold, int minTransactionId, int maxTransactionId) {
         this.transactionsBackgroundWorkers = transactionsBackgroundWorkers;
         this.transactionsBatchSize = transactionsBatchSize;
         this.threshold = threshold;
@@ -36,7 +36,7 @@ public class ThresholdIndexingStrategyConfiguration implements IndexingConfigura
 
     @Override
     public @NonNull IndexingStrategy.IndexingStrategyKey getIndexingStrategy() {
-        return IndexingStrategy.IndexingStrategyKey.THRESHOLD;
+        return IndexingStrategy.IndexingStrategyKey.TXN_AGGREGATION;
     }
 
 }

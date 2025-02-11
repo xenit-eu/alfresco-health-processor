@@ -1,21 +1,16 @@
-package eu.xenit.alfresco.healthprocessor.indexing.threshold;
+package eu.xenit.alfresco.healthprocessor.indexing.txnaggregation;
 
 import lombok.NonNull;
-import org.alfresco.repo.search.SearchTrackingComponent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.alfresco.repo.solr.Transaction;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,21 +21,21 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class ThresholdIndexingStrategyTransactionIdFetcherTest {
+class TransactionAggregationIndexingStrategyTransactionIdFetcherTest {
 
     public static final @NonNull Pattern QUERY_PATTERN = Pattern.compile("SELECT txn\\.id as id FROM alf_transaction txn WHERE txn\\.id BETWEEN (\\d+) AND (\\d+) ORDER BY txn\\.id ASC LIMIT (\\d+)");    private static final int AMOUNT_OF_DUMMY_TRANSACTIONS = 1000;
     private static final int AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS = 5;
     private static final int TRANSACTIONS_BATCH_SIZE = 10;
-    private static final @NonNull ThresholdIndexingStrategyConfiguration CONFIGURATION =
-            new ThresholdIndexingStrategyConfiguration(AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS, TRANSACTIONS_BATCH_SIZE,
+    private static final @NonNull TransactionAggregationIndexingStrategyConfiguration CONFIGURATION =
+            new TransactionAggregationIndexingStrategyConfiguration(AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS, TRANSACTIONS_BATCH_SIZE,
             -1, 0, AMOUNT_OF_DUMMY_TRANSACTIONS);
 
     private final @NonNull ArrayList<Long> dummyTransactionIDs = new ArrayList<>(AMOUNT_OF_DUMMY_TRANSACTIONS);
     private final @NonNull JdbcTemplate dummyJdbcTemplate = mock(JdbcTemplate.class);
 
-    private ThresholdIndexingStrategyTransactionIdFetcher fetcher;
+    private TransactionAggregationIndexingStrategyTransactionIdFetcher fetcher;
 
-    public ThresholdIndexingStrategyTransactionIdFetcherTest() throws SQLException {
+    public TransactionAggregationIndexingStrategyTransactionIdFetcherTest() throws SQLException {
         LongStream.range(0, AMOUNT_OF_DUMMY_TRANSACTIONS).forEach(dummyTransactionIDs::add);
 
         when(dummyJdbcTemplate.queryForList(anyString(), eq(Long.class))).thenAnswer(invocation -> {
@@ -57,8 +52,8 @@ class ThresholdIndexingStrategyTransactionIdFetcherTest {
 
     @BeforeEach
     void setUp() {
-        ThresholdIndexingStrategyState state = new ThresholdIndexingStrategyState(0, AMOUNT_OF_DUMMY_TRANSACTIONS, AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS);
-        fetcher = new ThresholdIndexingStrategyTransactionIdFetcher(CONFIGURATION, dummyJdbcTemplate, state);
+        TransactionAggregationIndexingStrategyState state = new TransactionAggregationIndexingStrategyState(0, AMOUNT_OF_DUMMY_TRANSACTIONS, AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS);
+        fetcher = new TransactionAggregationIndexingStrategyTransactionIdFetcher(CONFIGURATION, dummyJdbcTemplate, state);
     }
 
     @Test
@@ -92,11 +87,11 @@ class ThresholdIndexingStrategyTransactionIdFetcherTest {
 
     @Test
     public void testArguments() {
-        ThresholdIndexingStrategyState state = new ThresholdIndexingStrategyState(0, 0, 0);
-        ThresholdIndexingStrategyConfiguration configurationOne = new ThresholdIndexingStrategyConfiguration(0, 0, 0, 0, 0);
-        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategyTransactionIdFetcher(configurationOne, dummyJdbcTemplate, state));
-        ThresholdIndexingStrategyConfiguration configurationTwo = new ThresholdIndexingStrategyConfiguration(1, 0, 0, 0, 0);
-        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategyTransactionIdFetcher(configurationTwo, dummyJdbcTemplate, state));
+        TransactionAggregationIndexingStrategyState state = new TransactionAggregationIndexingStrategyState(0, 0, 0);
+        TransactionAggregationIndexingStrategyConfiguration configurationOne = new TransactionAggregationIndexingStrategyConfiguration(0, 0, 0, 0, 0);
+        assertThrows(IllegalArgumentException.class, () -> new TransactionAggregationIndexingStrategyTransactionIdFetcher(configurationOne, dummyJdbcTemplate, state));
+        TransactionAggregationIndexingStrategyConfiguration configurationTwo = new TransactionAggregationIndexingStrategyConfiguration(1, 0, 0, 0, 0);
+        assertThrows(IllegalArgumentException.class, () -> new TransactionAggregationIndexingStrategyTransactionIdFetcher(configurationTwo, dummyJdbcTemplate, state));
     }
 
 }

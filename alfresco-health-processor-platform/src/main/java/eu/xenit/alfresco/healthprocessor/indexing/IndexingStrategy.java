@@ -43,7 +43,7 @@ public interface IndexingStrategy {
     enum IndexingStrategyKey {
         TXNID("txn-id"),
         LAST_TXNS("last-txns"),
-        THRESHOLD("threshold");
+        TXN_AGGREGATION("txn-aggregation");
 
         @Getter
         private final String key;

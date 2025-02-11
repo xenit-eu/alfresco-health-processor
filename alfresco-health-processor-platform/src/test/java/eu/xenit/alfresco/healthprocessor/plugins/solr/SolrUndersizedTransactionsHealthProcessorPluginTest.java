@@ -1,5 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.plugins.solr;
 
+import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.util.TransactionHelper;
 import lombok.NonNull;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
@@ -36,7 +37,7 @@ class SolrUndersizedTransactionsHealthProcessorPluginTest {
 
         touchedNodeIDs = new HashSet<>(AMOUNT_OF_TEST_NODE_REFS);
 
-        properties.put("eu.xenit.alfresco.healthprocessor.indexing.strategy", "threshold");
+        properties.put("eu.xenit.alfresco.healthprocessor.indexing.strategy", IndexingStrategy.IndexingStrategyKey.TXN_AGGREGATION.getKey());
     }
 
     @BeforeEach

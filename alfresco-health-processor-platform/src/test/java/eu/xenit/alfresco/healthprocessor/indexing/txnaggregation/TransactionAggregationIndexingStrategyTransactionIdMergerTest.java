@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.indexing.threshold;
+package eu.xenit.alfresco.healthprocessor.indexing.txnaggregation;
 
 import lombok.NonNull;
 import org.alfresco.repo.domain.node.StoreEntity;
@@ -19,7 +19,6 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +30,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class ThresholdIndexingStrategyTransactionIdMergerTest {
+class TransactionAggregationIndexingStrategyTransactionIdMergerTest {
 
     private static final @NonNull Random RANDOM = new Random();
     private static final @NonNull List<StoreRef> WORKSPACE_AND_ARCHIVE_STORE_REFS = List.of(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, StoreRef.STORE_REF_ARCHIVE_SPACESSTORE);
@@ -41,14 +40,14 @@ class ThresholdIndexingStrategyTransactionIdMergerTest {
     private static final int TRANSACTIONS_BATCH_SIZE = 2;
 
     private final @NonNull ArrayList<Node> nodes = new ArrayList<>(THRESHOLD);
-    private final @NonNull ThresholdIndexingStrategyTransactionIdFetcher fetcher = mock(ThresholdIndexingStrategyTransactionIdFetcher.class);
+    private final @NonNull TransactionAggregationIndexingStrategyTransactionIdFetcher fetcher = mock(TransactionAggregationIndexingStrategyTransactionIdFetcher.class);
     private final @NonNull SearchTrackingComponent searchTrackingComponent = mock(SearchTrackingComponent.class);
     private final @NonNull AtomicInteger transactionIndexCounter = new AtomicInteger(0);
     private final @NonNull BlockingDeque<Set<NodeRef>> queuedNodes = new LinkedBlockingDeque<>();
-    private final @NonNull ThresholdIndexingStrategyTransactionIdMerger merger;
-    private final @NonNull ThresholdIndexingStrategyConfiguration configuration = new ThresholdIndexingStrategyConfiguration(-1, -1, THRESHOLD, -1, -1);
+    private final @NonNull TransactionAggregationIndexingStrategyTransactionIdMerger merger;
+    private final @NonNull TransactionAggregationIndexingStrategyConfiguration configuration = new TransactionAggregationIndexingStrategyConfiguration(-1, -1, THRESHOLD, -1, -1);
 
-    public ThresholdIndexingStrategyTransactionIdMergerTest() throws InterruptedException {
+    public TransactionAggregationIndexingStrategyTransactionIdMergerTest() throws InterruptedException {
         for (int i = 0; i < THRESHOLD; i ++) {
             nodes.add(createDummyNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, i + 1L, Integer.toString(i)));
         }
@@ -75,7 +74,7 @@ class ThresholdIndexingStrategyTransactionIdMergerTest {
             return null;
         }).when(searchTrackingComponent).getNodes(any(), any());
 
-        merger = new ThresholdIndexingStrategyTransactionIdMerger(fetcher, queuedNodes, configuration,
+        merger = new TransactionAggregationIndexingStrategyTransactionIdMerger(fetcher, queuedNodes, configuration,
                 searchTrackingComponent);
     }
 

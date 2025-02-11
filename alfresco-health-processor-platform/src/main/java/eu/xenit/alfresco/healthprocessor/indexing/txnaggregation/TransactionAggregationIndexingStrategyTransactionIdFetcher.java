@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.indexing.threshold;
+package eu.xenit.alfresco.healthprocessor.indexing.txnaggregation;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
@@ -18,31 +18,31 @@ import java.util.concurrent.LinkedBlockingDeque;
  * and then apply the limit in Java. This is not efficient and can cause memory issues.
  */
 @Slf4j
-public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable, MeterBinder {
+public class TransactionAggregationIndexingStrategyTransactionIdFetcher implements Runnable, MeterBinder {
 
     private final static @NonNull String QUERY = "SELECT txn.id as id FROM alf_transaction txn WHERE txn.id BETWEEN %d AND %d ORDER BY txn.id ASC LIMIT %d";
 
     private final @NonNull BlockingDeque<@NonNull List<@NonNull Long>> queuedTransactionIDs;
 
     private final @NonNull JdbcTemplate jdbcTemplate;
-    private final @NonNull ThresholdIndexingStrategyState state;
-    private final @NonNull ThresholdIndexingStrategyConfiguration configuration;
+    private final @NonNull TransactionAggregationIndexingStrategyState state;
+    private final @NonNull TransactionAggregationIndexingStrategyConfiguration configuration;
 
     private boolean isRunning = false;
 
-    public ThresholdIndexingStrategyTransactionIdFetcher(@NonNull ThresholdIndexingStrategyConfiguration configuration,
-                                                         @NonNull JdbcTemplate jdbcTemplate,
-                                                         @NonNull ThresholdIndexingStrategyState state) {
+    public TransactionAggregationIndexingStrategyTransactionIdFetcher(@NonNull TransactionAggregationIndexingStrategyConfiguration configuration,
+                                                                      @NonNull JdbcTemplate jdbcTemplate,
+                                                                      @NonNull TransactionAggregationIndexingStrategyState state) {
         // Queue size: no more required than the amount of background workers.
         // If the queue is full, it means that the background workers can not keep up with the transaction fetcher anyway.
         // Slow down in this case.
         this(configuration, jdbcTemplate, state, new LinkedBlockingDeque<>(configuration.getTransactionsBackgroundWorkers()));
     }
 
-    ThresholdIndexingStrategyTransactionIdFetcher(@NonNull ThresholdIndexingStrategyConfiguration configuration,
-                                                  @NonNull JdbcTemplate jdbcTemplate,
-                                                  @NonNull ThresholdIndexingStrategyState state,
-                                                  @NonNull BlockingDeque<@NonNull List<@NonNull Long>> queuedTransactionIDs) {
+    TransactionAggregationIndexingStrategyTransactionIdFetcher(@NonNull TransactionAggregationIndexingStrategyConfiguration configuration,
+                                                               @NonNull JdbcTemplate jdbcTemplate,
+                                                               @NonNull TransactionAggregationIndexingStrategyState state,
+                                                               @NonNull BlockingDeque<@NonNull List<@NonNull Long>> queuedTransactionIDs) {
         if (configuration.getTransactionsBackgroundWorkers() <= 0)
             throw new IllegalArgumentException(String.format("The amount of background workers must be greater than zero (%d provided).", configuration.getTransactionsBackgroundWorkers()));
         if (configuration.getTransactionsBatchSize() <= 0)
@@ -56,7 +56,7 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable, 
 
     @Override
     public void run() {
-        log.debug("Starting the ThresholdIndexingStrategyTransactionIdFetcher.");
+        log.debug("Starting the TransactionAggregationIndexingStrategyTransactionIdFetcher.");
         try {
             isRunning = true;
             long currentTransactionId = state.getCurrentTransactionId();
@@ -82,7 +82,7 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable, 
                 isRunning = false;
                 signalEnd();
             } catch (InterruptedException e) {
-                log.error("The ThresholdIndexingStrategyTransactionIdFetcher has been interrupted while signaling the end to the transaction merger(s). " +
+                log.error("The TransactionAggregationIndexingStrategyTransactionIdFetcher has been interrupted while signaling the end to the transaction merger(s). " +
                         "The threshold indexer can not recover from this.", e);
             }
         }

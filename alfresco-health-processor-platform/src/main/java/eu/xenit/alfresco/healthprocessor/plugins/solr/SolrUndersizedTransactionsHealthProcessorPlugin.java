@@ -25,7 +25,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -121,7 +120,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
 
     private static void guaranteeThresholdIndexerIsUsed(@NonNull Properties properties) {
         String property = properties.getProperty(SELECTED_INDEXER_STRATEGY_PROPERTY);
-        String expected = IndexingStrategy.IndexingStrategyKey.THRESHOLD.getKey();
+        String expected = IndexingStrategy.IndexingStrategyKey.TXN_AGGREGATION.getKey();
         if (!(expected.equals(property)))
             throw new IllegalStateException(String.format("The SolrUndersizedTransactionsHealthProcessorPlugin can only be used with the (%s) indexing strategy. " +
                     "However, the (%s) strategy was selected. " +

@@ -39,12 +39,12 @@ services:
       - GLOBAL_system.node_table_cleaner.algorithm=V1
       - GLOBAL_index.tracking.minRecordPurgeAgeDays=0
 
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.strategy=threshold
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.threshold.transactions-background-workers=5
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.threshold.transactions-batch-size=100
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.threshold.threshold=1000
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-id.start=-1
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-id.end=-1
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.strategy=txn-aggregation
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-background-workers=5
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-batch-size=100
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.threshold=1000
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.start=-1
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.end=-1
 
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threads=2

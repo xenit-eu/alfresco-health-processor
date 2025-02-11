@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.indexing.threshold;
+package eu.xenit.alfresco.healthprocessor.indexing.txnaggregation;
 
 import org.junit.jupiter.api.Test;
 
@@ -6,11 +6,11 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ThresholdIndexingStrategyStateTest {
+class TransactionAggregationIndexingStrategyStateTest {
 
     @Test
     void getMapRepresentation() {
-        ThresholdIndexingStrategyState state = new ThresholdIndexingStrategyState(1, 2, 3);
+        TransactionAggregationIndexingStrategyState state = new TransactionAggregationIndexingStrategyState(1, 2, 3);
         for (int i = 0; i < 4; i ++) state.getTransactionBatchesQueueSize().incrementAndGet();
         Map<String, String> expectedRepresentation = Map.of(
                 "current-transaction-id", "1",

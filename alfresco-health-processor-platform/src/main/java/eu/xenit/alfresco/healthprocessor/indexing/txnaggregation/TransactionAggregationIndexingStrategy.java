@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.indexing.threshold;
+package eu.xenit.alfresco.healthprocessor.indexing.txnaggregation;
 
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.NullCycleProgress;
@@ -25,39 +25,39 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.LongSupplier;
 
 @Slf4j
-public class ThresholdIndexingStrategy implements IndexingStrategy, MeterBinder {
+public class TransactionAggregationIndexingStrategy implements IndexingStrategy, MeterBinder {
 
-    private final @NonNull ThresholdIndexingStrategyConfiguration configuration;
+    private final @NonNull TransactionAggregationIndexingStrategyConfiguration configuration;
     private final @NonNull AbstractNodeDAOImpl nodeDAO;
     private final @NonNull SearchTrackingComponent searchTrackingComponent;
-    private final @NonNull ThresholdIndexingStrategyState state = new ThresholdIndexingStrategyState();
-    private final @NonNull ThresholdIndexingStrategyTransactionIdFetcher transactionIdFetcher;
+    private final @NonNull TransactionAggregationIndexingStrategyState state = new TransactionAggregationIndexingStrategyState();
+    private final @NonNull TransactionAggregationIndexingStrategyTransactionIdFetcher transactionIdFetcher;
     private final @NonNull BlockingDeque<@NonNull Set<@NonNull NodeRef>> queuedNodes;
-    private final @NonNull ThresholdIndexingStrategyTransactionIdMerger @NonNull [] transactionIdMergers;
+    private final @NonNull TransactionAggregationIndexingStrategyTransactionIdMerger @NonNull [] transactionIdMergers;
     private final @NonNull HashSet<@NonNull Thread> runningThreads;
     private final @NonNull AtomicReference<@NonNull CycleProgress> cycleProgress = new AtomicReference<>(NullCycleProgress.getInstance());
     private final @NonNull LongSupplier progressReporter = state::getCurrentTransactionId;
 
-    public ThresholdIndexingStrategy(@NonNull ThresholdIndexingStrategyConfiguration configuration,
-                                     @NonNull AbstractNodeDAOImpl nodeDAO,
-                                     @NonNull SearchTrackingComponent searchTrackingComponent,
-                                     @NonNull DataSource dataSource,
-                                     @Nullable MeterRegistry meterRegistry) {
+    public TransactionAggregationIndexingStrategy(@NonNull TransactionAggregationIndexingStrategyConfiguration configuration,
+                                                  @NonNull AbstractNodeDAOImpl nodeDAO,
+                                                  @NonNull SearchTrackingComponent searchTrackingComponent,
+                                                  @NonNull DataSource dataSource,
+                                                  @Nullable MeterRegistry meterRegistry) {
         this(configuration, nodeDAO, searchTrackingComponent, new JdbcTemplate(dataSource), meterRegistry);
     }
 
-    ThresholdIndexingStrategy(@NonNull ThresholdIndexingStrategyConfiguration configuration,
-                              @NonNull AbstractNodeDAOImpl nodeDAO,
-                              @NonNull SearchTrackingComponent searchTrackingComponent,
-                              @NonNull JdbcTemplate jdbcTemplate) {
+    TransactionAggregationIndexingStrategy(@NonNull TransactionAggregationIndexingStrategyConfiguration configuration,
+                                           @NonNull AbstractNodeDAOImpl nodeDAO,
+                                           @NonNull SearchTrackingComponent searchTrackingComponent,
+                                           @NonNull JdbcTemplate jdbcTemplate) {
         this(configuration, nodeDAO, searchTrackingComponent, jdbcTemplate, null);
     }
 
-    ThresholdIndexingStrategy(@NonNull ThresholdIndexingStrategyConfiguration configuration,
-                              @NonNull AbstractNodeDAOImpl nodeDAO,
-                              @NonNull SearchTrackingComponent searchTrackingComponent,
-                              @NonNull JdbcTemplate jdbcTemplate,
-                              @Nullable MeterRegistry meterRegistry) {
+    TransactionAggregationIndexingStrategy(@NonNull TransactionAggregationIndexingStrategyConfiguration configuration,
+                                           @NonNull AbstractNodeDAOImpl nodeDAO,
+                                           @NonNull SearchTrackingComponent searchTrackingComponent,
+                                           @NonNull JdbcTemplate jdbcTemplate,
+                                           @Nullable MeterRegistry meterRegistry) {
         if (configuration.getTransactionsBackgroundWorkers() <= 0)
             throw new IllegalArgumentException(String.format("The amount of background workers must be greater than zero (%d provided).", configuration.getTransactionsBackgroundWorkers()));
 
@@ -66,12 +66,12 @@ public class ThresholdIndexingStrategy implements IndexingStrategy, MeterBinder 
         this.nodeDAO = nodeDAO;
 
         this.runningThreads = new HashSet<>(configuration.getTransactionsBackgroundWorkers() + 1);
-        this.transactionIdFetcher = new ThresholdIndexingStrategyTransactionIdFetcher(configuration, jdbcTemplate, state);
+        this.transactionIdFetcher = new TransactionAggregationIndexingStrategyTransactionIdFetcher(configuration, jdbcTemplate, state);
         this.queuedNodes = new LinkedBlockingDeque<>(configuration.getTransactionsBackgroundWorkers());
 
-        this.transactionIdMergers = new ThresholdIndexingStrategyTransactionIdMerger[configuration.getTransactionsBackgroundWorkers()];
+        this.transactionIdMergers = new TransactionAggregationIndexingStrategyTransactionIdMerger[configuration.getTransactionsBackgroundWorkers()];
         for (int i = 0; i < configuration.getTransactionsBackgroundWorkers(); i++)
-            this.transactionIdMergers[i] = new ThresholdIndexingStrategyTransactionIdMerger(transactionIdFetcher, queuedNodes, configuration, searchTrackingComponent);
+            this.transactionIdMergers[i] = new TransactionAggregationIndexingStrategyTransactionIdMerger(transactionIdFetcher, queuedNodes, configuration, searchTrackingComponent);
 
         if (meterRegistry != null) bindTo(meterRegistry);
     }
@@ -81,15 +81,15 @@ public class ThresholdIndexingStrategy implements IndexingStrategy, MeterBinder 
         state.setCurrentTransactionId(Math.max(configuration.getMinTransactionId(), nodeDAO.getMinTxnId()));
         state.setMaxTransactionId(Math.min(configuration.getMaxTransactionId() >= 0? configuration.getMaxTransactionId() : Long.MAX_VALUE, searchTrackingComponent.getMaxTxnId()));
         cycleProgress.set(new SimpleCycleProgress(state.getCurrentTransactionId(), state.getMaxTransactionId(), progressReporter));
-        log.debug("Starting the ThresholdIndexingStrategy with currentTransactionId ({}) and maxTransactionId ({}).", state.getCurrentTransactionId(), state.getMaxTransactionId());
+        log.debug("Starting the TransactionAggregationIndexingStrategy with currentTransactionId ({}) and maxTransactionId ({}).", state.getCurrentTransactionId(), state.getMaxTransactionId());
 
         Thread fetcherThread = new Thread(transactionIdFetcher);
-        fetcherThread.setName("ThresholdIndexingStrategyTransactionIdFetcher");
+        fetcherThread.setName("TransactionAggregationIndexingStrategyTransactionIdFetcher");
         runningThreads.add(fetcherThread);
         for (int i = 0; i < transactionIdMergers.length; i++) {
-            ThresholdIndexingStrategyTransactionIdMerger merger = transactionIdMergers[i];
+            TransactionAggregationIndexingStrategyTransactionIdMerger merger = transactionIdMergers[i];
             Thread mergerThread = new Thread(merger);
-            mergerThread.setName(String.format("ThresholdIndexingStrategyTransactionIdMerger-%d", i));
+            mergerThread.setName(String.format("TransactionAggregationIndexingStrategyTransactionIdMerger-%d", i));
             runningThreads.add(new Thread(merger));
         }
         for (Thread thread : runningThreads) thread.start();
@@ -115,7 +115,7 @@ public class ThresholdIndexingStrategy implements IndexingStrategy, MeterBinder 
 
     @Override
     public void onStop() {
-        log.debug("Stopping the ThresholdIndexingStrategy.");
+        log.debug("Stopping the TransactionAggregationIndexingStrategy.");
         for (Thread thread : runningThreads) thread.interrupt();
         runningThreads.clear();
 

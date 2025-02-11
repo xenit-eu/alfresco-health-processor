@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.indexing.threshold;
+package eu.xenit.alfresco.healthprocessor.indexing.txnaggregation;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -16,11 +16,11 @@ import java.util.concurrent.BlockingDeque;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ThresholdIndexingStrategyTransactionIdMerger implements Runnable {
+public class TransactionAggregationIndexingStrategyTransactionIdMerger implements Runnable {
 
-    private final @NonNull ThresholdIndexingStrategyTransactionIdFetcher fetcher;
+    private final @NonNull TransactionAggregationIndexingStrategyTransactionIdFetcher fetcher;
     private final @NonNull BlockingDeque<Set<NodeRef>> queuedNodes;
-    private final @NonNull ThresholdIndexingStrategyConfiguration configuration;
+    private final @NonNull TransactionAggregationIndexingStrategyConfiguration configuration;
     private final @NonNull NodeParameters nodeParameters = new NodeParameters();
     private final @NonNull SearchTrackingComponent searchTrackingComponent;
 

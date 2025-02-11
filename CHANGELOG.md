@@ -24,7 +24,7 @@ Version template:
 * Added the SolrUndersizedTransactionsHealthProcessorPlugin,
    which merges the transactions before they are being indexed by Solr
    to improve performance.
-* Added the threshold indexing strategy, which multi-threads the retrieval
+* Added the txn-aggregation indexing strategy, which multi-threads the retrieval
   and batching process of transactions to improve performance.
 
 ## [0.6.1] - 2025-01-08
