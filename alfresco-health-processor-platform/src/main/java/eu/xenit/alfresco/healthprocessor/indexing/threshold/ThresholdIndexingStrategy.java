@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.lang.Nullable;
 
 import javax.sql.DataSource;
 import java.util.HashSet;
@@ -40,7 +42,22 @@ public class ThresholdIndexingStrategy implements IndexingStrategy, MeterBinder 
                                      @NonNull AbstractNodeDAOImpl nodeDAO,
                                      @NonNull SearchTrackingComponent searchTrackingComponent,
                                      @NonNull DataSource dataSource,
-                                     @NonNull MeterRegistry meterRegistry) {
+                                     @Nullable MeterRegistry meterRegistry) {
+        this(configuration, nodeDAO, searchTrackingComponent, new JdbcTemplate(dataSource), meterRegistry);
+    }
+
+    ThresholdIndexingStrategy(@NonNull ThresholdIndexingStrategyConfiguration configuration,
+                              @NonNull AbstractNodeDAOImpl nodeDAO,
+                              @NonNull SearchTrackingComponent searchTrackingComponent,
+                              @NonNull JdbcTemplate jdbcTemplate) {
+        this(configuration, nodeDAO, searchTrackingComponent, jdbcTemplate, null);
+    }
+
+    ThresholdIndexingStrategy(@NonNull ThresholdIndexingStrategyConfiguration configuration,
+                              @NonNull AbstractNodeDAOImpl nodeDAO,
+                              @NonNull SearchTrackingComponent searchTrackingComponent,
+                              @NonNull JdbcTemplate jdbcTemplate,
+                              @Nullable MeterRegistry meterRegistry) {
         if (configuration.getTransactionsBackgroundWorkers() <= 0)
             throw new IllegalArgumentException(String.format("The amount of background workers must be greater than zero (%d provided).", configuration.getTransactionsBackgroundWorkers()));
 
@@ -49,14 +66,14 @@ public class ThresholdIndexingStrategy implements IndexingStrategy, MeterBinder 
         this.nodeDAO = nodeDAO;
 
         this.runningThreads = new HashSet<>(configuration.getTransactionsBackgroundWorkers() + 1);
-        this.transactionIdFetcher = new ThresholdIndexingStrategyTransactionIdFetcher(configuration, dataSource, state);
+        this.transactionIdFetcher = new ThresholdIndexingStrategyTransactionIdFetcher(configuration, jdbcTemplate, state);
         this.queuedNodes = new LinkedBlockingDeque<>(configuration.getTransactionsBackgroundWorkers());
 
         this.transactionIdMergers = new ThresholdIndexingStrategyTransactionIdMerger[configuration.getTransactionsBackgroundWorkers()];
         for (int i = 0; i < configuration.getTransactionsBackgroundWorkers(); i++)
             this.transactionIdMergers[i] = new ThresholdIndexingStrategyTransactionIdMerger(transactionIdFetcher, queuedNodes, configuration, searchTrackingComponent);
 
-        bindTo(meterRegistry);
+        if (meterRegistry != null) bindTo(meterRegistry);
     }
 
     @Override

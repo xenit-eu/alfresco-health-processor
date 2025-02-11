@@ -6,55 +6,59 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.alfresco.repo.solr.Transaction;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ThresholdIndexingStrategyTransactionIdFetcherTest {
 
-    private static final int AMOUNT_OF_DUMMY_TRANSACTIONS = 1000;
+    public static final @NonNull Pattern QUERY_PATTERN = Pattern.compile("SELECT txn\\.id as id FROM alf_transaction txn WHERE txn\\.id BETWEEN (\\d+) AND (\\d+) ORDER BY txn\\.id ASC LIMIT (\\d+)");    private static final int AMOUNT_OF_DUMMY_TRANSACTIONS = 1000;
     private static final int AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS = 5;
     private static final int TRANSACTIONS_BATCH_SIZE = 10;
     private static final @NonNull ThresholdIndexingStrategyConfiguration CONFIGURATION =
             new ThresholdIndexingStrategyConfiguration(AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS, TRANSACTIONS_BATCH_SIZE,
             -1, 0, AMOUNT_OF_DUMMY_TRANSACTIONS);
 
-    private final @NonNull ArrayList<Transaction> dummyTransactions = new ArrayList<>();
-    private final @NonNull SearchTrackingComponent dummySearchTrackingComponent = mock(SearchTrackingComponent.class);
+    private final @NonNull ArrayList<Long> dummyTransactionIDs = new ArrayList<>(AMOUNT_OF_DUMMY_TRANSACTIONS);
+    private final @NonNull JdbcTemplate dummyJdbcTemplate = mock(JdbcTemplate.class);
 
     private ThresholdIndexingStrategyTransactionIdFetcher fetcher;
 
-    public ThresholdIndexingStrategyTransactionIdFetcherTest() {
-        IntStream.range(0, AMOUNT_OF_DUMMY_TRANSACTIONS)
-                .forEach(i -> {
-                    Transaction dummyTransaction = mock(Transaction.class);
-                    when(dummyTransaction.getId()).thenReturn((long) i);
-                    dummyTransactions.add(dummyTransaction);
-                });
-        when(dummySearchTrackingComponent.getTransactions(anyLong(), eq(Long.MIN_VALUE), anyLong(),
-                eq(Long.MAX_VALUE), anyInt())).thenAnswer(invocation -> {
-            long fromIndex = invocation.getArgument(0);
-            long toIndex = invocation.getArgument(2);
-            int amount = invocation.getArgument(4);
+    public ThresholdIndexingStrategyTransactionIdFetcherTest() throws SQLException {
+        LongStream.range(0, AMOUNT_OF_DUMMY_TRANSACTIONS).forEach(dummyTransactionIDs::add);
 
-            return dummyTransactions.subList((int) fromIndex, Math.min((int) fromIndex + amount, Math.min((int) toIndex, dummyTransactions.size())));
+        when(dummyJdbcTemplate.queryForList(anyString(), eq(Long.class))).thenAnswer(invocation -> {
+            Matcher matcher = QUERY_PATTERN.matcher(invocation.getArgument(0));
+            if (!matcher.matches()) throw new IllegalArgumentException(String.format("unexpected query: %s", invocation.getArgument(0)));
+            int startTxnId = Integer.parseInt(matcher.group(1));
+            int endTxnId = Integer.parseInt(matcher.group(2));
+            int limit = Integer.parseInt(matcher.group(3));
+
+            int end = Math.min(startTxnId + limit, Math.min(endTxnId, AMOUNT_OF_DUMMY_TRANSACTIONS));
+            return dummyTransactionIDs.subList(startTxnId, end);
         });
     }
 
     @BeforeEach
     void setUp() {
         ThresholdIndexingStrategyState state = new ThresholdIndexingStrategyState(0, AMOUNT_OF_DUMMY_TRANSACTIONS, AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS);
-        fetcher = new ThresholdIndexingStrategyTransactionIdFetcher(CONFIGURATION, dummySearchTrackingComponent, state);
+        fetcher = new ThresholdIndexingStrategyTransactionIdFetcher(CONFIGURATION, dummyJdbcTemplate, state);
     }
 
     @Test
@@ -67,15 +71,15 @@ class ThresholdIndexingStrategyTransactionIdFetcherTest {
             int amountOfBatchesForEachBackGroundWorker = AMOUNT_OF_DUMMY_TRANSACTIONS / (AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS * TRANSACTIONS_BATCH_SIZE);
             for (int i = 0; i < amountOfBatchesForEachBackGroundWorker; i ++) {
                 for (int j = 0; j < AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS; j++) {
-                    List<org.alfresco.repo.solr.Transaction> transactions = fetcher.getNextTransactions();
-                    assertEquals(dummyTransactions.subList((i * AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS + j) * TRANSACTIONS_BATCH_SIZE,
-                            (i * AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS + j + 1) * TRANSACTIONS_BATCH_SIZE), transactions);
+                    List<Long> transactionIDs = fetcher.getNextTransactionIDs();
+                    assertEquals(dummyTransactionIDs.subList((i * AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS + j) * TRANSACTIONS_BATCH_SIZE,
+                            (i * AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS + j + 1) * TRANSACTIONS_BATCH_SIZE), transactionIDs);
                 }
             }
 
             // Every background worker receives the end signal.
             for (int j = 0; j < AMOUNT_OF_TRANSACTIONS_BACKGROUND_WORKERS; j ++) {
-                assertTrue(fetcher.getNextTransactions().isEmpty());
+                assertTrue(fetcher.getNextTransactionIDs().isEmpty());
             }
 
             // The fetcher kills itself (sound a lot darker than it is).
@@ -90,9 +94,9 @@ class ThresholdIndexingStrategyTransactionIdFetcherTest {
     public void testArguments() {
         ThresholdIndexingStrategyState state = new ThresholdIndexingStrategyState(0, 0, 0);
         ThresholdIndexingStrategyConfiguration configurationOne = new ThresholdIndexingStrategyConfiguration(0, 0, 0, 0, 0);
-        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategyTransactionIdFetcher(configurationOne, dummySearchTrackingComponent, state));
+        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategyTransactionIdFetcher(configurationOne, dummyJdbcTemplate, state));
         ThresholdIndexingStrategyConfiguration configurationTwo = new ThresholdIndexingStrategyConfiguration(1, 0, 0, 0, 0);
-        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategyTransactionIdFetcher(configurationTwo, dummySearchTrackingComponent, state));
+        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategyTransactionIdFetcher(configurationTwo, dummyJdbcTemplate, state));
     }
 
 }

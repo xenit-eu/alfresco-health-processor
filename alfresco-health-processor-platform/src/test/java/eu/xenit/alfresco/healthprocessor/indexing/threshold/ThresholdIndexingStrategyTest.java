@@ -12,20 +12,22 @@ import org.alfresco.repo.solr.Transaction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import static eu.xenit.alfresco.healthprocessor.indexing.threshold.ThresholdIndexingStrategyTransactionIdFetcherTest.QUERY_PATTERN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -45,8 +47,9 @@ class ThresholdIndexingStrategyTest {
             = new ThresholdIndexingStrategyConfiguration(AMOUNT_OF_BACKGROUND_WORKERS, TRANSACTION_BATCHES, THRESHOLD,
             0, AMOUNT_OF_TRANSACTIONS);
 
-    private final @NonNull AbstractNodeDAOImpl nodeDAO;
-    private final @NonNull SearchTrackingComponent searchTrackingComponent;
+    private final @NonNull AbstractNodeDAOImpl nodeDAO = mock(AbstractNodeDAOImpl.class);
+    private final @NonNull JdbcTemplate dummyJdbcTemplate = mock(JdbcTemplate.class);
+    private final @NonNull SearchTrackingComponent searchTrackingComponent = mock(SearchTrackingComponent.class);
     private final @NonNull ArrayList<Node> nodes = new ArrayList<>();
     private final @NonNull ThresholdIndexingStrategy indexingStrategy;
 
@@ -61,23 +64,9 @@ class ThresholdIndexingStrategyTest {
             nodes.add(node);
         }
 
-        this.nodeDAO = mock(AbstractNodeDAOImpl.class);
         when(nodeDAO.getMinTxnId()).thenReturn(0L);
 
-        this.searchTrackingComponent = mock(SearchTrackingComponent.class);
         when(searchTrackingComponent.getMaxTxnId()).thenReturn((long) AMOUNT_OF_TRANSACTIONS);
-        when(searchTrackingComponent.getTransactions(anyLong(), anyLong(), anyLong(), anyLong(), anyInt())).thenAnswer(invocation -> {
-            long start = invocation.getArgument(0);
-            long end = Math.min(invocation.getArgument(2), Math.min(start + (int) invocation.getArgument(4),
-                    AMOUNT_OF_TRANSACTIONS));
-
-            return LongStream.range(start, end)
-                    .mapToObj(txnId -> {
-                        Transaction transaction = mock(Transaction.class);
-                        when(transaction.getId()).thenReturn(txnId);
-                        return transaction;
-                    }).collect(Collectors.toList());
-        });
         doAnswer(invocation -> {
             NodeParameters nodeParameters = invocation.getArgument(0);
             SearchTrackingComponent.NodeQueryCallback callback = invocation.getArgument(1);
@@ -89,7 +78,18 @@ class ThresholdIndexingStrategyTest {
             return null;
         }).when(searchTrackingComponent).getNodes(any(), any());
 
-        this.indexingStrategy = new ThresholdIndexingStrategy(CONFIGURATION, nodeDAO, searchTrackingComponent);
+        when(dummyJdbcTemplate.queryForList(anyString(), eq(Long.class))).thenAnswer(invocation -> {
+            Matcher matcher = QUERY_PATTERN.matcher(invocation.getArgument(0));
+            if (!matcher.matches()) throw new IllegalArgumentException(String.format("unexpected query: %s", invocation.getArgument(0)));
+            int startTxnId = Integer.parseInt(matcher.group(1));
+            int endTxnId = Integer.parseInt(matcher.group(2));
+            int limit = Integer.parseInt(matcher.group(3));
+
+            int end = Math.min(startTxnId + limit, Math.min(endTxnId, AMOUNT_OF_TRANSACTIONS));
+            return LongStream.range(startTxnId, end).boxed().collect(Collectors.toList());
+        });
+
+        this.indexingStrategy = new ThresholdIndexingStrategy(CONFIGURATION, nodeDAO, searchTrackingComponent, dummyJdbcTemplate);
     }
 
     @Test
@@ -115,7 +115,7 @@ class ThresholdIndexingStrategyTest {
     @Test
     public void testArguments() {
         ThresholdIndexingStrategyConfiguration configuration = new ThresholdIndexingStrategyConfiguration(0, 0, 0, 0, 0);
-        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategy(configuration, nodeDAO, searchTrackingComponent));
+        assertThrows(IllegalArgumentException.class, () -> new ThresholdIndexingStrategy(configuration, nodeDAO, searchTrackingComponent, dummyJdbcTemplate));
     }
 
 }

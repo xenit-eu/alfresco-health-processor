@@ -24,7 +24,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "cec99vsppqj28f"
+        "uid": "becncuuncs4xsa"
       },
       "fieldConfig": {
         "defaults": {
@@ -120,6 +120,19 @@
         }
       ],
       "title": "Queued node batches (to be merged)",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{__name__=\"eu_xenit_alfresco_healthprocessor_plugin_solr_transaction_merger_merge_queue_size\", instance=\"acs-service:30000\", job=\"alfresco-metrics\"}": "Node batches ready to be committed"
+            }
+          }
+        }
+      ],
       "type": "timeseries"
     }
   ],
@@ -138,6 +151,6 @@
   "timezone": "browser",
   "title": "Solr undersized transactions merger plugin",
   "uid": "fec9at23p05c0e",
-  "version": 1,
+  "version": 3,
   "weekStart": ""
 }

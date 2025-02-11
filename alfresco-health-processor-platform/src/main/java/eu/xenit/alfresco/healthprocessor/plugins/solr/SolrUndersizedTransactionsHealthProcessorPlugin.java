@@ -15,6 +15,7 @@ import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 import org.alfresco.util.Pair;
+import org.springframework.lang.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -42,11 +43,19 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
     private final @NonNull AbstractNodeDAOImpl nodeDAO;
     private final @Getter @NonNull Map<@NonNull String, @NonNull String> configuration;
 
+    // Used for tests.
+    SolrUndersizedTransactionsHealthProcessorPlugin(boolean enabled, int mergerThreads,
+                                                    @NonNull Properties properties,
+                                                    @NonNull TransactionHelper transactionHelper,
+                                                    @NonNull AbstractNodeDAOImpl nodeDAO) {
+        this(enabled, mergerThreads, properties, transactionHelper, nodeDAO, null);
+    }
+
     public SolrUndersizedTransactionsHealthProcessorPlugin(boolean enabled, int mergerThreads,
                                                            @NonNull Properties properties,
                                                            @NonNull TransactionHelper transactionHelper,
                                                            @NonNull AbstractNodeDAOImpl nodeDAO,
-                                                           @NonNull MeterRegistry meterRegistry) {
+                                                           @Nullable MeterRegistry meterRegistry) {
         super(enabled);
         if (enabled) guaranteeThresholdIndexerIsUsed(properties);
 
@@ -58,7 +67,7 @@ public class SolrUndersizedTransactionsHealthProcessorPlugin extends ToggleableH
         this.configuration = new HashMap<>(super.getConfiguration());
         this.configuration.put(MERGER_THREADS_CONFIGURATION_KEY, String.valueOf(mergerThreads));
 
-        bindTo(meterRegistry);
+        if (meterRegistry != null) bindTo(meterRegistry);
     }
 
     @Nonnull

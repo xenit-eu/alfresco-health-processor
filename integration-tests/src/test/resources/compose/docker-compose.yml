@@ -9,6 +9,10 @@ services:
       - JAVA_OPTS_DEBUG=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000
       - JAVA_XMX=1G
       - DEBUG=true
+      - GLOBAL_log4j.logger.eu.xenit.alfresco.healthprocessor.indexing=DEBUG
+      - GLOBAL_log4j.logger.eu.xenit.alfresco.healthprocessor.plugins=DEBUG
+      - GLOBAL_log4j.logger.org.apache.camel.component.jms.DefaultJmsMessageListenerContainer=FATAL
+      - GLOBAL_log4j.logger.org.alfresco.repo.event2.EventGeneratorQueue=FATAL
 #      - SOLR_SSL=none
       - INDEX=solr6
       - GLOBAL_solr.http.socket.timeout=30000

@@ -68,6 +68,8 @@
             }
           },
           "mappings": [],
+          "max": 1,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -144,7 +146,7 @@
           "useBackend": false
         }
       ],
-      "title": "% DONE",
+      "title": "Progress",
       "transformations": [
         {
           "id": "calculateField",
@@ -173,6 +175,17 @@
               "reducer": "stdDev"
             },
             "replaceFields": true
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{__name__=\"eu_xenit_alfresco_healthprocessor_indexing_threshold_current_transaction_id\", instance=\"acs-service:30000\", job=\"alfresco-metrics\"} / {__name__=\"eu_xenit_alfresco_healthprocessor_indexing_threshold_max_transaction_id\", instance=\"acs-service:30000\", job=\"alfresco-metrics\"}": "Progress (%)"
+            }
           }
         }
       ],
@@ -255,7 +268,7 @@
         },
         "tooltip": {
           "hideZeros": false,
-          "mode": "single",
+          "mode": "none",
           "sort": "none"
         }
       },
@@ -273,125 +286,20 @@
           "useBackend": false
         }
       ],
-      "title": "Amount of processed nodes",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "becncuuncs4xsa"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
+      "title": "Amount of processed transaction IDs",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{instance=\"acs-service:30000\", job=\"alfresco-metrics\"}": "Amount of processed transaction IDs"
             }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
           }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 11,
-        "w": 24,
-        "x": 0,
-        "y": 11
-      },
-      "id": 1,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.5.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "cec99vsppqj28f"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "eu_xenit_alfresco_healthprocessor_indexing_threshold_current_transaction_id",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "cec99vsppqj28f"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "eu_xenit_alfresco_healthprocessor_indexing_threshold_max_transaction_id",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "B",
-          "useBackend": false
         }
       ],
-      "title": "Current and max. transaction ID",
       "type": "timeseries"
     },
     {
@@ -458,9 +366,9 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 11
       },
-      "id": 3,
+      "id": 1,
       "options": {
         "legend": {
           "calcs": [],
@@ -477,18 +385,57 @@
       "pluginVersion": "11.5.1",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cec99vsppqj28f"
+          },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "eu_xenit_alfresco_healthprocessor_indexing_threshold_queued_transaction_batches",
+          "expr": "eu_xenit_alfresco_healthprocessor_indexing_threshold_current_transaction_id",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A",
           "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cec99vsppqj28f"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "eu_xenit_alfresco_healthprocessor_indexing_threshold_max_transaction_id",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
         }
       ],
-      "title": "Queued transaction batches (to be processed)",
+      "title": "Current and max. transaction ID",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{__name__=\"eu_xenit_alfresco_healthprocessor_indexing_threshold_current_transaction_id\", instance=\"acs-service:30000\", job=\"alfresco-metrics\"}": "Current transaction ID",
+              "{__name__=\"eu_xenit_alfresco_healthprocessor_indexing_threshold_max_transaction_id\", instance=\"acs-service:30000\", job=\"alfresco-metrics\"}": "Max. transaction ID"
+            }
+          }
+        }
+      ],
       "type": "timeseries"
     },
     {
@@ -555,104 +502,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 22
-      },
-      "id": 4,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.5.1",
-      "targets": [
-        {
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "eu_xenit_alfresco_healthprocessor_indexing_threshold_queued_nodes",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "Queued node batches (to be exported)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "becncuuncs4xsa"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 24,
-        "x": 0,
-        "y": 32
+        "y": 11
       },
       "id": 2,
       "options": {
@@ -717,6 +567,253 @@
         }
       ],
       "title": "Active background threads",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{__name__=\"eu_xenit_alfresco_healthprocessor_indexing_threshold_running_background_threads\", instance=\"acs-service:30000\", job=\"alfresco-metrics\"}": "Total amount of running background threads",
+              "{__name__=\"eu_xenit_alfresco_healthprocessor_indexing_threshold_running_transaction_mergers\", instance=\"acs-service:30000\", job=\"alfresco-metrics\"}": "Amount of transaction mergers",
+              "{__name__=\"eu_xenit_alfresco_healthprocessor_indexing_threshold_transaction_fetcher_running\", instance=\"acs-service:30000\", job=\"alfresco-metrics\"}": "Amount of transaction fetchers"
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "becncuuncs4xsa"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "eu_xenit_alfresco_healthprocessor_indexing_threshold_queued_transaction_batches",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "Queued transaction batches (to be processed)",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{__name__=\"eu_xenit_alfresco_healthprocessor_indexing_threshold_queued_transaction_batches\", instance=\"acs-service:30000\", job=\"alfresco-metrics\"}": "Transaction batches ready to be processed by merger threads"
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "becncuuncs4xsa"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.1",
+      "targets": [
+        {
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "eu_xenit_alfresco_healthprocessor_indexing_threshold_queued_nodes",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "Queued node batches (to be exported)",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "{__name__=\"eu_xenit_alfresco_healthprocessor_indexing_threshold_queued_nodes\", instance=\"acs-service:30000\", job=\"alfresco-metrics\"}": "Node batches exported / queued by transaction mergers"
+            }
+          }
+        }
+      ],
       "type": "timeseries"
     }
   ],
@@ -728,13 +825,13 @@
     "list": []
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Threshold indexing strategy",
   "uid": "cec9a0x6os9oge",
-  "version": 10,
+  "version": 21,
   "weekStart": ""
 }

@@ -6,12 +6,17 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
-// TODO: add an explanation about why we directly contact the DB.
+/**
+ * Problem we discovered while implementing this: you would think that you can use the
+ * searchTrackingComponent.getTransactions(...) method to fetch the transaction IDs.
+ * DO NOT USE THIS APPROACH UNLESS YOU ALSO SPECIFY A RANGE (TRANSACTION ID OR DATE) IN THE QUERY.
+ * Alfresco does not send a LIMIT to the database, so it will fetch all transactions from the database
+ * and then apply the limit in Java. This is not efficient and can cause memory issues.
+ */
 @Slf4j
 public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable, MeterBinder {
 
@@ -26,24 +31,24 @@ public class ThresholdIndexingStrategyTransactionIdFetcher implements Runnable, 
     private boolean isRunning = false;
 
     public ThresholdIndexingStrategyTransactionIdFetcher(@NonNull ThresholdIndexingStrategyConfiguration configuration,
-                                                         @NonNull DataSource dataSource,
+                                                         @NonNull JdbcTemplate jdbcTemplate,
                                                          @NonNull ThresholdIndexingStrategyState state) {
-        // No more required than the amount of background workers.
+        // Queue size: no more required than the amount of background workers.
         // If the queue is full, it means that the background workers can not keep up with the transaction fetcher anyway.
         // Slow down in this case.
-        this(configuration, dataSource, state, new LinkedBlockingDeque<>(configuration.getTransactionsBackgroundWorkers()));
+        this(configuration, jdbcTemplate, state, new LinkedBlockingDeque<>(configuration.getTransactionsBackgroundWorkers()));
     }
 
     ThresholdIndexingStrategyTransactionIdFetcher(@NonNull ThresholdIndexingStrategyConfiguration configuration,
-                                                  @NonNull DataSource dataSource,
+                                                  @NonNull JdbcTemplate jdbcTemplate,
                                                   @NonNull ThresholdIndexingStrategyState state,
-                                                  @NonNull LinkedBlockingDeque<@NonNull List<@NonNull Long>> queuedTransactionIDs) {
+                                                  @NonNull BlockingDeque<@NonNull List<@NonNull Long>> queuedTransactionIDs) {
         if (configuration.getTransactionsBackgroundWorkers() <= 0)
             throw new IllegalArgumentException(String.format("The amount of background workers must be greater than zero (%d provided).", configuration.getTransactionsBackgroundWorkers()));
         if (configuration.getTransactionsBatchSize() <= 0)
             throw new IllegalArgumentException(String.format("The batch size must be greater than zero (%d provided).", configuration.getTransactionsBatchSize()));
 
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
+        this.jdbcTemplate = jdbcTemplate;
         this.state = state;
         this.configuration = configuration;
         this.queuedTransactionIDs = queuedTransactionIDs;

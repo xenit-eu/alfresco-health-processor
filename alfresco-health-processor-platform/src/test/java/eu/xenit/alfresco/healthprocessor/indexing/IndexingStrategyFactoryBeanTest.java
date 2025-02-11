@@ -12,12 +12,15 @@ import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrate
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdIndexingConfiguration;
 import eu.xenit.alfresco.healthprocessor.util.AttributeStore;
 import eu.xenit.alfresco.healthprocessor.util.InMemoryAttributeStore;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.search.SearchTrackingComponent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import javax.sql.DataSource;
 
 @ExtendWith(MockitoExtension.class)
 public class IndexingStrategyFactoryBeanTest {
@@ -58,6 +61,6 @@ public class IndexingStrategyFactoryBeanTest {
 
     private IndexingStrategyFactoryBean factoryBean(IndexingConfiguration configuration) {
         return new IndexingStrategyFactoryBean(configuration, trackingComponent, attributeStore,
-                mock(SearchTrackingComponent.class), mock(AbstractNodeDAOImpl.class));
+                mock(SearchTrackingComponent.class), mock(AbstractNodeDAOImpl.class), mock(DataSource.class), mock(MeterRegistry.class));
     }
 }

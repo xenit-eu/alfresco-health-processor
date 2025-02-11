@@ -3,7 +3,6 @@ package eu.xenit.alfresco.healthprocessor.indexing.threshold;
 import lombok.NonNull;
 import org.alfresco.repo.domain.node.StoreEntity;
 import org.alfresco.repo.domain.node.TransactionEntity;
-import org.alfresco.repo.solr.Transaction;
 import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -21,6 +20,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -53,14 +53,11 @@ class ThresholdIndexingStrategyTransactionIdMergerTest {
             nodes.add(createDummyNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, i + 1L, Integer.toString(i)));
         }
 
-        when(fetcher.getNextTransactions()).thenAnswer(invocation -> {
+        when(fetcher.getNextTransactionIDs()).thenAnswer(invocation -> {
            int transactionIndex = transactionIndexCounter.getAndIncrement();
-           return IntStream.range(TRANSACTIONS_BATCH_SIZE * transactionIndex, Math.min(TRANSACTIONS_BATCH_SIZE * (transactionIndex + 1), nodes.size() + 1)) // + 1: cf. .getNodes() mock.
-                   .mapToObj(index -> {
-                       Transaction transaction = mock(Transaction.class);
-                       when(transaction.getId()).thenReturn((long) index);
-                      return transaction;
-                   }).collect(Collectors.toList());
+           return LongStream.range((long) TRANSACTIONS_BATCH_SIZE * transactionIndex, Math.min(TRANSACTIONS_BATCH_SIZE * (transactionIndex + 1), nodes.size() + 1)) // + 1: cf. .getNodes() mock.
+                   .boxed()
+                   .collect(Collectors.toList());
         });
 
         doAnswer(invocation -> {
