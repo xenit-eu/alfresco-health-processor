@@ -19,6 +19,16 @@
                 value="${eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties}" />
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrUndersizedTransactionsHealthProcessorPlugin"
+        class="eu.xenit.alfresco.healthprocessor.plugins.solr.SolrUndersizedTransactionsHealthProcessorPlugin">
+        <constructor-arg name="enabled" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled}" />
+        <constructor-arg name="mergerThreads" value="${eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threads}" />
+        <constructor-arg name="properties" ref="global-properties" />
+        <constructor-arg name="transactionHelper" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoTransactionHelper" />
+        <constructor-arg name="nodeDAO" ref="nodeDAO" />
+        <constructor-arg name="meterRegistry" ref="meterRegistry" />
+    </bean>
+
     <!-- Solr validation -->
     <bean class="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelectorBeanPostProcessor" autowire="constructor">
         <constructor-arg name="globalProperties" ref="global-properties" />

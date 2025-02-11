@@ -149,6 +149,28 @@ eu.xenit.alfresco.healthprocessor.indexing.last-txns.lookback-transactions=10000
 eu.xenit.alfresco.healthprocessor.indexing.last-txns.txn-batch-size=5000
 ```
 
+#### Multi-threaded txn-aggregation strategy
+
+Strategy id: `txn-aggregation`
+
+Creates a single thread that goes over all transactions in the range of `txn-id.start` and `txn-id.end` (-1 can be used to indicate all transactions).
+Also creates `transactions-background-workers` threads that process these transactions in batches of `transactions-batch-size` transactions in parallel.
+
+Transactions that already have at least `threshold` nodes linked to them are ignored.
+The remaining nodes are added to the worker's cache / bucket.
+Once the size of the cache / bucket reaches the `threshold` value, a copy of the bucket
+is scheduled for delivery by the indexing strategy.
+The original bucket is then cleared and can be filled with new nodes.
+
+```properties
+eu.xenit.alfresco.healthprocessor.indexing.strategy=txn-aggregation
+eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-background-workers=5
+eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-batch-size=1000
+eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.threshold=1000
+eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.start=-1
+eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.end=-1
+```
+
 ### HealthProcessorPlugin implementations
 
 #### Content Validation
@@ -254,6 +276,26 @@ All nodes for which an `PURGE` and `REINDEX` commands has been succesfully sent 
 > **Note**: Although the nodes are marked as _FIXED_, asynchronous purging/indexing by the Solr server may still fail.
 > Currently, this case can not be detected automatically, but a node that does not become _HEALTHY_ in a subsequent
 > Health-Processor run should be investigated why it is not being indexed.
+
+#### Solr undersized transactions merger
+
+Activation property: `eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled=true`
+
+<b>Note: this plugin can only be used in combination with the `txn-aggregation` indexing strategy. 
+If this indexing strategy is not selected while the plugin is enabled, the health processor platform will not boot.</b>
+
+This plugin is used to merge transactions that are too small to be indexed by Solr in a performant manner.
+<br>
+This plugin marks all received nodeRefs as healthy, no matter what.
+The actual merge operation is done in (a) separate thread(s).
+The amount of threads can be configured; however, 1-2 threads should be sufficient for most setups 
+due to the fast merge operation.
+
+Properties:
+```properties
+eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled=true
+eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threads=1
+```
 
 ### HealthReporter implementations
 

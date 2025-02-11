@@ -1,0 +1,121 @@
+# This Docker-compose file contains configuration that is contradictory to the default configuration from the integration tests.
+# To not mess up the integration tests, a version of the Docker-compose file was kept here, that can be used
+# to test the threshold indexing strategy with the solr transaction merger plugin.
+# However, you still need to swap the Docker-compose files in the integration tests to use this one.
+
+version: '3.2'
+services:
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - "../../../../../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+
+  alfresco:
+    image: ${DOCKER_IMAGE}
+    ports:
+      - ${COMPOSE_INFLOW_TCP_8080:-8080}
+      - ":8000:8000"
+    environment:
+      - JAVA_OPTS_DEBUG=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000
+      - JAVA_XMX=8G
+      - DEBUG=true
+      #      - SOLR_SSL=none
+      - INDEX=solr6
+      - GLOBAL_solr.http.socket.timeout=30000
+      - GLOBAL_solr.http.connection.timeout=30000
+      - GLOBAL_csrf.filter.enabled=false
+      - GLOBAL_messaging.broker.url=failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true
+      - ENABLE_CLUSTERING=true
+
+      - GLOBAL_system.node_table_cleaner.algorithm=V1
+      - GLOBAL_index.tracking.minRecordPurgeAgeDays=0
+
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.strategy=txn-aggregation
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-background-workers=5
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-batch-size=100
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.threshold=1000
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.start=-1
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.end=-1
+
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-transaction-merger.threads=2
+
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.node-batch-size=1000
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.processing.max-batches-per-second=0
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.noop.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.store.max-stored-reports=4000
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.streaming.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.progress.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.alfred-telemetry.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:content
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.check-transaction=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled=false
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled=false
+
+      # Disable this loud logger which sends errors in Alfresco 7.0.
+      - LOG4J_logger.org.alfresco.repo.content.transform.LocalTransformServiceRegistry=OFF
+      # Settings for MQ (is needed!)
+      - GLOBAL_messaging.subsystem.autostart=false
+      - GLOBAL_events.subsystem.autostart=false
+      # Settings for transformation services
+      - GLOBAL_transform.service.enabled=false
+      - GLOBAL_local.transform.service.enabled=false
+      - GLOBAL_legacy.transform.service.enabled=false
+      # Needed to silence transformation routing log spam
+      - GLOBAL_messaging.broker.username=admin
+      - GLOBAL_messaging.broker.password=admin
+      - GLOBAL_messaging.broker.url=vm://localhost?broker.persistent=false
+      # Disable unused services
+      - GLOBAL_cifs.enabled=false
+      - GLOBAL_nfs.enabled=false
+      - GLOBAL_ftp.enabled=false
+      - GLOBAL_system.metadata-query-indexes.ignored=false
+      - GLOBAL_system.workflow.engine.jbpm.enabled=false
+      - GLOBAL_system.workflow.engine.activiti.enabled=false
+      - GLOBAL_system.usages.enabled=false
+      - GLOBAL_replication.enabled=false
+      - GLOBAL_audit.enabled=false
+      - GLOBAL_transferservice.receiver.enabled=false
+      - GLOBAL_home.folder.creation.eager=false
+      - GLOBAL_activities.feed.notifier.enabled=false
+      - GLOBAL_sync.pullJob.enabled=false
+      - GLOBAL_sync.pushJob.enabled=false
+      - GLOBAL_activities.feed.generator.enabled=false
+      - GLOBAL_activities.feed.cleaner.enabled=false
+      - GLOBAL_activities.post.lookup.enabled=false
+      - GLOBAL_activities.post.cleaner.enabled=false
+      - GLOBAL_ooo.enabled=false
+      - GLOBAL_jodconverter.enabled=false
+    depends_on:
+      - postgresql
+  solr:
+    image: docker.io/xenit/alfresco-solr6:2.0
+    environment:
+      - ALFRESCO_HOST=alfresco
+      #      - ALFRESCO_SSL=none
+      - GLOBAL_ALL_alfresco.index.transformContent=false
+      - GLOBAL_solr.suggester.enabled=false
+      - GLOBAL_ALL_alfresco.cron=0/2 * * * * ? *
+
+  postgresql:
+    image: docker.io/xenit/postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=alfresco
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=alfresco
+
+

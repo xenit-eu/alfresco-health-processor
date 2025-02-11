@@ -27,6 +27,16 @@
                 value="${eu.xenit.alfresco.healthprocessor.indexing.last-txns.txn-batch-size}" />
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.indexing.txnaggregation.ThresholdIndexingStrategyConfiguration"
+          class="eu.xenit.alfresco.healthprocessor.indexing.txnaggregation.TransactionAggregationIndexingStrategyConfiguration"
+            autowire-candidate="false">
+        <constructor-arg name="transactionsBackgroundWorkers" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-background-workers}" />
+        <constructor-arg name="transactionsBatchSize" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-batch-size}" />
+        <constructor-arg name="threshold" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.threshold}" />
+        <constructor-arg name="minTransactionId" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.start}" />
+        <constructor-arg name="maxTransactionId" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.end}" />
+    </bean>
+
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration"
             class="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfigurationFactoryBean">
         <constructor-arg name="indexingStrategyKey" ref="eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy.IndexingStrategyKey" />
@@ -34,6 +44,7 @@
             <list value-type="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration">
                 <ref bean="eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdIndexingConfiguration" />
                 <ref bean="eu.xenit.alfresco.healthprocessor.indexing.lasttxns.LastTxnsIndexingConfiguration" />
+                <ref bean="eu.xenit.alfresco.healthprocessor.indexing.txnaggregation.ThresholdIndexingStrategyConfiguration" />
             </list>
         </constructor-arg>
     </bean>
@@ -53,5 +64,9 @@
         <constructor-arg name="configuration" ref="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration" />
         <constructor-arg name="trackingComponent" ref="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent" />
         <constructor-arg name="attributeStore" ref="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore" />
+        <constructor-arg name="searchTrackingComponent" ref="searchTrackingComponent" />
+        <constructor-arg name="nodeDAO" ref="nodeDAO" />
+        <constructor-arg name="dataSource" ref="dataSource" />
+        <constructor-arg name="meterRegistry" ref="meterRegistry" />
     </bean>
 </beans>

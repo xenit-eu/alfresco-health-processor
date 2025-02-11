@@ -16,10 +16,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -143,6 +145,16 @@ public class NodeHealthReport implements Serializable {
         }
         nodeHealthReport.data(newData);
         return nodeHealthReport;
+    }
+
+    public static @NonNull Set<NodeHealthReport> of(@NonNull NodeHealthStatus status, @NonNull Collection<NodeRef> nodeRefs, @NonNull String... messages) {
+        return nodeRefs.stream()
+                .map(nodeRef -> new NodeHealthReport(status, nodeRef, messages))
+                .collect(Collectors.toSet());
+    }
+
+    public static @NonNull Set<NodeHealthReport> ofHealthy(@NonNull Collection<NodeRef> nodeRefs, @NonNull String... messages) {
+        return of(NodeHealthStatus.HEALTHY, nodeRefs, messages);
     }
 
     /**
