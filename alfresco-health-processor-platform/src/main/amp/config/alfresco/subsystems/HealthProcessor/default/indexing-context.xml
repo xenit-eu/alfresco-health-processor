@@ -30,11 +30,11 @@
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.txnaggregation.ThresholdIndexingStrategyConfiguration"
           class="eu.xenit.alfresco.healthprocessor.indexing.txnaggregation.TransactionAggregationIndexingStrategyConfiguration"
             autowire-candidate="false">
-        <constructor-arg name="transactionsBackgroundWorkers" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-background-workers}" />
-        <constructor-arg name="transactionsBatchSize" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-batch-size}" />
-        <constructor-arg name="threshold" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.threshold}" />
-        <constructor-arg name="minTransactionId" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.start}" />
-        <constructor-arg name="maxTransactionId" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.end}" />
+        <constructor-arg name="transactionsBackgroundWorkers" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-background-workers:1}" />
+        <constructor-arg name="transactionsBatchSize" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.transactions-batch-size:1}" />
+        <constructor-arg name="threshold" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.threshold:1}" />
+        <constructor-arg name="minTransactionId" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.start:-1}" />
+        <constructor-arg name="maxTransactionId" value="${eu.xenit.alfresco.healthprocessor.indexing.txn-aggregation.end:-1}" />
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.IndexingConfiguration"
