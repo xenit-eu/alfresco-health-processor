@@ -1,8 +1,8 @@
 package eu.xenit.alfresco.healthprocessor.reporter.log;
 
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ToggleableHealthReporter;
 import eu.xenit.alfresco.healthprocessor.reporter.store.NodeHealthReportClassifier;

@@ -2,9 +2,11 @@ package eu.xenit.alfresco.healthprocessor.solr;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.JSONResponseHandler;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector;
+
+import eu.xenit.alfresco.healthprocessor.checker.solr.JSONResponseHandler;
+import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpoint;
+import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpointSelector;
+
 import java.io.IOException;
 import java.util.Properties;
 

@@ -6,9 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.SslHttpClientFactory;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector;
+
+import eu.xenit.alfresco.healthprocessor.checker.solr.SslHttpClientFactory;
+import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpoint;
+import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpointSelector;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.http.client.HttpClient;
 import org.springframework.extensions.webscripts.AbstractWebScript;

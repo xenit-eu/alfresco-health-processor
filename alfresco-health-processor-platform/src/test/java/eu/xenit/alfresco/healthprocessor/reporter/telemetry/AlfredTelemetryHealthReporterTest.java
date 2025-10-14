@@ -6,10 +6,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
+import eu.xenit.alfresco.healthprocessor.checker.AssertHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.checker.NoOpHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.indexing.NullCycleProgress;
 import eu.xenit.alfresco.healthprocessor.indexing.SimpleCycleProgress;
-import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.NoOpHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Key;
 import eu.xenit.alfresco.healthprocessor.reporter.telemetry.Constants.Tag;
 import eu.xenit.alfresco.healthprocessor.util.TestReports;

@@ -1,7 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.fixer.api;
 
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.extensibility.BaseExtension;
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import java.util.Set;
 import javax.annotation.Nonnull;

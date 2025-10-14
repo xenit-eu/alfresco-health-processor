@@ -1,13 +1,13 @@
 package eu.xenit.alfresco.healthprocessor.fixer.solr;
 
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.checker.solr.NodeIndexHealthReport;
+import eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor;
+import eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor.SolrActionResponse;
+import eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor.SolrNodeCommand;
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
 import eu.xenit.alfresco.healthprocessor.fixer.api.ToggleableHealthFixerPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrNodeCommand;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrActionResponse;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import java.util.HashSet;
 import java.util.Set;

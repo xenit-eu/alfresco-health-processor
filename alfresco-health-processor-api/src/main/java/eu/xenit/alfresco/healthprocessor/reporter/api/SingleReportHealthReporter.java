@@ -1,10 +1,11 @@
 package eu.xenit.alfresco.healthprocessor.reporter.api;
 
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
+
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 
 /**
  * Health reporter that divides a batch into individual calls.

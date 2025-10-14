@@ -1,8 +1,9 @@
 package eu.xenit.alfresco.healthprocessor.reporter.api;
 
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import java.util.Set;
 import javax.annotation.Nonnull;
+
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 
 final class DisabledHealthReporter implements HealthReporter {
 

@@ -7,11 +7,11 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
+import eu.xenit.alfresco.healthprocessor.checker.AssertHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.fixer.NodeFixService;
 import eu.xenit.alfresco.healthprocessor.indexing.AssertIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
-import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.ReportsService;
 import eu.xenit.alfresco.healthprocessor.util.AssertTransactionHelper;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;

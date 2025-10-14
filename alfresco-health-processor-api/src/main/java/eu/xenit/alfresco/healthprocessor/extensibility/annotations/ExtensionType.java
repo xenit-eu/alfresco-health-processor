@@ -1,8 +1,8 @@
 package eu.xenit.alfresco.healthprocessor.extensibility.annotations;
 
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.extensibility.BaseExtension;
 import eu.xenit.alfresco.healthprocessor.fixer.api.HealthFixerPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
