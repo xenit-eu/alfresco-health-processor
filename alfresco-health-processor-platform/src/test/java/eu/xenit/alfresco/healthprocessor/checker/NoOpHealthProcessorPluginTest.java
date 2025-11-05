@@ -6,12 +6,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
-import eu.xenit.alfresco.healthprocessor.checker.NoOpHealthProcessorPlugin;
+import java.util.Set;
+
+import org.junit.jupiter.api.Test;
+
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
-import java.util.Set;
-import org.junit.jupiter.api.Test;
 
 class NoOpHealthProcessorPluginTest {
 

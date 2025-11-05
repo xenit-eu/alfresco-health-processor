@@ -34,7 +34,6 @@ public class ProcessorService {
     private final StateCache stateCache;
     private final NodeFixService fixService;
 
-    @SuppressWarnings("UnstableApiUsage")
     @Nullable
     private RateLimiter rateLimiter;
 

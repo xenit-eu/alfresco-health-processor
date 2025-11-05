@@ -6,21 +6,18 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import eu.xenit.alfresco.healthprocessor.checker.ContentValidationHealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
-import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.UUID;
+
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -37,6 +34,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 
 @ExtendWith(MockitoExtension.class)
 class ContentValidationHealthProcessorPluginTest {

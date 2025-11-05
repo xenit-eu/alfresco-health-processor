@@ -14,6 +14,7 @@ public class AlfrescoAttributeStore implements AttributeStore {
 
     private final AttributeService attributeService;
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getAttribute(Serializable key1, Serializable key2) {
         Serializable ret = attributeService.getAttribute(ATTR_KEY_HEALTH_PROCESSOR, key1, key2);

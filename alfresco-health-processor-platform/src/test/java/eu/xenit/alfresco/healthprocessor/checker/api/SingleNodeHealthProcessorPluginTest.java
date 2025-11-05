@@ -5,20 +5,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 
-import eu.xenit.alfresco.healthprocessor.checker.api.SingleNodeHealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
-import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
-import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
+
+import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
+import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 class SingleNodeHealthProcessorPluginTest {
 
