@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.solr;
+package eu.xenit.alfresco.healthprocessor.index;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +34,7 @@ public class NodeFinder {
         return nodeRefs.stream().map(nodeService::getNodeStatus).collect(Collectors.toList());
     }
 
-    public List<NodeRef> findWithSolr() {
+    public List<NodeRef> findWithIndex() {
         SearchParameters searchParameters = new SearchParameters();
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);

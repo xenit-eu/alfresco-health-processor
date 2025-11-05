@@ -8,10 +8,10 @@ include 'alfresco-health-processor-api'
 include 'alfresco-health-processor-platform'
 include 'integration-tests'
 
-def integrationTestVersions = ["231"]
+def integrationTestVersions = ["community-231", "enterprise-251"]
 
 integrationTestVersions.each {version ->
-    include ":integration-tests:alfresco-community-${version}"
+    include ":integration-tests:alfresco-${version}"
 }
 
 reckon {

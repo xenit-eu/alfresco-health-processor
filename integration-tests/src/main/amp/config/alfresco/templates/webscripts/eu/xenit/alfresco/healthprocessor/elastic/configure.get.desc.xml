@@ -1,7 +1,7 @@
 <webscript>
-    <shortname>Health Processor Solr node Check webscript</shortname>
+    <shortname>Health Processor ElasticSearch plugin configure webscript</shortname>
     <description>For integration testing purposes</description>
-    <url>/xenit/healthprocessor/solr/check</url>
+    <url>/xenit/healthprocessor/elastic/configure</url>
     <authentication>user</authentication>
     <format default="json"/>
     <family>Health Processor Test</family>

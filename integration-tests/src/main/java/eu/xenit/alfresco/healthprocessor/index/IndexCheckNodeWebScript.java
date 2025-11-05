@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.solr;
+package eu.xenit.alfresco.healthprocessor.index;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,16 +11,16 @@ import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
-public class SolrCheckNodeWebScript extends AbstractWebScript {
+public class IndexCheckNodeWebScript extends AbstractWebScript {
 
     private final NodeFinder nodeFinder;
 
-    public SolrCheckNodeWebScript(NodeFinder nodeFinder) {
+    public IndexCheckNodeWebScript(NodeFinder nodeFinder) {
         this.nodeFinder = nodeFinder;
     }
 
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException {
-        List<NodeRef> nodes = nodeFinder.findWithSolr();
+        List<NodeRef> nodes = nodeFinder.findWithIndex();
 
         JsonNodeFactory jsonNodeFactory = new JsonNodeFactory(false);
 
