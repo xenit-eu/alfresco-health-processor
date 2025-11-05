@@ -6,7 +6,7 @@ plugins {
     id 'eu.xenit.amp'
 }
 
-description = "Alfresco Repository module for ${rootProject.description}"
+description = "Alfresco Health Processor (Repository module)"
 
 java {
     withJavadocJar()
@@ -49,6 +49,8 @@ test {
 amp {
     libs = jar.outputs.files + configurations.runtimeClasspath - configurations.alfrescoProvided
 }
+
+testAmp { enabled = false }
 
 apply from: "${rootDir}/gradle/publish.gradle"
 

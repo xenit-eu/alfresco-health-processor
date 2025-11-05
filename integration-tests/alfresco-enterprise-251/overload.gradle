@@ -1,0 +1,5 @@
+ext {
+    alfrescoVersion = '25.1.0'
+	alfrescoPackagingArtifact = 'acs-packaging'
+	alfrescoWarArtifact = 'content-services'
+}

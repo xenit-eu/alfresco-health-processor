@@ -36,7 +36,6 @@ test {
 subprojects { Project p ->
     apply plugin: 'java'
 
-//    def alfrescoVersion = project.name[-2..-1]
     apply from: "${project.projectDir}/overload.gradle"
 
     description = "Alfresco ${alfrescoVersion} with Health Processor"
@@ -63,8 +62,8 @@ subprojects { Project p ->
     }
 
     dependencies {
-        baseAlfrescoWar platform("org.alfresco:acs-community-packaging:${alfrescoVersion}")
-        baseAlfrescoWar "org.alfresco:content-services-community@war"
+        baseAlfrescoWar platform("org.alfresco:${alfrescoPackagingArtifact}:${alfrescoVersion}")
+        baseAlfrescoWar "org.alfresco:${alfrescoWarArtifact}@war"
         alfrescoAmp project(path: ":integration-tests", configuration: "amp")
         alfrescoAmp project(path: ":alfresco-health-processor-platform", configuration: "amp")
         alfrescoAmp "eu.xenit.alfred.telemetry:alfred-telemetry-platform:${alfredTelemetryVersion}@amp"
@@ -91,14 +90,11 @@ subprojects { Project p ->
                 "${project.parent.projectDir}/src/test/resources/compose/docker-compose.yml",
         ]
 
-//        scale = [alfresco: 2]
         ignorePullFailure = false
 
+        stopContainers = true
         removeVolumes = true
         captureContainersOutput = false
-
-        // Uncomment for quick iterations when developing integration tests
-        // stopContainers = false
 
         environment.put 'COMPOSE_INFLOW_TCP_8080', project.findProperty('random_ports') ? '8080' : '8080:8080'
 
