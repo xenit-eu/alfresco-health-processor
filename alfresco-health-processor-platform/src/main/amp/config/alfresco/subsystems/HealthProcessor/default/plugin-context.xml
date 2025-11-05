@@ -19,62 +19,145 @@
                 value="${eu.xenit.alfresco.healthprocessor.checker.content-validation.properties}" />
     </bean>
 
-    <!-- Solr validation -->
-    <bean class="eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpointSelectorBeanPostProcessor" autowire="constructor">
+    <bean id="eu.xenit.alfresco.healthprocessor.checker.SolrIndexValidationHealthProcessorPlugin"
+        class="eu.xenit.alfresco.healthprocessor.checker.SolrIndexValidationHealthProcessorPlugin">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.checker.solr-index.enabled}" />
+        <constructor-arg name="searchApplicationContextFactory" ref="Search" />
+        <constructor-arg name="subsystemName" value="solr6" />
+        <constructor-arg name="nodeService" ref="NodeService" />
+        <constructor-arg name="solrServerSelector"
+            ref="eu.xenit.alfresco.healthprocessor.endpoint.solr.SearchEndpointSelector" />
+        <constructor-arg name="solrRequestExecutor" ref="eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor" />
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.checker.ElasticIndexValidationHealthProcessorPlugin"
+        class="eu.xenit.alfresco.healthprocessor.checker.ElasticIndexValidationHealthProcessorPlugin">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.checker.elastic-index.enabled}" />
+        <constructor-arg name="searchApplicationContextFactory" ref="Search" />
+        <constructor-arg name="subsystemName" value="elasticsearch" />
+        <constructor-arg name="nodeService" ref="NodeService" />
+        <constructor-arg name="elasticServerSelector"
+            ref="eu.xenit.alfresco.healthprocessor.endpoint.elastic.SearchEndpointSelector" />
+        <constructor-arg name="elasticRequestExecutor"
+            ref="eu.xenit.alfresco.healthprocessor.executors.ElasticRequestExecutor" />
+    </bean>
+
+    <bean class="eu.xenit.alfresco.healthprocessor.endpoint.solr.SolrEndpointSelectorBeanPostProcessor" autowire="constructor">
         <constructor-arg name="globalProperties" ref="global-properties" />
     </bean>
 
-    <bean id="eu.xenit.alfresco.healthprocessor.checker.solr.SolrIndexValidationHealthProcessorPlugin"
-            class="eu.xenit.alfresco.healthprocessor.checker.solr.SolrIndexValidationHealthProcessorPlugin">
-        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.checker.solr-index.enabled}" />
-        <constructor-arg name="nodeService" ref="NodeService" />
-        <constructor-arg name="solrServerSelector"
-                ref="eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpointSelector" />
-        <constructor-arg name="solrRequestExecutor"
-                ref="eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor" />
+    <bean class="eu.xenit.alfresco.healthprocessor.endpoint.elastic.ElasticEndpointSelectorBeanPostProcessor" autowire="constructor">
+        <constructor-arg name="globalProperties" ref="global-properties" />
     </bean>
 
-    <bean id="eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor"
-            class="eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor" >
-            <constructor-arg name="checkTransaction" value="${eu.xenit.alfresco.healthprocessor.checker.solr-index.check-transaction}" />
-            <constructor-arg name="globalProperties" ref="global-properties" />
+    <bean id="eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor"
+            class="eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutorImpl" >
+        <constructor-arg name="checkTransaction" value="${eu.xenit.alfresco.healthprocessor.checker.solr-index.check-transaction}" />
+        <constructor-arg name="sslKeyStore" ref="ssl.keyStore" />
+        <constructor-arg name="sslTrustStore" ref="ssl.trustStore" />
     </bean>
 
-    <bean id="eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpointSelector"
-            class="eu.xenit.alfresco.healthprocessor.checker.solr.filter.FilteringSearchEndpointSelector"
+    <bean id="eu.xenit.alfresco.healthprocessor.executors.ElasticRequestExecutor"
+            class="eu.xenit.alfresco.healthprocessor.executors.ElasticRequestExecutorImpl" >
+        <constructor-arg name="nodeDAO" ref="nodeDAO" />
+        <constructor-arg name="sslKeyStore" ref="ssl.keyStore" />
+        <constructor-arg name="sslTrustStore" ref="ssl.trustStore" />
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.endpoint.solr.SearchEndpointSelector"
+            class="eu.xenit.alfresco.healthprocessor.endpoint.FilteringSearchEndpointSelector"
             autowire-candidate="false">
+        <constructor-arg ref="eu.xenit.alfresco.healthprocessor.endpoint.solr.AggregateSearchEndpointSelector" />
         <constructor-arg>
-            <bean class="eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.AggregateSearchEndpointSelector" autowire="constructor" />
-        </constructor-arg>
-        <constructor-arg>
-            <bean class="eu.xenit.alfresco.healthprocessor.checker.solr.filter.AggregateFilter" autowire="constructor" />
-        </constructor-arg>
+            <bean class="eu.xenit.alfresco.healthprocessor.filter.AggregateFilter">
+                <constructor-arg>
+                    <list>
+                        <bean class="eu.xenit.alfresco.healthprocessor.filter.PropertyNodeFilter">
+                            <constructor-arg ref="ServiceRegistry" />
+                            <constructor-arg name="filteredProperties">
+                                <map>
+                                    <entry key="cm:isIndexed">
+                                        <value type="boolean">false</value>
+                                    </entry>
+                                </map>
+                            </constructor-arg>
+                        </bean>
 
+                        <bean class="eu.xenit.alfresco.healthprocessor.filter.DeletedNodeFilter" />
+                    </list>
+                </constructor-arg>
+            </bean>
+        </constructor-arg>
     </bean>
 
-    <bean class="eu.xenit.alfresco.healthprocessor.checker.solr.filter.PropertySolrNodeFilter">
-        <constructor-arg ref="ServiceRegistry" />
-        <constructor-arg name="filteredProperties">
-            <map>
-                <entry key="cm:isIndexed">
-                    <value type="boolean">false</value>
-                </entry>
-            </map>
+    <bean id="eu.xenit.alfresco.healthprocessor.endpoint.elastic.SearchEndpointSelector"
+            class="eu.xenit.alfresco.healthprocessor.endpoint.FilteringSearchEndpointSelector"
+            autowire-candidate="false">
+        <constructor-arg ref="eu.xenit.alfresco.healthprocessor.endpoint.elastic.AggregateSearchEndpointSelector" />
+        <constructor-arg>
+            <bean class="eu.xenit.alfresco.healthprocessor.filter.AggregateFilter">
+                <constructor-arg>
+                    <list>
+                        <!-- Alfresco-defined set of stores which don't send events (and thus aren't ever indexed) -->
+                        <bean class="eu.xenit.alfresco.healthprocessor.filter.NodeIgnoredStoresFilter">
+                            <constructor-arg index="0" ref="storesToIgnorePolicies" />
+                        </bean>
+                        <!-- Alfresco-defined filters that restrict for which type of nodes events are sent (and thus limit what can be indexed) -->
+                        <bean class="eu.xenit.alfresco.healthprocessor.filter.NodeEventFilterBridge">
+                            <constructor-arg index="0" ref="NodeService" />
+                            <constructor-arg index="1" ref="event2NodeTypeFilter" />
+                        </bean>
+                    </list>
+                </constructor-arg>
+            </bean>
         </constructor-arg>
     </bean>
 
-    <bean class="eu.xenit.alfresco.healthprocessor.checker.solr.filter.DeletedNodeFilter" />
+    <bean id="eu.xenit.alfresco.healthprocessor.endpoint.solr.AggregateSearchEndpointSelector"
+        class="eu.xenit.alfresco.healthprocessor.endpoint.AggregateSearchEndpointSelector" autowire-candidate="false" />
+
+    <bean id="eu.xenit.alfresco.healthprocessor.endpoint.elastic.AggregateSearchEndpointSelector"
+        class="eu.xenit.alfresco.healthprocessor.endpoint.AggregateSearchEndpointSelector" autowire-candidate="false" />
 
     <bean id="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrMissingNodeFixerPlugin"
         class="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrMissingNodeFixerPluginImpl">
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled}" />
+        <constructor-arg name="searchApplicationContextFactory" ref="Search" />
+        <constructor-arg name="subsystemName" value="solr6" />
         <constructor-arg name="solrRequestExecutor"
-                ref="eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor" />
+                ref="eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor" />
     </bean>
+
     <bean id="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrDuplicateNodeFixerPlugin"
             class="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrDuplicateNodeFixerPluginImpl">
         <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled}" />
+        <constructor-arg name="searchApplicationContextFactory" ref="Search" />
+        <constructor-arg name="subsystemName" value="solr6" />
         <constructor-arg name="solrRequestExecutor"
-                ref="eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor" />
+                ref="eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor" />
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.fixer.elastic.ElasticUndeletedNodeFixerPlugin"
+            class="eu.xenit.alfresco.healthprocessor.fixer.elastic.ElasticUndeletedNodeFixerPluginImpl">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.fixer.elastic-undeleted-node.enabled}" />
+        <constructor-arg name="searchApplicationContextFactory" ref="Search" />
+        <constructor-arg name="subsystemName" value="elasticsearch" />
+        <constructor-arg name="elasticRequestExecutor"
+                ref="eu.xenit.alfresco.healthprocessor.executors.ElasticRequestExecutor" />
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.fixer.elastic.ElasticMissingOrOutdatedNodeFixerPlugin"
+            class="eu.xenit.alfresco.healthprocessor.fixer.elastic.ElasticMissingOrOutdatedNodeFixerPluginImpl">
+        <property name="enabled" value="${eu.xenit.alfresco.healthprocessor.fixer.elastic-missing-or-outdated-node.enabled}" />
+        <property name="waitForIndex" value="${eu.xenit.alfresco.healthprocessor.fixer.elastic-missing-or-outdated-node.waitForIndex}" />
+        <property name="waitIntervalMillis" value="${eu.xenit.alfresco.healthprocessor.fixer.elastic-missing-or-outdated-node.waitIntervalMillis}" />
+        <property name="waitIntervalCount" value="${eu.xenit.alfresco.healthprocessor.fixer.elastic-missing-or-outdated-node.waitIntervalCount}" />
+        <constructor-arg name="searchApplicationContextFactory" ref="Search" />
+        <constructor-arg name="subsystemName" value="elasticsearch" />
+        <constructor-arg name="elasticRequestExecutor"
+                ref="eu.xenit.alfresco.healthprocessor.executors.ElasticRequestExecutor" />
+        <constructor-arg name="transactionHelper" ref="retryingTransactionHelper" />
+        <constructor-arg name="nodeService" ref="nodeService" />
+        <constructor-arg name="eventGenerator" ref="eventGeneratorV2" />
     </bean>
 </beans>
