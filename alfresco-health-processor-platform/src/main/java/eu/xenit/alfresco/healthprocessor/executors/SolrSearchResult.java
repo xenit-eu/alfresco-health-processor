@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr;
+package eu.xenit.alfresco.healthprocessor.executors;
 
 import java.util.HashSet;
 import java.util.Set;

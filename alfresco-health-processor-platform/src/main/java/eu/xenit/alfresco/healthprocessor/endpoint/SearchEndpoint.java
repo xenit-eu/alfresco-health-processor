@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr.endpoint;
+package eu.xenit.alfresco.healthprocessor.endpoint;
 
 import java.net.URI;
 import lombok.EqualsAndHashCode;
@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 /**
- * A search endpoint is configuration data for access to a solr search index
+ * A search endpoint is configuration data for access to a search index
  */
 @EqualsAndHashCode
 @ToString
@@ -21,14 +21,5 @@ public class SearchEndpoint {
         } else {
             this.baseUri = baseUri;
         }
-    }
-
-    public URI getAdminUri() {
-        return baseUri.resolve("../admin/");
-    }
-
-    public String getCoreName() {
-        String[] path = baseUri.getPath().split("/");
-        return path[path.length - 1];
     }
 }

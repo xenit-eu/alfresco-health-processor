@@ -1,51 +1,44 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr;
+package eu.xenit.alfresco.healthprocessor.executors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import org.alfresco.encryption.AlfrescoKeyStore;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 
-import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpoint;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Properties;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import eu.xenit.alfresco.healthprocessor.endpoint.solr.SolrEndpoint;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * Performs HTTP requests on a {@link SearchEndpoint}
+ * Performs HTTP requests on a {@link SolrEndpoint}
  */
 @Slf4j
 @RequiredArgsConstructor
-public class SolrRequestExecutor {
+public class SolrRequestExecutorImpl implements SolrRequestExecutor {
 
     private final HttpClient httpClient;
     private final boolean checkTransaction;
 
-    public SolrRequestExecutor(Boolean checkTransaction, Properties globalProperties) {
-        this(SslHttpClientFactory.setupHttpClient(globalProperties), checkTransaction);
+    public SolrRequestExecutorImpl(Boolean checkTransaction, AlfrescoKeyStore sslKeyStore, AlfrescoKeyStore sslTrustStore) {
+        this(SslHttpClientFactory.setupHttpClient(sslKeyStore, sslTrustStore), checkTransaction);
     }
 
     /**
-     * Performs a search operation on an endpoint to determine if the nodes are indexed or not
-     *
-     * @param endpoint     The endpoint to perform a search on
-     * @param nodeStatuses Nodes to search for
-     * @return The result of the search operation
-     * @throws IOException When the HTTP request goes wrong
+     * {@inheritDoc}
      */
-    public SolrSearchResult checkNodeIndexed(SearchEndpoint endpoint, Collection<Status> nodeStatuses)
+    @Override
+    public SolrSearchResult checkNodeIndexed(SolrEndpoint endpoint, Collection<Status> nodeStatuses)
             throws IOException {
 
         // Initially, try a fetch for double the size of the node statuses array
@@ -107,7 +100,7 @@ public class SolrRequestExecutor {
         return solrSearchResult;
     }
 
-    private JsonNode executeSearchRequest(SearchEndpoint endpoint, Collection<Status> nodeStatuses, long fetchSize)
+    private JsonNode executeSearchRequest(SolrEndpoint endpoint, Collection<Status> nodeStatuses, long fetchSize)
             throws IOException {
         String solrQuery;
         if (!checkTransaction) {
@@ -135,15 +128,10 @@ public class SolrRequestExecutor {
     }
 
     /**
-     * Schedules an async SolrNodeCommand for a node on a search endpoint.
-     * This action/command is scheduled for execution by solr or a failure is returned.
-     * @param endpoint the search endpoint
-     * @param nodeStatus node status containing information about the dbIDs and transactionIds
-     * @param command Solr action that will be executed
-     * @return
-     * @throws IOException when the command can not be sent to solr
+     * {@inheritDoc}
      */
-    public SolrActionResponse executeAsyncNodeCommand(SearchEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
+    @Override
+    public SolrActionResponse executeAsyncNodeCommand(SolrEndpoint endpoint, Status nodeStatus, SolrNodeCommand command)
             throws IOException {
         String coreName = endpoint.getCoreName();
 
@@ -169,29 +157,6 @@ public class SolrRequestExecutor {
             successFull = message.equals("scheduled");
         }
         return new SolrActionResponse(successFull, message);
-    }
-
-    @Value
-    public static class SolrActionResponse {
-        private final boolean successFull;
-        private final String message;
-    }
-
-    /**
-     * The boolean targetsTransaction indicates if the action should be sent for the transaction the node was contained in.
-     * If true, the nodeCommand will be scheduled for the complete transaction of this node.
-     * If false, the nodeCommand is scheduled for this single node contained in the nodestatus.
-     */
-    @AllArgsConstructor
-    public enum SolrNodeCommand {
-        REINDEX("reindex", false),
-        PURGE("purge", false),
-        REINDEX_TRANSACTION("reindex", true);
-
-        @Getter
-        private final String command;
-        @Getter
-        private final boolean targetsTransaction;
     }
 
 }

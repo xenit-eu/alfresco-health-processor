@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr.filter;
+package eu.xenit.alfresco.healthprocessor.filter;
 
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -12,13 +12,13 @@ import org.alfresco.service.cmr.repository.NodeRef.Status;
  */
 @AllArgsConstructor
 @ToString
-public class AggregateFilter implements SolrNodeFilter {
+public class AggregateFilter implements NodeFilter {
 
-    private final List<SolrNodeFilter> filters;
+    private final List<NodeFilter> filters;
 
     @Override
     public boolean isIgnored(Status nodeRefStatus) {
-        for (SolrNodeFilter filter : filters) {
+        for (NodeFilter filter : filters) {
             if (filter.isIgnored(nodeRefStatus)) {
                 return true;
             }

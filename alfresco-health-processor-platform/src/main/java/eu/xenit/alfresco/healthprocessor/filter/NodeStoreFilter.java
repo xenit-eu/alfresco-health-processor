@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr.filter;
+package eu.xenit.alfresco.healthprocessor.filter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -12,7 +12,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 @Slf4j
 @RequiredArgsConstructor
 @ToString
-public class NodeStoreFilter implements SolrNodeFilter {
+public class NodeStoreFilter implements NodeFilter {
 
     private final StoreRef storeRef;
 

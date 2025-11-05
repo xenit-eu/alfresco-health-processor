@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr.filter;
+package eu.xenit.alfresco.healthprocessor.filter;
 
 import eu.xenit.alfresco.healthprocessor.util.QNameUtil;
 import java.io.Serializable;
@@ -24,13 +24,13 @@ import org.alfresco.service.namespace.QName;
 @Slf4j
 @AllArgsConstructor
 @ToString
-public class PropertySolrNodeFilter implements SolrNodeFilter {
+public class PropertyNodeFilter implements NodeFilter {
 
     @ToString.Exclude
     private final NodeService nodeService;
     private final Map<QName, Serializable> filteredProperties;
 
-    public PropertySolrNodeFilter(ServiceRegistry serviceRegistry,
+    public PropertyNodeFilter(ServiceRegistry serviceRegistry,
             Map<String, Serializable> filteredProperties) {
         this(
                 serviceRegistry.getNodeService(),
@@ -53,8 +53,8 @@ public class PropertySolrNodeFilter implements SolrNodeFilter {
             for (Entry<QName, Serializable> filteredProperty : filteredProperties.entrySet()) {
                 if (properties.containsKey(filteredProperty.getKey())) {
                     Serializable value = properties.get(filteredProperty.getKey());
-                    if (value instanceof List) {
-                        List list = (List) value;
+                    if (value instanceof List<?>) {
+                        List<?> list = (List<?>) value;
                         for (Object val : list) {
                             if (Objects.equals(val, filteredProperty.getValue())) {
                                 log.debug("Node {} ignored because property {} is {}", nodeRefStatus.getNodeRef(),

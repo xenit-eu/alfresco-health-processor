@@ -1,12 +1,13 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr.endpoint;
+package eu.xenit.alfresco.healthprocessor.endpoint;
 
 import java.util.Set;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Selects which search endpoints should be queried check if a node is indexed there.
  */
-public interface SearchEndpointSelector {
+public interface SearchEndpointSelector<T extends SearchEndpoint> {
 
     /**
      * Retrieves the set of search endpoints which should have the node indexed (eventually).
@@ -19,5 +20,5 @@ public interface SearchEndpointSelector {
      * @param nodeRef The node to select search endpoints for
      * @return
      */
-    Set<SearchEndpoint> getSearchEndpointsForNode(NodeRef.Status nodeRef);
+    Set<T> getSearchEndpointsForNode(NodeRef.Status nodeRef);
 }

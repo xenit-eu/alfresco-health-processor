@@ -1,10 +1,13 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr.endpoint;
+package eu.xenit.alfresco.healthprocessor.endpoint;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.alfresco.service.cmr.repository.NodeRef.Status;
+
 import lombok.AllArgsConstructor;
 import lombok.ToString;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 
 
 /**
@@ -12,12 +15,12 @@ import org.alfresco.service.cmr.repository.NodeRef.Status;
  */
 @AllArgsConstructor
 @ToString
-public class AggregateSearchEndpointSelector implements SearchEndpointSelector {
+public class AggregateSearchEndpointSelector<T extends SearchEndpoint> implements SearchEndpointSelector<T> {
 
-    private final Set<SearchEndpointSelector> endpointSelectors;
+    private final List<SearchEndpointSelector<T>> endpointSelectors;
 
     @Override
-    public Set<SearchEndpoint> getSearchEndpointsForNode(Status nodeRef) {
+    public Set<T> getSearchEndpointsForNode(Status nodeRef) {
         return endpointSelectors.stream()
                 .flatMap(selector -> selector.getSearchEndpointsForNode(nodeRef).stream())
                 .collect(Collectors.toSet());

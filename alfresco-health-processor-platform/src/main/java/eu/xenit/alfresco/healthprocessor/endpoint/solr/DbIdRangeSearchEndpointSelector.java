@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr.endpoint;
+package eu.xenit.alfresco.healthprocessor.endpoint.solr;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -7,22 +7,24 @@ import lombok.AllArgsConstructor;
 import lombok.ToString;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 
+import eu.xenit.alfresco.healthprocessor.endpoint.SearchEndpointSelector;
+
 /**
  * Endpoint selector that only selects an endpoint when the database id of a node is within a range
  */
 @AllArgsConstructor
 @ToString
-public class DbIdRangeSearchEndpointSelector implements SearchEndpointSelector {
+public class DbIdRangeSearchEndpointSelector implements SearchEndpointSelector<SolrEndpoint> {
 
     private final Long dbIdStart;
     private final Long dbIdEnd;
-    private final SearchEndpoint endpoint;
+    private final SolrEndpoint endpoint;
 
-    public DbIdRangeSearchEndpointSelector(String filter, SearchEndpoint endpoint) {
+    public DbIdRangeSearchEndpointSelector(String filter, SolrEndpoint endpoint) {
         this(filter.split("-", 2), endpoint);
     }
 
-    private DbIdRangeSearchEndpointSelector(String[] filterParts, SearchEndpoint endpoint) {
+    private DbIdRangeSearchEndpointSelector(String[] filterParts, SolrEndpoint endpoint) {
         this(Long.parseUnsignedLong(
                         Objects.requireNonNull(filterParts[0], "Filter must be 2 numbers separated with a dash"), 10),
                 Long.parseUnsignedLong(
@@ -32,7 +34,7 @@ public class DbIdRangeSearchEndpointSelector implements SearchEndpointSelector {
 
 
     @Override
-    public Set<SearchEndpoint> getSearchEndpointsForNode(Status nodeRef) {
+    public Set<SolrEndpoint> getSearchEndpointsForNode(Status nodeRef) {
         if (nodeRef.getDbId() >= dbIdStart && nodeRef.getDbId() < dbIdEnd) {
             return Collections.singleton(endpoint);
         }
