@@ -1,17 +1,15 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr.filter;
+package eu.xenit.alfresco.healthprocessor.filter;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-import eu.xenit.alfresco.healthprocessor.checker.solr.filter.PropertySolrNodeFilter;
-import eu.xenit.alfresco.healthprocessor.checker.solr.filter.SolrNodeFilter;
-import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
@@ -23,20 +21,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
+
 @ExtendWith(MockitoExtension.class)
-class PropertySolrNodeFilterTest {
+class PropertyNodeFilterTest {
 
     @Mock
     private NodeService nodeService;
 
-    private SolrNodeFilter filter;
+    private NodeFilter filter;
 
     @BeforeEach
     void setup() {
         Map<QName, Serializable> propertyMap = new HashMap<>();
         propertyMap.put(ContentModel.PROP_IS_INDEXED, false);
         propertyMap.put(ContentModel.PROP_CREATOR, "System");
-        filter = new PropertySolrNodeFilter(nodeService, propertyMap);
+        filter = new PropertyNodeFilter(nodeService, propertyMap);
     }
 
     @Test

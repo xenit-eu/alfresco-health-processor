@@ -1,22 +1,22 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr.endpoint;
+package eu.xenit.alfresco.healthprocessor.endpoint.solr;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.DbIdRangeSearchEndpointSelector;
-import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpoint;
-import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpointSelector;
-import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import java.net.URI;
 import java.util.Collections;
+
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.junit.jupiter.api.Test;
 
+import eu.xenit.alfresco.healthprocessor.endpoint.SearchEndpointSelector;
+import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
+
 class DbIdRangeSearchEndpointSelectorTest {
 
-    private static final SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://empty/"));
+    private static final SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://empty/"));
 
-    private void rangeTests(SearchEndpointSelector endpointSelector) {
+    private void rangeTests(SearchEndpointSelector<SolrEndpoint> endpointSelector) {
         assertEquals(Collections.emptySet(), endpointSelector.getSearchEndpointsForNode(new Status(1L,
                 TestNodeRefs.REF, "1", 1L, false)));
         assertEquals(Collections.emptySet(), endpointSelector.getSearchEndpointsForNode(new Status(49L,
@@ -33,14 +33,14 @@ class DbIdRangeSearchEndpointSelectorTest {
 
     @Test
     void testSelectsInRange() {
-        SearchEndpointSelector endpointSelector = new DbIdRangeSearchEndpointSelector(50L, 100L, endpoint);
+        SearchEndpointSelector<SolrEndpoint> endpointSelector = new DbIdRangeSearchEndpointSelector(50L, 100L, endpoint);
 
         rangeTests(endpointSelector);
     }
 
     @Test
     void testFilterParsing() {
-        SearchEndpointSelector endpointSelector = new DbIdRangeSearchEndpointSelector("50-100", endpoint);
+        SearchEndpointSelector<SolrEndpoint> endpointSelector = new DbIdRangeSearchEndpointSelector("50-100", endpoint);
 
         rangeTests(endpointSelector);
     }

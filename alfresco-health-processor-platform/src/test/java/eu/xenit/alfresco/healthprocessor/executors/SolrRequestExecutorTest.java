@@ -1,19 +1,11 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr;
+package eu.xenit.alfresco.healthprocessor.executors;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.paweladamski.httpclientmock.HttpClientMock;
-
-import eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor;
-import eu.xenit.alfresco.healthprocessor.checker.solr.SolrSearchResult;
-import eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor.SolrActionResponse;
-import eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor.SolrNodeCommand;
-import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpoint;
-import eu.xenit.alfresco.healthprocessor.util.SetUtil;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.apache.http.client.HttpResponseException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URI;
@@ -23,24 +15,31 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.apache.http.client.HttpResponseException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import eu.xenit.alfresco.healthprocessor.endpoint.solr.SolrEndpoint;
+import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor.SolrActionResponse;
+import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor.SolrNodeCommand;
+import eu.xenit.alfresco.healthprocessor.util.SetUtil;
 
 class SolrRequestExecutorTest {
 
     private HttpClientMock httpClientMock;
-    private SolrRequestExecutor solrRequestExecutor;
-    private SolrRequestExecutor solrRequestExecutorTransactionChecker;
+    private SolrRequestExecutorImpl solrRequestExecutor;
+    private SolrRequestExecutorImpl solrRequestExecutorTransactionChecker;
 
     private static final long LAST_INDEXED_TX = 1000L;
 
     @BeforeEach
     void setup() {
         httpClientMock = new HttpClientMock();
-        solrRequestExecutor = new SolrRequestExecutor(httpClientMock, false);
-        solrRequestExecutorTransactionChecker = new SolrRequestExecutor(httpClientMock, true);
+        solrRequestExecutor = new SolrRequestExecutorImpl(httpClientMock, false);
+        solrRequestExecutorTransactionChecker = new SolrRequestExecutorImpl(httpClientMock, true);
     }
 
     private static NodeRef randomNodeRef() {
@@ -57,7 +56,7 @@ class SolrRequestExecutorTest {
 
     @Test
     void checkIndexedNodes() throws IOException {
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/index/"));
 
         List<Status> nodeRefs = new ArrayList<>();
 
@@ -94,7 +93,7 @@ class SolrRequestExecutorTest {
         * In this case two nodes are contained in tx (txId 2) but one of them failed to index. (however the transaction is still considered as indexed)
         * */
 
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/index/"));
 
         List<Status> nodeRefs = new ArrayList<>();
 
@@ -136,7 +135,7 @@ class SolrRequestExecutorTest {
              Searching for DBID:10 indicates no problem with the solr index...
              Searching for DBID:10 in conjuction with INTXID:3 indicates a problem and reindexes TX 3
          */
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/index/"));
 
         List<Status> nodeRefs = new ArrayList<>();
 
@@ -185,7 +184,7 @@ class SolrRequestExecutorTest {
 
     @Test
     void checkIndexedNodesAllIndexed() throws IOException {
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/index/"));
 
         List<Status> nodeRefs = new ArrayList<>();
 
@@ -217,7 +216,7 @@ class SolrRequestExecutorTest {
 
     @Test
     void checkSolrHttpError() {
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/index/"));
 
         List<Status> nodeRefs = new ArrayList<>();
         nodeRefs.add(randomNodeRefStatus(10L, LAST_INDEXED_TX - 10));
@@ -236,7 +235,7 @@ class SolrRequestExecutorTest {
 
     @Test
     void checkEmptyResponse() throws IOException {
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/index/"));
 
         List<Status> nodeRefs = new ArrayList<>();
 
@@ -263,7 +262,7 @@ class SolrRequestExecutorTest {
 
     @Test
     void checkDuplicateNodes() throws IOException {
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/index/"));
 
         List<Status> nodeRefs = new ArrayList<>();
 
@@ -295,7 +294,7 @@ class SolrRequestExecutorTest {
 
     @Test
     void checkManyDuplicateNodes() throws IOException {
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/index/"));
 
         List<Status> nodeRefs = new ArrayList<>();
 
@@ -338,7 +337,7 @@ class SolrRequestExecutorTest {
 
     @Test
     void performNodeCommandReindex() throws IOException {
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/index/"));
 
         NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
 
@@ -360,7 +359,7 @@ class SolrRequestExecutorTest {
     //Solr version prior to 2.0 do not include the action response statuses in their response
     @Test
     void performNodeCommandReindexSolrv1x() throws IOException {
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/index/"));
 
         NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
 
@@ -378,7 +377,7 @@ class SolrRequestExecutorTest {
 
     @Test
     void performNodeCommandPurge() throws IOException {
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/some-index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/some-index/"));
 
         NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
 
@@ -400,7 +399,7 @@ class SolrRequestExecutorTest {
 
     @Test
     void performNodeCommandStatusCode500() throws IOException {
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/index/"));
 
         NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
 
@@ -418,7 +417,7 @@ class SolrRequestExecutorTest {
 
     @Test
     void performNodeCommandFails() throws IOException {
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/index/"));
 
         NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 8L);
 
@@ -440,7 +439,7 @@ class SolrRequestExecutorTest {
 
     @Test
     void targetTransactionCommand() throws IOException {
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://nowhere/solr/some-index/"));
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://nowhere/solr/some-index/"));
         NodeRef.Status nodeRefStatus = randomNodeRefStatus(25L, 10L);
 
         httpClientMock.onGet("http://nowhere/solr/admin/cores?action=reindex&txid=10&wt=json&coreName=some-index")

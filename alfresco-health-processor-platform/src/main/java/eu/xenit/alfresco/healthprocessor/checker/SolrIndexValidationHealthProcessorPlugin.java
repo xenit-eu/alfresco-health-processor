@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr;
+package eu.xenit.alfresco.healthprocessor.checker;
 
 import static eu.xenit.alfresco.healthprocessor.checker.NodeIndexHealthReport.IndexHealthStatus.DUPLICATE;
 import static eu.xenit.alfresco.healthprocessor.checker.NodeIndexHealthReport.IndexHealthStatus.EXCEPTION;
@@ -23,9 +23,7 @@ import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.slf4j.Logger;
 
-import eu.xenit.alfresco.healthprocessor.checker.NodeIndexHealthReport;
 import eu.xenit.alfresco.healthprocessor.checker.NodeIndexHealthReport.IndexHealthStatus;
-import eu.xenit.alfresco.healthprocessor.checker.SubsystemDependantHealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.endpoint.SearchEndpointSelector;
 import eu.xenit.alfresco.healthprocessor.endpoint.solr.SolrEndpoint;
 import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor;

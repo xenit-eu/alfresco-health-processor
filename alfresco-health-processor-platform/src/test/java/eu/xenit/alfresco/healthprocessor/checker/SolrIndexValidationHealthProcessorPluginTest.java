@@ -1,4 +1,4 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr;
+package eu.xenit.alfresco.healthprocessor.checker;
 
 import static eu.xenit.alfresco.healthprocessor.util.SetUtil.set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -7,21 +7,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import eu.xenit.alfresco.healthprocessor.checker.solr.SolrIndexValidationHealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor;
-import eu.xenit.alfresco.healthprocessor.checker.solr.SolrSearchResult;
-import eu.xenit.alfresco.healthprocessor.checker.solr.NodeIndexHealthReport.IndexHealthStatus;
-import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpoint;
-import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpointSelector;
-import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
-import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
-import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -33,6 +25,16 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import eu.xenit.alfresco.healthprocessor.checker.NodeIndexHealthReport.IndexHealthStatus;
+import eu.xenit.alfresco.healthprocessor.endpoint.SearchEndpointSelector;
+import eu.xenit.alfresco.healthprocessor.endpoint.solr.SolrEndpoint;
+import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutorImpl;
+import eu.xenit.alfresco.healthprocessor.executors.SolrSearchResult;
+import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
+import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
+
+@SuppressWarnings("unchecked")
 @ExtendWith(MockitoExtension.class)
 class SolrIndexValidationHealthProcessorPluginTest {
 
@@ -40,22 +42,22 @@ class SolrIndexValidationHealthProcessorPluginTest {
     private NodeService nodeService;
 
     @Mock
-    private SearchEndpointSelector searchEndpointSelector;
+    private SearchEndpointSelector<SolrEndpoint> searchEndpointSelector;
 
     @Mock
-    private SolrRequestExecutor solrRequestExecutor;
+    private SolrRequestExecutorImpl solrRequestExecutor;
 
     private SolrIndexValidationHealthProcessorPlugin healthProcessorPlugin;
 
     @BeforeEach
     void setup() {
-        healthProcessorPlugin = new SolrIndexValidationHealthProcessorPlugin(nodeService, searchEndpointSelector,
+        healthProcessorPlugin = new SolrIndexValidationHealthProcessorPlugin(null, "solr6", nodeService, searchEndpointSelector,
                 solrRequestExecutor);
     }
 
     @Test
     void process_single_endpoint_all_present() throws IOException {
-        SearchEndpoint searchEndpoint = new SearchEndpoint(URI.create("http://empty/"));
+        SolrEndpoint searchEndpoint = new SolrEndpoint(URI.create("http://empty/"));
         when(searchEndpointSelector.getSearchEndpointsForNode(Mockito.any())).thenReturn(
                 Collections.singleton(searchEndpoint));
 
@@ -89,8 +91,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
     @Test
     void process_multiple_endpoints_all_present() throws IOException {
-        SearchEndpoint searchEndpoint1 = new SearchEndpoint(URI.create("http://empty/solr/index1/"));
-        SearchEndpoint searchEndpoint2 = new SearchEndpoint(URI.create("http://empty/solr/index2/"));
+        SolrEndpoint searchEndpoint1 = new SolrEndpoint(URI.create("http://empty/solr/index1/"));
+        SolrEndpoint searchEndpoint2 = new SolrEndpoint(URI.create("http://empty/solr/index2/"));
         when(searchEndpointSelector.getSearchEndpointsForNode(Mockito.any())).thenReturn(
                 set(searchEndpoint1, searchEndpoint2));
 
@@ -128,8 +130,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
     @Test
     void process_multiple_endpoints_some_missing() throws IOException {
-        SearchEndpoint searchEndpoint1 = new SearchEndpoint(URI.create("http://empty/solr/index1/"));
-        SearchEndpoint searchEndpoint2 = new SearchEndpoint(URI.create("http://empty/solr/index2/"));
+        SolrEndpoint searchEndpoint1 = new SolrEndpoint(URI.create("http://empty/solr/index1/"));
+        SolrEndpoint searchEndpoint2 = new SolrEndpoint(URI.create("http://empty/solr/index2/"));
         when(searchEndpointSelector.getSearchEndpointsForNode(Mockito.any())).thenReturn(
                 set(searchEndpoint1, searchEndpoint2));
 
@@ -167,8 +169,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
     @Test
     void process_multiple_endpoints_some_not_indexed() throws IOException {
-        SearchEndpoint searchEndpoint1 = new SearchEndpoint(URI.create("http://empty/solr/index1/"));
-        SearchEndpoint searchEndpoint2 = new SearchEndpoint(URI.create("http://empty/solr/index2/"));
+        SolrEndpoint searchEndpoint1 = new SolrEndpoint(URI.create("http://empty/solr/index1/"));
+        SolrEndpoint searchEndpoint2 = new SolrEndpoint(URI.create("http://empty/solr/index2/"));
         when(searchEndpointSelector.getSearchEndpointsForNode(Mockito.any())).thenReturn(
                 set(searchEndpoint1, searchEndpoint2));
 
@@ -206,8 +208,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
     @Test
     void process_multiple_endpoints_all_not_indexed() throws IOException {
-        SearchEndpoint searchEndpoint1 = new SearchEndpoint(URI.create("http://empty/solr/index1/"));
-        SearchEndpoint searchEndpoint2 = new SearchEndpoint(URI.create("http://empty/solr/index2/"));
+        SolrEndpoint searchEndpoint1 = new SolrEndpoint(URI.create("http://empty/solr/index1/"));
+        SolrEndpoint searchEndpoint2 = new SolrEndpoint(URI.create("http://empty/solr/index2/"));
         when(searchEndpointSelector.getSearchEndpointsForNode(Mockito.any())).thenReturn(
                 set(searchEndpoint1, searchEndpoint2));
 
@@ -245,8 +247,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
     @Test
     void process_multiple_endpoints_some_duplicates() throws IOException {
-        SearchEndpoint searchEndpoint1 = new SearchEndpoint(URI.create("http://empty/solr/index1/"));
-        SearchEndpoint searchEndpoint2 = new SearchEndpoint(URI.create("http://empty/solr/index2/"));
+        SolrEndpoint searchEndpoint1 = new SolrEndpoint(URI.create("http://empty/solr/index1/"));
+        SolrEndpoint searchEndpoint2 = new SolrEndpoint(URI.create("http://empty/solr/index2/"));
         when(searchEndpointSelector.getSearchEndpointsForNode(Mockito.any())).thenReturn(
                 set(searchEndpoint1, searchEndpoint2));
 
@@ -311,8 +313,8 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
     @Test
     void process_multiple_endpoints_exception() throws IOException {
-        SearchEndpoint searchEndpoint1 = new SearchEndpoint(URI.create("http://empty/solr/index1/"));
-        SearchEndpoint searchEndpoint2 = new SearchEndpoint(URI.create("http://empty/solr/index2/"));
+        SolrEndpoint searchEndpoint1 = new SolrEndpoint(URI.create("http://empty/solr/index1/"));
+        SolrEndpoint searchEndpoint2 = new SolrEndpoint(URI.create("http://empty/solr/index2/"));
         when(searchEndpointSelector.getSearchEndpointsForNode(Mockito.any())).thenReturn(
                 set(searchEndpoint1, searchEndpoint2));
 
@@ -349,7 +351,7 @@ class SolrIndexValidationHealthProcessorPluginTest {
 
     @Test
     void process_single_endpoint_http_error() throws IOException {
-        SearchEndpoint searchEndpoint = new SearchEndpoint(URI.create("http://empty/solr/index/"));
+        SolrEndpoint searchEndpoint = new SolrEndpoint(URI.create("http://empty/solr/index/"));
         when(searchEndpointSelector.getSearchEndpointsForNode(Mockito.any())).thenReturn(set(searchEndpoint));
 
         when(nodeService.getNodeStatus(Mockito.any())).then(invocation -> {

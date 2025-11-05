@@ -1,11 +1,12 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr.endpoint;
+package eu.xenit.alfresco.healthprocessor.filter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URI;
+
 import org.junit.jupiter.api.Test;
 
-import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpoint;
+import eu.xenit.alfresco.healthprocessor.endpoint.SearchEndpoint;
 
 class SearchEndpointTest {
 

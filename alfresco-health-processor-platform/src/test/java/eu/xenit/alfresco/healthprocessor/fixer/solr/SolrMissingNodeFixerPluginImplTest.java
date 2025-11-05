@@ -9,45 +9,50 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import eu.xenit.alfresco.healthprocessor.checker.solr.NodeIndexHealthReport;
-import eu.xenit.alfresco.healthprocessor.checker.solr.SolrIndexValidationHealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor;
-import eu.xenit.alfresco.healthprocessor.checker.solr.NodeIndexHealthReport.IndexHealthStatus;
-import eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor.SolrActionResponse;
-import eu.xenit.alfresco.healthprocessor.checker.solr.SolrRequestExecutor.SolrNodeCommand;
-import eu.xenit.alfresco.healthprocessor.checker.solr.endpoint.SearchEndpoint;
-import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
-import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
-import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
-import eu.xenit.alfresco.healthprocessor.util.TestReports;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import eu.xenit.alfresco.healthprocessor.checker.NodeIndexHealthReport;
+import eu.xenit.alfresco.healthprocessor.checker.NodeIndexHealthReport.IndexHealthStatus;
+import eu.xenit.alfresco.healthprocessor.checker.SolrIndexValidationHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.endpoint.solr.SolrEndpoint;
+import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor.SolrActionResponse;
+import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor.SolrNodeCommand;
+import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutorImpl;
+import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
+import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
+import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import eu.xenit.alfresco.healthprocessor.util.TestReports;
+
 class SolrMissingNodeFixerPluginImplTest {
 
-    private SolrRequestExecutor executor;
+    private SolrRequestExecutorImpl executor;
     private SolrMissingNodeFixerPluginImpl missingNodeFixerPlugin;
 
     @BeforeEach
     void setup() {
-        executor = mock(SolrRequestExecutor.class);
-        missingNodeFixerPlugin = new SolrMissingNodeFixerPluginImpl(executor);
+        executor = mock(SolrRequestExecutorImpl.class);
+        SwitchableApplicationContextFactory searchSubsystem = mock(SwitchableApplicationContextFactory.class);
+        when(searchSubsystem.getCurrentSourceBeanName()).thenReturn("solr6");
+        missingNodeFixerPlugin = new SolrMissingNodeFixerPluginImpl(searchSubsystem, "solr6", executor);
     }
 
     @Test
     void fix_missing_node() throws IOException {
         NodeHealthReport healthReport = TestReports.unhealthy();
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://empty/solr/core1/"));
-        NodeIndexHealthReport nodeIndexHealthReport = new NodeIndexHealthReport(
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://empty/solr/core1/"));
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 new Status(123L, healthReport.getNodeRef(), "1", 1L, false),
                 endpoint
@@ -73,15 +78,15 @@ class SolrMissingNodeFixerPluginImplTest {
     @Test
     void fix_missing_nodes_multiple_endpoints() throws IOException {
         NodeHealthReport healthReport = TestReports.unhealthy();
-        SearchEndpoint endpoint1 = new SearchEndpoint(URI.create("http://empty/solr/core1/"));
-        SearchEndpoint endpoint2 = new SearchEndpoint(URI.create("http://empty/solr/core2/"));
+        SolrEndpoint endpoint1 = new SolrEndpoint(URI.create("http://empty/solr/core1/"));
+        SolrEndpoint endpoint2 = new SolrEndpoint(URI.create("http://empty/solr/core2/"));
         NodeRef.Status nodeRefStatus = new Status(123L, healthReport.getNodeRef(), "1", 1L, false);
-        NodeIndexHealthReport nodeIndexHealthReport1 = new NodeIndexHealthReport(
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport1 = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 nodeRefStatus,
                 endpoint1
         );
-        NodeIndexHealthReport nodeIndexHealthReport2 = new NodeIndexHealthReport(
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport2 = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_INDEXED,
                 nodeRefStatus,
                 endpoint2
@@ -107,15 +112,15 @@ class SolrMissingNodeFixerPluginImplTest {
     void fix_multiple_missing_nodes() throws IOException {
         NodeHealthReport healthReport1 = TestReports.unhealthy();
         NodeHealthReport healthReport2 = TestReports.unhealthy();
-        SearchEndpoint endpoint1 = new SearchEndpoint(URI.create("http://empty/solr/core1/"));
+        SolrEndpoint endpoint1 = new SolrEndpoint(URI.create("http://empty/solr/core1/"));
         NodeRef.Status nodeRefStatus1 = new Status(123L, healthReport1.getNodeRef(), "1", 1L, false);
         NodeRef.Status nodeRefStatus2 = new Status(1234L, healthReport2.getNodeRef(), "1", 1L, false);
-        NodeIndexHealthReport nodeIndexHealthReport1 = new NodeIndexHealthReport(
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport1 = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 nodeRefStatus1,
                 endpoint1
         );
-        NodeIndexHealthReport nodeIndexHealthReport2 = new NodeIndexHealthReport(
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport2 = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 nodeRefStatus2,
                 endpoint1
@@ -146,8 +151,8 @@ class SolrMissingNodeFixerPluginImplTest {
     @Test
     void fix_missing_nodes_fails_reindex() throws IOException {
         NodeHealthReport healthReport = TestReports.unhealthy();
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://empty/solr/core1/"));
-        NodeIndexHealthReport nodeIndexHealthReport = new NodeIndexHealthReport(
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://empty/solr/core1/"));
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 new Status(123L, healthReport.getNodeRef(), "1", 1L, false),
                 endpoint
@@ -170,8 +175,8 @@ class SolrMissingNodeFixerPluginImplTest {
     @Test
     void fix_missing_nodes_throws_reindex() throws IOException {
         NodeHealthReport healthReport = TestReports.unhealthy();
-        SearchEndpoint endpoint = new SearchEndpoint(URI.create("http://empty/solr/core1/"));
-        NodeIndexHealthReport nodeIndexHealthReport = new NodeIndexHealthReport(
+        SolrEndpoint endpoint = new SolrEndpoint(URI.create("http://empty/solr/core1/"));
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 new Status(123L, healthReport.getNodeRef(), "1", 1L, false),
                 endpoint
@@ -195,22 +200,22 @@ class SolrMissingNodeFixerPluginImplTest {
         NodeHealthReport healthReport1 = TestReports.unhealthy();
         NodeHealthReport healthReport2 = TestReports.unhealthy();
         NodeHealthReport healthReport3 = TestReports.unhealthy();
-        SearchEndpoint endpoint1 = new SearchEndpoint(URI.create("http://empty/solr/core1/"));
+        SolrEndpoint endpoint1 = new SolrEndpoint(URI.create("http://empty/solr/core1/"));
         NodeRef.Status nodeRefStatus1 = new Status(123L, healthReport1.getNodeRef(), "1", 1L, false);
         NodeRef.Status nodeRefStatus2 = new Status(1234L, healthReport2.getNodeRef(), "1", 1L, false);
         NodeRef.Status nodeRefStatus3 = new Status(1234L, healthReport3.getNodeRef(), "1", 2L, false);
 
-        NodeIndexHealthReport nodeIndexHealthReport1 = new NodeIndexHealthReport(
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport1 = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 nodeRefStatus1,
                 endpoint1
         );
-        NodeIndexHealthReport nodeIndexHealthReport2 = new NodeIndexHealthReport(
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport2 = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 nodeRefStatus2,
                 endpoint1
         );
-        NodeIndexHealthReport nodeIndexHealthReport3 = new NodeIndexHealthReport(
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport3 = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 nodeRefStatus3,
                 endpoint1
@@ -245,15 +250,15 @@ class SolrMissingNodeFixerPluginImplTest {
     void reindex_retried_after_fail() throws IOException{
         NodeHealthReport healthReport1 = TestReports.unhealthy();
         NodeHealthReport healthReport2 = TestReports.unhealthy();
-        SearchEndpoint endpoint1 = new SearchEndpoint(URI.create("http://empty/solr/core1/"));
+        SolrEndpoint endpoint1 = new SolrEndpoint(URI.create("http://empty/solr/core1/"));
         NodeRef.Status nodeRefStatus1 = new Status(123L, healthReport1.getNodeRef(), "1", 1L, false);
         NodeRef.Status nodeRefStatus2 = new Status(1234L, healthReport2.getNodeRef(), "1", 1L, false);
-        NodeIndexHealthReport nodeIndexHealthReport1 = new NodeIndexHealthReport(
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport1 = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 nodeRefStatus1,
                 endpoint1
         );
-        NodeIndexHealthReport nodeIndexHealthReport2 = new NodeIndexHealthReport(
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport2 = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 nodeRefStatus2,
                 endpoint1
@@ -285,15 +290,15 @@ class SolrMissingNodeFixerPluginImplTest {
     @Test
     void fix_same_transaction_multiple_endpoints() throws IOException {
         NodeHealthReport healthReport = TestReports.unhealthy();
-        SearchEndpoint endpoint1 = new SearchEndpoint(URI.create("http://empty/solr/core1/"));
-        SearchEndpoint endpoint2 = new SearchEndpoint(URI.create("http://empty/solr/core2/"));
+        SolrEndpoint endpoint1 = new SolrEndpoint(URI.create("http://empty/solr/core1/"));
+        SolrEndpoint endpoint2 = new SolrEndpoint(URI.create("http://empty/solr/core2/"));
         NodeRef.Status nodeRefStatus = new Status(123L, healthReport.getNodeRef(), "1", 1L, false);
-        NodeIndexHealthReport nodeIndexHealthReport1 = new NodeIndexHealthReport(
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport1 = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 nodeRefStatus,
                 endpoint1
         );
-        NodeIndexHealthReport nodeIndexHealthReport2 = new NodeIndexHealthReport(
+        NodeIndexHealthReport<SolrEndpoint> nodeIndexHealthReport2 = new NodeIndexHealthReport<>(
                 IndexHealthStatus.NOT_FOUND,
                 nodeRefStatus,
                 endpoint2

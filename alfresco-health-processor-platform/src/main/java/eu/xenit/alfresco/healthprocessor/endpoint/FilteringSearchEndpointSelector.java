@@ -1,12 +1,10 @@
-package eu.xenit.alfresco.healthprocessor.checker.solr.filter;
+package eu.xenit.alfresco.healthprocessor.endpoint;
 
 import java.util.Collections;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 
-import eu.xenit.alfresco.healthprocessor.endpoint.SearchEndpoint;
-import eu.xenit.alfresco.healthprocessor.endpoint.SearchEndpointSelector;
 import eu.xenit.alfresco.healthprocessor.filter.NodeFilter;
 import lombok.AllArgsConstructor;
 import lombok.ToString;
@@ -18,15 +16,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 @ToString
-public class FilteringSearchEndpointSelector implements SearchEndpointSelector<SearchEndpoint> {
+public class FilteringSearchEndpointSelector<T extends SearchEndpoint> implements SearchEndpointSelector<T>
+{
 
-    private final SearchEndpointSelector<SearchEndpoint> searchEndpointSelector;
+    private final SearchEndpointSelector<T> searchEndpointSelector;
+
     private final NodeFilter filter;
 
-
     @Override
-    public Set<SearchEndpoint> getSearchEndpointsForNode(Status nodeRef) {
-        if (filter.isIgnored(nodeRef)) {
+    public Set<T> getSearchEndpointsForNode(Status nodeRef)
+    {
+        if (filter.isIgnored(nodeRef))
+        {
             log.trace("Node {} is ignored by a filter.", nodeRef.getNodeRef());
 
             return Collections.emptySet();
