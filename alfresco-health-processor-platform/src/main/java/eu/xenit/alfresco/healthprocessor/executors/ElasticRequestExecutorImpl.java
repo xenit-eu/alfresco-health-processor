@@ -82,14 +82,17 @@ public class ElasticRequestExecutorImpl implements ElasticRequestExecutor
 
                     if (lastMetadataUpdate <= txn.getCommitTimeMs())
                     {
+                        log.trace("Node {} is indexed but its last index update may not reflect the most recent state", expectedStatus);
                         elasticResult.getOutdated().add(expectedStatus);
                     }
                     else if (expectPathsIndexed && !source.has("PATH"))
                     {
+                        log.trace("Node {} is indexed but contains no PATH field", expectedStatus);
                         elasticResult.getPathMissing().add(expectedStatus);
                     }
                     else
                     {
+                        log.trace("Node {} is correctly indexed", expectedStatus);
                         elasticResult.getFound().add(expectedStatus);
                     }
                 }
