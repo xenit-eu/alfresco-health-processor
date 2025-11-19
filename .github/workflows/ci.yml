@@ -3,6 +3,10 @@ name: CI
 on:
   push:
   pull_request:
+env:
+  GRADLE_OPTS: >-
+    -Dorg.gradle.project.org.alfresco.maven.nexus.username=${{ secrets.ALFRESCO_NEXUS_USERNAME }} 
+    -Dorg.gradle.project.org.alfresco.maven.nexus.password=${{ secrets.ALFRESCO_NEXUS_PASSWORD }}
 
 jobs:
   test:

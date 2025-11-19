@@ -76,8 +76,6 @@ def copyPropertyValueIfExists(sourcePropertyName, targetPropertyName) {
 allprojects { Project p ->
     group = 'eu.xenit.alfresco'
 
-    // It is not possible to set properties with a dot via GitHub Actions env variables, therefore we introduce support
-    // for a non-dotted-equivalent
     copyPropertyValueIfExists('alfresco_nexus_username', 'org.alfresco.maven.nexus.username')
     copyPropertyValueIfExists('alfresco_nexus_password', 'org.alfresco.maven.nexus.password')
     copyPropertyValueIfExists('xenit_docker_registry_url', 'eu.xenit.docker.registry.url')
@@ -96,8 +94,8 @@ allprojects { Project p ->
             maven {
                 url 'https://artifacts.alfresco.com/nexus/content/groups/private'
                 credentials {
-                    username project.property('org.alfresco.maven.nexus.username')
-                    password project.property('org.alfresco.maven.nexus.password')
+                    username rootProject.property('org.alfresco.maven.nexus.username')
+                    password rootProject.property('org.alfresco.maven.nexus.password')
                 }
             }
         }
