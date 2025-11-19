@@ -31,16 +31,13 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
-        run: ./gradlew aggregateJacocoReport sonarqube
-      - name: Javadoc
-        run: ./gradlew javadoc
+        run: ./gradlew aggregateJacocoReport sonar --stacktrace
   integration-test:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' || startsWith(github.ref, 'refs/tags/') }}
     strategy:
       matrix:
-        flavour: [ "community" ]
-        version: [ "231" ]
+        edition: [ "community-231", "enterprise-251" ]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,13 +47,13 @@ jobs:
           java-version: 17
           distribution: temurin
       - name: Test
-        run: ./gradlew :integration-tests:alfresco-${{ matrix.flavour }}-${{ matrix.version }}:integrationTest -Prandom_ports=true
+        run: ./gradlew :integration-tests:alfresco-${{ matrix.edition }}:integrationTest -Prandom_ports=true
       - name: Upload reports
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: reports-integration-test-${{ matrix.flavour }}-${{ matrix.version }}
-          path: integration-tests/alfresco-${{ matrix.flavour }}-${{ matrix.version }}/build/reports
+          name: reports-integration-test-${{ matrix.edition }}
+          path: integration-tests/alfresco-${{ matrix.edition }}/build/reports
   publish:
     needs: [test, integration-test]
     runs-on: ubuntu-latest
