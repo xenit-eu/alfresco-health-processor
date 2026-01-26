@@ -115,14 +115,14 @@ services:
       FILE_STORE_URL: "http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file"
 
   shared-file-store:
-    image: alfresco/alfresco-shared-file-store:4.2.1
+    image: quay.io/alfresco/alfresco-shared-file-store:4.2.1
     environment:
       JAVA_OPTS: " -Xms256m -Xmx512m"
       scheduler.content.age.millis: 86400000
       scheduler.cleanup.interval: 86400000
 
   transform-router:
-    image: alfresco/alfresco-transform-router:4.2.1
+    image: quay.io/alfresco/alfresco-transform-router:4.2.1
     environment:
       JAVA_OPTS: " -Xms256m -Xmx512m"
       ACTIVEMQ_URL: "nio://activemq:61616"
@@ -139,7 +139,7 @@ services:
       ES_JAVA_OPTS: "-Xms750m -Xmx750m"
 
   search:
-    image: alfresco/alfresco-elasticsearch-live-indexing:5.1.1.1
+    image: quay.io/alfresco/alfresco-elasticsearch-live-indexing:5.1.1.1
     environment:
       ALFRESCO_ACCEPTED_CONTENT_MEDIA_TYPES_CACHE_BASE_URL: http://transform-core-aio:8090/transform/config
       ALFRESCO_SHAREDFILESTORE_BASEURL: http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file/
