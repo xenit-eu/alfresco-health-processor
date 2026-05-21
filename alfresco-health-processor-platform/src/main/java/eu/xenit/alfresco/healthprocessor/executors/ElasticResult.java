@@ -37,7 +37,7 @@ public class ElasticResult
     /**
      * Nodes that have been found but should not have been in the index
      */
-    Set<NodeRef.Status> superflous;
+    Set<NodeRef.Status> superfluous;
 
     /**
      * Nodes that were expected to be indexed, but were not found in the index

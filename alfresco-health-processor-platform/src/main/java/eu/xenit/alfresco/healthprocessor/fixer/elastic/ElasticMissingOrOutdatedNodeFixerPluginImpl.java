@@ -144,7 +144,7 @@ public class ElasticMissingOrOutdatedNodeFixerPluginImpl extends AbstractElastic
         }
         for (Entry<Status, Pair<NodeHealthReport, NodeIndexHealthReport<ElasticEndpoint>>> entry : hrByStatus.entrySet())
         {
-            fixReports.add(new NodeFixReport(NodeFixStatus.SUCCEEDED, entry.getValue().getFirst(), "Event to trigger reindex sent"));
+            fixReports.add(new NodeFixReport(NodeFixStatus.SUCCEEDED, entry.getValue().getFirst(), "Reindex event sent (not yet verified)"));
         }
         return fixReports;
     }
@@ -235,7 +235,7 @@ public class ElasticMissingOrOutdatedNodeFixerPluginImpl extends AbstractElastic
 
                 checkedParents.addAll(parents.keySet());
                 checkResult.getFound().forEach(irrelevantParentStatusConsumer);
-                checkResult.getSuperflous().forEach(irrelevantParentStatusConsumer);
+                checkResult.getSuperfluous().forEach(irrelevantParentStatusConsumer);
                 checkResult.getMissing().forEach(s -> relevantParentStatusConsumer.accept(s, IndexHealthStatus.NOT_FOUND));
                 checkResult.getOutdated().forEach(s -> relevantParentStatusConsumer.accept(s, IndexHealthStatus.FOUND_OUTDATED));
                 checkResult.getPathMissing().forEach(s -> relevantParentStatusConsumer.accept(s, IndexHealthStatus.FOUND_PATH_MISSING));
@@ -272,7 +272,7 @@ public class ElasticMissingOrOutdatedNodeFixerPluginImpl extends AbstractElastic
                 // verifiedFixed.contains only works because result of doIndex is guaranteed to use input instances
                 // so contains works on object identity here (Status has no equals/hashCode)
                 fixReports.add(new NodeFixReport(NodeFixStatus.SUCCEEDED, hrByNodeRef.remove(n).getFirst(),
-                        verifiedFixed.contains(status) ? "Reindexed (verified)" : "Event to trigger reindex sent"));
+                        verifiedFixed.contains(status) ? "Reindexed (verified)" : "Reindex event sent (not yet verified)"));
                 if (childrenByParent.containsKey(n))
                 {
                     childrenByParent.get(n).stream().forEach(c -> parentsByChild.get(c).remove(n));

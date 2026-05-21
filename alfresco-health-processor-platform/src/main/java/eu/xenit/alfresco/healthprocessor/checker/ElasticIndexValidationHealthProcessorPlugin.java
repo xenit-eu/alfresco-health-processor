@@ -124,7 +124,7 @@ public class ElasticIndexValidationHealthProcessorPlugin extends SubsystemDepend
                 searchResult.getMissing().stream().forEach(nrs -> processor.accept(nrs, NOT_FOUND));
                 searchResult.getPathMissing().stream().forEach(nrs -> processor.accept(nrs, FOUND_PATH_MISSING));
                 searchResult.getOutdated().stream().forEach(nrs -> processor.accept(nrs, FOUND_OUTDATED));
-                searchResult.getSuperflous().stream().forEach(nrs -> processor.accept(nrs, FOUND_UNDELETED));
+                searchResult.getSuperfluous().stream().forEach(nrs -> processor.accept(nrs, FOUND_UNDELETED));
 
                 expectedNodeRefStatuses.stream().filter(Predicate.not(processedStatuses::contains))
                         .forEach(nrs -> processor.accept(nrs, NOT_INDEX_RELEVANT));

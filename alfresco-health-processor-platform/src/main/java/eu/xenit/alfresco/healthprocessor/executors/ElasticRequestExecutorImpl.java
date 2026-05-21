@@ -64,6 +64,11 @@ public class ElasticRequestExecutorImpl implements ElasticRequestExecutor
             String id = o.path("_id").asText();
             boolean found = o.path("found").asBoolean();
             Status expectedStatus = statusById.remove(id);
+            if (expectedStatus == null)
+            {
+                log.warn("Elasticsearch returned document id '{}' that was not in the request; skipping", id);
+                return;
+            }
             boolean expectedInIndex = !expectedStatus.isDeleted();
             if (expectedInIndex)
             {
@@ -80,7 +85,7 @@ public class ElasticRequestExecutorImpl implements ElasticRequestExecutor
                     long lastMetadataUpdate = source.path("METADATA_INDEXING_LAST_UPDATE").asLong();
                     Transaction txn = txnById.computeIfAbsent(expectedStatus.getDbTxnId(), nodeDAO::getTxnById);
 
-                    if (lastMetadataUpdate <= txn.getCommitTimeMs())
+                    if (lastMetadataUpdate < txn.getCommitTimeMs())
                     {
                         log.trace("Node {} is indexed but its last index update may not reflect the most recent state", expectedStatus);
                         elasticResult.getOutdated().add(expectedStatus);
@@ -104,7 +109,7 @@ public class ElasticRequestExecutorImpl implements ElasticRequestExecutor
                 else if (isAlive)
                 {
                     log.trace("Node {} was deleted but is still in index and marked as alive", expectedStatus);
-                    elasticResult.getSuperflous().add(expectedStatus);
+                    elasticResult.getSuperfluous().add(expectedStatus);
                 }
             }
             else if (expectedInIndex)
@@ -154,7 +159,7 @@ public class ElasticRequestExecutorImpl implements ElasticRequestExecutor
     {
         ActionResponse result = null;
 
-        log.debug("Deleting node inde entry for {} on endpoint {}", id, endpoint);
+        log.debug("Deleting node index entry for {} on endpoint {}", id, endpoint);
         HttpDelete deleteRequest = new HttpDelete(endpoint.getBaseUri().resolve("./_doc/" + id));
         try
         {
