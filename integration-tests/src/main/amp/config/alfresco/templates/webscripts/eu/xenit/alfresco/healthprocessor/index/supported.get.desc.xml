@@ -1,0 +1,8 @@
+<webscript>
+    <shortname>Health Processor supported index subsystem check webscript</shortname>
+    <description>For integration testing purposes</description>
+    <url>/xenit/healthprocessor/index/supported</url>
+    <authentication>user</authentication>
+    <format default="json"/>
+    <family>Health Processor Test</family>
+</webscript>

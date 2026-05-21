@@ -38,9 +38,49 @@
         </constructor-arg>
     </bean>
 
+    <!-- need to duplicate search tracking component - elastic does not expose any if active -->
+    <bean id="search.trackingComponent" class="org.alfresco.repo.solr.SOLRTrackingComponentImpl" init-method="init">
+        <property name="permissionService" ref="permissionService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="ownableService" ref="ownableService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="searchDAO" ref="searchDAO" />
+        <property name="dictionaryDAO" ref="dictionaryDAO" />
+        <property name="aclDAO" ref="aclDAO" />
+        <property name="enabled" value="true" />
+        <property name="typeIndexFilter" ref="search.TypeIndexFilter" />
+        <property name="aspectIndexFilter" ref="search.AspectIndexFilter" />
+        <property name="namespaceService" ref="namespaceService" />
+    </bean>
+    
+    <bean id="search.abstractIndexFilter" abstract="true" init-method="init" >
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+    </bean>
+    
+    <bean id="search.TypeIndexFilter" class="org.alfresco.repo.search.TypeIndexFilter" parent="search.abstractIndexFilter">
+        <property name="ignorePathsForSpecificTypes" value="${search.solrTrackingSupport.ignorePathsForSpecificTypes}" />
+        <property name="typesForIgnoringPaths">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}person</value>
+                <value>{http://www.alfresco.org/model/application/1.0}configurations</value>
+                <value>{http://www.alfresco.org/model/content/1.0}authorityContainer</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="search.AspectIndexFilter" class="org.alfresco.repo.search.AspectIndexFilter" parent="search.abstractIndexFilter">
+        <property name="ignorePathsForSpecificAspects" value="${search.solrTrackingSupport.ignorePathsForSpecificAspects}" />
+        <property name="aspectsForIgnoringPaths">
+            <list></list>
+        </property>
+    </bean>
+
     <bean id="eu.xenit.alfresco.healthprocessor.indexing.TrackingComponent"
           class="eu.xenit.alfresco.healthprocessor.indexing.Alfresco7TrackingComponent">
-        <constructor-arg name="trackingComponent" ref="searchTrackingComponent" />
+        <constructor-arg name="trackingComponent" ref="search.trackingComponent" />
     </bean>
 
     <bean id="eu.xenit.alfresco.healthprocessor.util.AlfrescoAttributeStore"

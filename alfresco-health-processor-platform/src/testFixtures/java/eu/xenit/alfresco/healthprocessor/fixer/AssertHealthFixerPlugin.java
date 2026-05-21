@@ -6,9 +6,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.fixer.api.HealthFixerPlugin;
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import java.util.Collections;
 import java.util.LinkedList;

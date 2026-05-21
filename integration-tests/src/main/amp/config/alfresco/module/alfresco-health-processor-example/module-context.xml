@@ -8,13 +8,46 @@
         Proxy required to make webscript available in main Spring context
     -->
 
-    <bean id="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector"
+    <bean id="eu.xenit.alfresco.healthprocessor.endpoint.solr.SearchEndpointSelector"
           class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
         <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>
-        <property name="sourceBeanName" value="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector"/>
+        <property name="sourceBeanName" value="eu.xenit.alfresco.healthprocessor.endpoint.solr.SearchEndpointSelector"/>
         <property name="interfaces">
             <list>
-                <value>eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector</value>
+                <value>eu.xenit.alfresco.healthprocessor.endpoint.SearchEndpointSelector</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor"
+          class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>
+        <property name="sourceBeanName" value="eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor"/>
+        <property name="interfaces">
+            <list>
+                <value>eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.endpoint.elastic.SearchEndpointSelector"
+          class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>
+        <property name="sourceBeanName" value="eu.xenit.alfresco.healthprocessor.endpoint.elastic.SearchEndpointSelector"/>
+        <property name="interfaces">
+            <list>
+                <value>eu.xenit.alfresco.healthprocessor.endpoint.SearchEndpointSelector</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="eu.xenit.alfresco.healthprocessor.executors.ElasticRequestExecutor"
+          class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>
+        <property name="sourceBeanName" value="eu.xenit.alfresco.healthprocessor.executors.ElasticRequestExecutor"/>
+        <property name="interfaces">
+            <list>
+                <value>eu.xenit.alfresco.healthprocessor.executors.ElasticRequestExecutor</value>
             </list>
         </property>
     </bean>
@@ -30,8 +63,19 @@
         </property>
     </bean>
 
+    <bean id="eu.xenit.alfresco.healthprocessor.fixer.elastic.ElasticMissingOrOutdatedNodeFixerPlugin"
+          class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory" ref="HealthProcessor"/>
+        <property name="sourceBeanName" value="eu.xenit.alfresco.healthprocessor.fixer.elastic.ElasticMissingOrOutdatedNodeFixerPlugin"/>
+        <property name="interfaces">
+            <list>
+                <value>eu.xenit.alfresco.healthprocessor.fixer.elastic.ElasticMissingOrOutdatedNodeFixerPlugin</value>
+            </list>
+        </property>
+    </bean>
+
     <bean id="nodeFinder"
-          class="eu.xenit.alfresco.healthprocessor.solr.NodeFinder">
+          class="eu.xenit.alfresco.healthprocessor.index.NodeFinder">
         <constructor-arg name="nodeService" ref="NodeService" />
         <constructor-arg name="searchService" ref="SearchService" />
         <constructor-arg name="namespaceService" ref="NamespaceService" />
@@ -41,6 +85,29 @@
           class="eu.xenit.alfresco.healthprocessor.example.ExampleHealthProcessorPlugin">
         <constructor-arg name="nodeService" ref="NodeService"/>
         <property name="enabled" value="true"/>
+    </bean>
+
+    <bean id="webscript.eu.xenit.alfresco.healthprocessor.index.check.get"
+          class="eu.xenit.alfresco.healthprocessor.index.IndexCheckNodeWebScript"
+          parent="webscript">
+        <constructor-arg name="nodeFinder" ref="nodeFinder" />
+    </bean>
+
+    <bean id="webscript.eu.xenit.alfresco.healthprocessor.index.supported.get"
+          class="eu.xenit.alfresco.healthprocessor.index.IndexSupportedWebScript"
+          parent="webscript">
+        <constructor-arg name="potentialIndexSubsystemNames">
+            <set>
+                <value>solr6</value>
+                <value>elasticsearch</value>
+            </set>
+        </constructor-arg>
+    </bean>
+
+    <bean id="webscript.eu.xenit.alfresco.healthprocessor.index.configure.get"
+          class="eu.xenit.alfresco.healthprocessor.index.IndexConfigureNodeWebScript"
+          parent="webscript">
+        <constructor-arg name="searchSubsystem" ref="Search" />
     </bean>
 
     <bean id="webscript.eu.xenit.alfresco.healthprocessor.example.extensions.info.get"
@@ -53,19 +120,28 @@
           class="eu.xenit.alfresco.healthprocessor.solr.SolrPurgeNodeWebScript"
           parent="webscript">
         <constructor-arg name="nodeFinder" ref="nodeFinder" />
-        <constructor-arg name="endpointSelector" ref="eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector" />
-        <constructor-arg name="globalProperties" ref="global-properties" />
-    </bean>
-
-    <bean id="webscript.eu.xenit.alfresco.healthprocessor.solr.check.get"
-          class="eu.xenit.alfresco.healthprocessor.solr.SolrCheckNodeWebScript"
-          parent="webscript">
-        <constructor-arg name="nodeFinder" ref="nodeFinder" />
+        <constructor-arg name="endpointSelector" ref="eu.xenit.alfresco.healthprocessor.endpoint.solr.SearchEndpointSelector" />
+        <constructor-arg name="solrRequestExecutor" ref="eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor" />
     </bean>
 
     <bean id="webscript.eu.xenit.alfresco.healthprocessor.solr.configure.get"
           class="eu.xenit.alfresco.healthprocessor.solr.SolrConfigureIndexNodeFixerPlugin"
-          parent="webscript" autowire="constructor">
+          parent="webscript">
+        <constructor-arg name="fixerPlugin" ref="eu.xenit.alfresco.healthprocessor.fixer.solr.SolrMissingNodeFixerPlugin" />
+    </bean>
+
+    <bean id="webscript.eu.xenit.alfresco.healthprocessor.elastic.purge.get"
+          class="eu.xenit.alfresco.healthprocessor.elastic.ElasticPurgeNodeWebScript"
+          parent="webscript">
+        <constructor-arg name="nodeFinder" ref="nodeFinder" />
+        <constructor-arg name="endpointSelector" ref="eu.xenit.alfresco.healthprocessor.endpoint.elastic.SearchEndpointSelector" />
+        <constructor-arg name="elasticRequestExecutor" ref="eu.xenit.alfresco.healthprocessor.executors.ElasticRequestExecutor" />
+    </bean>
+
+    <bean id="webscript.eu.xenit.alfresco.healthprocessor.elastic.configure.get"
+          class="eu.xenit.alfresco.healthprocessor.elastic.ElasticConfigureIndexNodeFixerPlugin"
+          parent="webscript">
+        <constructor-arg name="fixerPlugin" ref="eu.xenit.alfresco.healthprocessor.fixer.elastic.ElasticMissingOrOutdatedNodeFixerPlugin" />
     </bean>
 
 </beans>

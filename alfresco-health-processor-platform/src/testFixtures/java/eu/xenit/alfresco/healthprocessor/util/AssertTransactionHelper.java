@@ -1,7 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -11,6 +10,7 @@ import static org.hamcrest.Matchers.nullValue;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Supplier;
+
 import org.alfresco.util.Pair;
 
 

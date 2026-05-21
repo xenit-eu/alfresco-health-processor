@@ -1,9 +1,10 @@
 package eu.xenit.alfresco.healthprocessor.processing;
 
 import com.google.common.util.concurrent.RateLimiter;
+
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.fixer.NodeFixService;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.ReportsService;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
@@ -33,7 +34,6 @@ public class ProcessorService {
     private final StateCache stateCache;
     private final NodeFixService fixService;
 
-    @SuppressWarnings("UnstableApiUsage")
     @Nullable
     private RateLimiter rateLimiter;
 

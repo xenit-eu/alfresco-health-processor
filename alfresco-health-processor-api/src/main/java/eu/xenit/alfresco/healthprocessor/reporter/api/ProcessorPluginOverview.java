@@ -1,9 +1,10 @@
 package eu.xenit.alfresco.healthprocessor.reporter.api;
 
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
+
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 import lombok.Value;
 
 /**

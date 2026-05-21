@@ -6,14 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.SslHttpClientFactory;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpointSelector;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.http.client.HttpClient;
-import org.springframework.extensions.webscripts.AbstractWebScript;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -21,23 +13,34 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
+
+import org.alfresco.encryption.AlfrescoKeyStore;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.http.client.HttpClient;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
+import eu.xenit.alfresco.healthprocessor.endpoint.SearchEndpointSelector;
+import eu.xenit.alfresco.healthprocessor.endpoint.solr.SolrEndpoint;
+import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor;
+import eu.xenit.alfresco.healthprocessor.index.NodeFinder;
 
 public abstract class SolrNodeHandlerWebScript extends AbstractWebScript {
 
     private final NodeFinder nodeFinder;
 
-    private final SearchEndpointSelector endpointSelector;
+    private final SearchEndpointSelector<SolrEndpoint> endpointSelector;
 
-    protected final HttpClient httpClient;
+    protected final SolrRequestExecutor solrRequestExecutor;
 
     protected SolrNodeHandlerWebScript(NodeFinder nodeFinder,
-                                       SearchEndpointSelector endpointSelector,
-                                       Properties globalProperties) {
+                                       SearchEndpointSelector<SolrEndpoint> endpointSelector,
+                                       SolrRequestExecutor solrRequestExecutor) {
         this.nodeFinder = nodeFinder;
         this.endpointSelector = endpointSelector;
-        this.httpClient = SslHttpClientFactory.setupHttpClient(globalProperties);
+        this.solrRequestExecutor = solrRequestExecutor;
     }
 
     @Override
@@ -46,9 +49,9 @@ public abstract class SolrNodeHandlerWebScript extends AbstractWebScript {
 
         Map<NodeRef, List<JsonNode>> results = new HashMap<>();
         for (NodeRef.Status nodeRef : nodesToPurge) {
-            Set<SearchEndpoint> endpoints = endpointSelector.getSearchEndpointsForNode(nodeRef);
+            Set<SolrEndpoint> endpoints = endpointSelector.getSearchEndpointsForNode(nodeRef);
 
-            for (SearchEndpoint endpoint : endpoints) {
+            for (SolrEndpoint endpoint : endpoints) {
                 try {
                     JsonNode result = handleNode(endpoint, nodeRef);
                     results.computeIfAbsent(nodeRef.getNodeRef(), nR -> new ArrayList<>()).add(result);
@@ -75,6 +78,6 @@ public abstract class SolrNodeHandlerWebScript extends AbstractWebScript {
         return objectNode;
     }
 
-    protected abstract JsonNode handleNode(SearchEndpoint endpoint, NodeRef.Status nodeStatus) throws IOException;
+    protected abstract JsonNode handleNode(SolrEndpoint endpoint, NodeRef.Status nodeStatus) throws IOException;
 
 }

@@ -1,31 +1,37 @@
 package eu.xenit.alfresco.healthprocessor.fixer.solr;
 
-import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
-import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport.IndexHealthStatus;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrNodeCommand;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.endpoint.SearchEndpoint;
-import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
-import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
-import org.alfresco.service.cmr.repository.NodeRef;
-
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
+import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
+import org.alfresco.service.cmr.repository.NodeRef;
+
+import eu.xenit.alfresco.healthprocessor.checker.NodeIndexHealthReport;
+import eu.xenit.alfresco.healthprocessor.checker.NodeIndexHealthReport.IndexHealthStatus;
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.endpoint.solr.SolrEndpoint;
+import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor.SolrNodeCommand;
+import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutorImpl;
+import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
+import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
+import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
+@EqualsAndHashCode(callSuper=true)
 public class SolrMissingNodeFixerPluginImpl extends AbstractSolrNodeFixerPlugin implements SolrMissingNodeFixerPlugin {
 
     private Map<SearchEndpointTxId, NodeFixReport> searchEndpointTxCache = new HashMap<>();
 
-    public SolrMissingNodeFixerPluginImpl(SolrRequestExecutor solrRequestExecutor) {
-        super(solrRequestExecutor);
+    public SolrMissingNodeFixerPluginImpl(SwitchableApplicationContextFactory searchApplicationContextFactory,
+            String subsystemName, SolrRequestExecutorImpl solrRequestExecutor) {
+        super(searchApplicationContextFactory, subsystemName, solrRequestExecutor);
     }
 
     @Nonnull
@@ -38,8 +44,9 @@ public class SolrMissingNodeFixerPluginImpl extends AbstractSolrNodeFixerPlugin 
 
     @Override
     protected Set<NodeFixReport> handleHealthReport(NodeHealthReport unhealthyReport,
-            NodeIndexHealthReport endpointHealthReport) {
-        if (endpointHealthReport.getHealthStatus() != IndexHealthStatus.NOT_FOUND) {
+            NodeIndexHealthReport<SolrEndpoint> endpointHealthReport) {
+        if (endpointHealthReport.getHealthStatus() != IndexHealthStatus.NOT_FOUND
+                && endpointHealthReport.getHealthStatus() != IndexHealthStatus.FOUND_OUTDATED) {
             return Collections.emptySet();
         }
 
@@ -68,7 +75,7 @@ public class SolrMissingNodeFixerPluginImpl extends AbstractSolrNodeFixerPlugin 
 
     @Value
     public static class SearchEndpointTxId {
-        private final SearchEndpoint searchEndpoint;
+        private final SolrEndpoint searchEndpoint;
         private final Long txId;
     }
 

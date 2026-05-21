@@ -42,6 +42,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class NodeHealthReport implements Serializable {
 
+    private static final long serialVersionUID = -939101152283421058L;
+
     NodeHealthStatus status;
     NodeRef nodeRef;
     Set<String> messages;

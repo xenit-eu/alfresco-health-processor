@@ -13,6 +13,9 @@ services:
       - INDEX=solr6
       - GLOBAL_solr.http.socket.timeout=30000
       - GLOBAL_solr.http.connection.timeout=30000
+      - GLOBAL_elasticsearch.createIndexIfNotExists=true
+      - GLOBAL_elasticsearch.host=elasticsearch
+      - GLOBAL_elasticsearch.port=9200
       - GLOBAL_csrf.filter.enabled=false
       - ENABLE_CLUSTERING=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.task.cron=0/20 * * * * ? *
@@ -24,25 +27,37 @@ services:
       - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.summary.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.log.progress.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.reporter.alfred-telemetry.enabled=true
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.enabled=true
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.content-validation.properties=cm:content
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.enabled=true
-      - GLOBAL_eu.xenit.alfresco.healthprocessor.plugin.solr-index.check-transaction=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.checker.content-validation.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.checker.content-validation.properties=cm:content
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.checker.elastic-index.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.checker.elastic-index.endpoints.default.expect-paths-indexed=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.checker.solr-index.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.checker.solr-index.check-transaction=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-missing-node.enabled=true
       - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.solr-duplicate-node.enabled=true
-      # Disable this loud logger which sends errors in Alfresco 7.0.
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.elastic-undeleted-node.enabled=true
+      - GLOBAL_eu.xenit.alfresco.healthprocessor.fixer.elastic-missing-or-outdated-node.enabled=true
+        # Disable this loud logger which sends errors in Alfresco 7.0.
       - LOG4J_logger.org.alfresco.repo.content.transform.LocalTransformServiceRegistry=OFF
         # Settings for MQ (is needed!)
       - GLOBAL_messaging.subsystem.autostart=false
       - GLOBAL_events.subsystem.autostart=false
+        # for integration tests we want as little delay as possible
+      - GLOBAL_repo.event2.send.strategy=direct
+        # default node type filter uses sys:* and thus blocks sys:store_root/sys:container
+        # this breaks path indexing when ElasticMissingOrOutdatedNodeFixerPluginImpl is used to try & fix missing nodes/paths
+        # indexer always looks up path from parent node(s) to build path on indexed nodes
+        # sys:store_root needed as root of all, sys:container needed for authorities and maybe other technical nodes
+        # default node filter does not include rule:*/act:*
+        # this breaks path indexing (lots of errors) because those typically live in cm:systemFolder (rule:ruleFolder) which are not indexed
+      - GLOBAL_repo.event2.filter.nodeTypes=sys:deleted,sys:descriptor,sys:reference,sys:lost_found,sys:archiveUser, rule:*, act:*, fm:*, cm:thumbnail, cm:failedThumbnail, cm:rating, rma:rmsite include_subtypes, usr:user
         # Settings for transformation services
-      - GLOBAL_transform.service.enabled=false
+      - GLOBAL_transform.service.enabled=true
+      - GLOBAL_transform.service.url=http://transform-router:8095
+      - GLOBAL_sfs.url=http://shared-file-store:8099/
       - GLOBAL_local.transform.service.enabled=false
       - GLOBAL_legacy.transform.service.enabled=false
-        # Needed to silence transformation routing log spam
-      - GLOBAL_messaging.broker.username=admin
-      - GLOBAL_messaging.broker.password=admin
-      - GLOBAL_messaging.broker.url=vm://localhost?broker.persistent=false
+      - GLOBAL_messaging.broker.url=failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true
         # Disable unused services
       - GLOBAL_cifs.enabled=false
       - GLOBAL_nfs.enabled=false
@@ -66,6 +81,13 @@ services:
       - GLOBAL_jodconverter.enabled=false
     depends_on:
       - postgresql
+    # healthcheck used to make sure live indexer is not started before ACS is done bootstrapping
+    healthcheck:
+      test: curl -f localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/probes/-ready-
+      interval: 15s
+      timeout: 15s
+      retries: 6
+
   solr:
     image: docker.io/xenit/alfresco-solr6:2.0
     environment:
@@ -82,4 +104,50 @@ services:
       - POSTGRES_PASSWORD=admin
       - POSTGRES_DB=alfresco
 
+  activemq:
+    image: alfresco/alfresco-activemq:5.18.7-jre17-rockylinux8
 
+  transform-core-aio:
+    image: alfresco/alfresco-transform-core-aio:5.2.1
+    environment:
+      JAVA_OPTS: " -Xms256m -Xmx1536m"
+      ACTIVEMQ_URL: nio://activemq:61616
+      FILE_STORE_URL: "http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file"
+
+  shared-file-store:
+    image: quay.io/alfresco/alfresco-shared-file-store:4.2.1
+    environment:
+      JAVA_OPTS: " -Xms256m -Xmx512m"
+      scheduler.content.age.millis: 86400000
+      scheduler.cleanup.interval: 86400000
+
+  transform-router:
+    image: quay.io/alfresco/alfresco-transform-router:4.2.1
+    environment:
+      JAVA_OPTS: " -Xms256m -Xmx512m"
+      ACTIVEMQ_URL: "nio://activemq:61616"
+      CORE_AIO_URL : "http://transform-core-aio:8090"
+      FILE_STORE_URL: "http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file"
+
+  elasticsearch:
+    image: elasticsearch:8.17.3
+    ports:
+      - 9200:9200
+    environment:
+      xpack.security.enabled: "false"
+      discovery.type: "single-node"
+      ES_JAVA_OPTS: "-Xms750m -Xmx750m"
+
+  search:
+    image: quay.io/alfresco/alfresco-elasticsearch-live-indexing:5.1.1.1
+    environment:
+      ALFRESCO_ACCEPTED_CONTENT_MEDIA_TYPES_CACHE_BASE_URL: http://transform-core-aio:8090/transform/config
+      ALFRESCO_SHAREDFILESTORE_BASEURL: http://shared-file-store:8099/alfresco/api/-default-/private/sfs/versions/1/file/
+      SPRING_ACTIVEMQ_BROKERURL: "nio://activemq:61616"
+      SPRING_ELASTICSEARCH_REST_URIS: http://elasticsearch:9200
+    # don't want live indexing acting on events generated during ACS bootstrap
+    # (this would cause conflicts when ACS tries to init the index) 
+    depends_on:
+      alfresco:
+        condition: service_healthy
+        restart: false

@@ -1,6 +1,6 @@
 package eu.xenit.alfresco.healthprocessor.reporter.store;
 
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;
@@ -91,6 +91,7 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
         attributeStore.setAttribute((Serializable) oldStats, ATTR_KEY_REPORT_STATS, pluginClass);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Map<Class<? extends HealthProcessorPlugin>, List<NodeHealthReport>> retrieveStoredReports() {
         Map<Class<? extends HealthProcessorPlugin>, List<NodeHealthReport>> ret = new HashMap<>();
@@ -106,6 +107,7 @@ public class AttributeHealthReportsStore implements HealthReportsStore {
         return ret;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Map<Class<? extends HealthProcessorPlugin>, Map<NodeHealthStatus, Long>> retrieveRecordedStats() {
         Map<Class<? extends HealthProcessorPlugin>, Map<NodeHealthStatus, Long>> ret = new HashMap<>();

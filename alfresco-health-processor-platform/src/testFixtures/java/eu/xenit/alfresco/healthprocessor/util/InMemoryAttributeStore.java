@@ -3,12 +3,14 @@ package eu.xenit.alfresco.healthprocessor.util;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.alfresco.util.Pair;
 
 public class InMemoryAttributeStore implements AttributeStore {
 
     private final Map<Pair<Serializable, Serializable>, Serializable> attributes = new HashMap<>();
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getAttribute(Serializable key1, Serializable key2) {
         // noinspection unchecked

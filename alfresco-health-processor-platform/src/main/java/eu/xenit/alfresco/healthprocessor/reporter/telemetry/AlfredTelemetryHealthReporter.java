@@ -1,7 +1,7 @@
 package eu.xenit.alfresco.healthprocessor.reporter.telemetry;
 
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.CycleProgress;
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthStatus;
 import eu.xenit.alfresco.healthprocessor.reporter.api.ProcessorPluginOverview;

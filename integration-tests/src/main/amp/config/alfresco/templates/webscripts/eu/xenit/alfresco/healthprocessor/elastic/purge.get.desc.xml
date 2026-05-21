@@ -1,0 +1,8 @@
+<webscript>
+    <shortname>Health Processor ElasticSearch node Purge webscript</shortname>
+    <description>For integration testing purposes</description>
+    <url>/xenit/healthprocessor/elastic/purge</url>
+    <authentication>user</authentication>
+    <format default="json"/>
+    <family>Health Processor Test</family>
+</webscript>

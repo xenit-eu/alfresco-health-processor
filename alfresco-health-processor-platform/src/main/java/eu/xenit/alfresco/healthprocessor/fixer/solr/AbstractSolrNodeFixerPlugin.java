@@ -1,57 +1,41 @@
 package eu.xenit.alfresco.healthprocessor.fixer.solr;
 
+import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
+
+import eu.xenit.alfresco.healthprocessor.checker.NodeIndexHealthReport;
+import eu.xenit.alfresco.healthprocessor.endpoint.solr.SolrEndpoint;
+import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor;
+import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor.SolrActionResponse;
+import eu.xenit.alfresco.healthprocessor.executors.SolrRequestExecutor.SolrNodeCommand;
+import eu.xenit.alfresco.healthprocessor.fixer.SubsystemDependantHealthFixerPlugin;
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixReport;
 import eu.xenit.alfresco.healthprocessor.fixer.api.NodeFixStatus;
-import eu.xenit.alfresco.healthprocessor.fixer.api.ToggleableHealthFixerPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.NodeIndexHealthReport;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrNodeCommand;
-import eu.xenit.alfresco.healthprocessor.plugins.solr.SolrRequestExecutor.SolrActionResponse;
 import eu.xenit.alfresco.healthprocessor.reporter.api.NodeHealthReport;
-import java.util.HashSet;
-import java.util.Set;
-import javax.annotation.Nonnull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
-@RequiredArgsConstructor
+@EqualsAndHashCode(callSuper=true)
 @Slf4j
-abstract class AbstractSolrNodeFixerPlugin implements ToggleableHealthFixerPlugin {
+abstract class AbstractSolrNodeFixerPlugin extends SubsystemDependantHealthFixerPlugin<SolrEndpoint> {
 
+    @EqualsAndHashCode.Exclude
     private final SolrRequestExecutor solrRequestExecutor;
-    private @Getter @Setter boolean enabled;
 
-    @Nonnull
-    @Override
-    public Set<NodeFixReport> fix(Class<? extends HealthProcessorPlugin> pluginClass,
-            Set<NodeHealthReport> unhealthyReports) {
-        Set<NodeFixReport> fixReports = new HashSet<>();
-        for (NodeHealthReport unhealthyReport : unhealthyReports) {
-            Set<NodeIndexHealthReport> endpointHealthReports = unhealthyReport.data(NodeIndexHealthReport.class);
-
-            for (NodeIndexHealthReport endpointHealthReport : endpointHealthReports) {
-                fixReports.addAll(handleHealthReport(unhealthyReport, endpointHealthReport));
-            }
-        }
-
-        return fixReports;
+    public AbstractSolrNodeFixerPlugin(SwitchableApplicationContextFactory searchApplicationContextFactory,
+            String subsystemName, SolrRequestExecutor solrRequestExecutor)
+    {
+        super(SolrEndpoint.class, searchApplicationContextFactory, subsystemName);
+        this.solrRequestExecutor = solrRequestExecutor;
     }
 
-    protected abstract Set<NodeFixReport> handleHealthReport(NodeHealthReport unhealthyReport,
-            NodeIndexHealthReport endpointHealthReport);
-
     protected NodeFixReport trySendSolrCommand(NodeHealthReport unhealthyReport,
-            NodeIndexHealthReport endpointHealthReport, SolrNodeCommand command) {
+            NodeIndexHealthReport<SolrEndpoint> endpointHealthReport, SolrNodeCommand command) {
         try {
             log.debug("Requesting {} for node {} on {}",
                     command,
                     endpointHealthReport.getNodeRefStatus().getNodeRef(),
                     endpointHealthReport.getEndpoint());
-            SolrActionResponse solrActionResponse = solrRequestExecutor.executeAsyncNodeCommand(endpointHealthReport.getEndpoint(),
+            SolrActionResponse solrActionResponse = solrRequestExecutor.executeAsyncNodeCommand((SolrEndpoint)endpointHealthReport.getEndpoint(),
                             endpointHealthReport.getNodeRefStatus(), command);
             if (solrActionResponse.isSuccessFull()) {
                 return new NodeFixReport(NodeFixStatus.SUCCEEDED, unhealthyReport, command + " on " +

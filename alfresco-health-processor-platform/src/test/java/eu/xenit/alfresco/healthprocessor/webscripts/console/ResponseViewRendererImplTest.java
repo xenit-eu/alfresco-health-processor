@@ -10,12 +10,12 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import eu.xenit.alfresco.healthprocessor.checker.AssertHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.indexing.FakeTrackingComponent;
 import eu.xenit.alfresco.healthprocessor.indexing.IndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrategy;
 import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdIndexingConfiguration;
-import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.processing.ProcessorService;
 import eu.xenit.alfresco.healthprocessor.processing.ProcessorState;
 import eu.xenit.alfresco.healthprocessor.reporter.api.HealthReporter;

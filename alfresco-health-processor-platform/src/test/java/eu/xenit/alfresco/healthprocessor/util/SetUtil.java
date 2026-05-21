@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SetUtil {
 
+    @SafeVarargs
     public static <T> Set<T> set(T... values) {
         return new HashSet<>(Arrays.asList(values));
     }

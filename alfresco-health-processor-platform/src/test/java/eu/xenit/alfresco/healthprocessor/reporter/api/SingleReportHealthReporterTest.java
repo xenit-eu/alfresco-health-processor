@@ -5,8 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
-import eu.xenit.alfresco.healthprocessor.plugins.AssertHealthProcessorPlugin;
-import eu.xenit.alfresco.healthprocessor.plugins.api.HealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.checker.AssertHealthProcessorPlugin;
+import eu.xenit.alfresco.healthprocessor.checker.api.HealthProcessorPlugin;
 import eu.xenit.alfresco.healthprocessor.util.TestReports;
 import java.util.ArrayList;
 import java.util.List;

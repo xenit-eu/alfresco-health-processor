@@ -1,20 +1,19 @@
 package eu.xenit.alfresco.healthprocessor.indexing.lasttxns;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
 
-import eu.xenit.alfresco.healthprocessor.indexing.FakeTrackingComponent;
-import eu.xenit.alfresco.healthprocessor.indexing.txnid.TxnIdBasedIndexingStrategy;
-import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 import java.util.Arrays;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import eu.xenit.alfresco.healthprocessor.indexing.FakeTrackingComponent;
+import eu.xenit.alfresco.healthprocessor.util.TestNodeRefs;
 
 class LastTxnsBasedIndexingStrategyTest {
 
